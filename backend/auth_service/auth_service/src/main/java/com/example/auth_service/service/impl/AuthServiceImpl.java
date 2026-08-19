@@ -7,8 +7,10 @@ import org.springframework.stereotype.Service;
 import com.example.auth_service.JwtUtil;
 import com.example.auth_service.entity.Profile;
 import com.example.auth_service.entity.User;
+import com.example.auth_service.payload.req.ForgotPasswordReq;
 import com.example.auth_service.payload.req.LoginReq;
 import com.example.auth_service.payload.req.RegisterReq;
+import com.example.auth_service.payload.req.ResetPasswordReq;
 import com.example.auth_service.payload.res.AuthRes;
 import com.example.auth_service.repository.ProfileRepository;
 import com.example.auth_service.repository.UserRepository;
@@ -80,5 +82,40 @@ public class AuthServiceImpl implements AuthService{
         response.setRole(user.getRole().name());
 
         return response;
+    }
+
+    @Override
+    public String forgotPassword(ForgotPasswordReq request) throws Exception {
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new Exception("Email tidak terdaftar!"));
+
+        // Generate token khusus reset
+        String resetToken = jwtUtil.generateResetToken(user.getEmail());
+
+        // CATATAN: Di dunia nyata, token ini dikirim via Email (JavaMailSender).
+        // Karena kita belum setup SMTP Email untuk proyek ini, kita return saja tokennya
+        // sebagai response agar Frontend/Postman bisa langsung menggunakannya.
+        return resetToken; 
+    }
+
+    @Override
+    public String resetPassword(ResetPasswordReq request) throws Exception {
+        // 1. Validasi apakah token JWT-nya masih berlaku dan formatnya benar
+        if (!jwtUtil.isValid(request.getToken())) {
+            throw new Exception("Token tidak valid atau sudah kedaluwarsa!");
+        }
+
+        // 2. Ekstrak email dari token tersebut
+        String email = jwtUtil.extractEmail(request.getToken());
+
+        // 3. Cari user berdasarkan email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new Exception("User tidak ditemukan!"));
+
+        // 4. Timpa password lama dengan password baru (wajib di-hash Bcrypt lagi)
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+
+        return "Password berhasil diubah! Silakan login menggunakan password baru Anda.";
     }
 }

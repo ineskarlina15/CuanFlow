@@ -34,7 +34,12 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable()) // Biar gampang testing di Postman
             .authorizeHttpRequests(auth -> auth
                 // Izinkan API login dan register untuk di-hit tanpa authentication
-                .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register").permitAll() 
+                .requestMatchers(
+                    "/api/v1/auth/login", 
+                    "/api/v1/auth/register",
+                    "/api/v1/auth/forgot-password",
+                    "/api/v1/auth/reset-password"
+                ).permitAll() 
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

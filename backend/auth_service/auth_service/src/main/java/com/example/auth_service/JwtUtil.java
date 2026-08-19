@@ -28,7 +28,6 @@ public class JwtUtil {
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getKey())
                 .compact();
     }
@@ -54,5 +53,15 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public String generateResetToken(String email) {
+        long RESET_EXPIRATION = 1000 * 60 * 15; // Berlaku 15 menit saja
+        return Jwts.builder()
+                .subject(email)
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + RESET_EXPIRATION))
+                .signWith(getKey())
+                .compact();
     }
 }
