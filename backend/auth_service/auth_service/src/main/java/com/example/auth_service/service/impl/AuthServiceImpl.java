@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.auth_service.JwtUtil;
+import com.example.auth_service.utility.JwtUtil;
 import com.example.auth_service.entity.Profile;
 import com.example.auth_service.entity.User;
 import com.example.auth_service.payload.req.ForgotPasswordReq;

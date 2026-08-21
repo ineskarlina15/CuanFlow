@@ -1,4 +1,4 @@
-package com.example.auth_service;
+package com.example.auth_service.utility;
 
 import java.security.Key;
 import java.util.Date;
