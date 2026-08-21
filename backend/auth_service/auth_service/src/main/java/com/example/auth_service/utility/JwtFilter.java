@@ -34,13 +34,19 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             if (jwtUtil.isValid(token)) {
                 String email = jwtUtil.extractEmail(token);
+                String role = jwtUtil.extractRole(token);
                 
+                java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new java.util.ArrayList<>();
+                if (role != null) {
+                    authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
+                }
+
                 // Membuat object User dari Spring Security
                 // (Password dikosongkan karena kita hanya butuh verifikasi email dari token)
                 User user = new User(
                         email,
                         "",
-                        java.util.List.of());
+                        authorities);
 
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         user,

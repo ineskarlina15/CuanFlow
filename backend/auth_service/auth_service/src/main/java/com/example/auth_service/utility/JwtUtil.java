@@ -13,7 +13,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
-    private final String SECRET = "BISMILLAHPROJEKCUANFLOWDAPATIGRADE-A";
+    @org.springframework.beans.factory.annotation.Value("${jwt.secret}")
+    private String SECRET;
+    
     // Set waktu token expire (Diubah ke 24 jam biar lega saat proses testing)
     private final long EXPIRATION = 1000 * 60 * 60 * 24; 
 
@@ -24,10 +26,13 @@ public class JwtUtil {
         );
     }
 
-    public String generateToken(String email) {
+    public String generateToken(Integer userId, String email, String role) {
         return Jwts.builder()
                 .subject(email)
+                .claim("userId", userId)
+                .claim("role", role)
                 .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(getKey())
                 .compact();
     }
@@ -40,6 +45,26 @@ public class JwtUtil {
                 .getPayload();
                 
         return claims.getSubject();
+    }
+
+    public Integer extractUserId(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("userId", Integer.class);
+    }
+
+    public String extractRole(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("role", String.class);
     }
 
     public boolean isValid(String token) {

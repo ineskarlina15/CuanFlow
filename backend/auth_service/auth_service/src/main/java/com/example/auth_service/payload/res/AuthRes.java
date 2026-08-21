@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthRes {
+    private Integer userId;
     private String token;
     private String name;
     private String email;

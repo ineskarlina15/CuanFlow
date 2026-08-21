@@ -57,6 +57,11 @@ public class UserServiceImpl implements UserService{
         return mapToProfileRes(user, profile);
     }
 
+    @Override
+    public java.util.List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
     // Fungsi bantuan untuk memetakan Entity ke DTO
     private ProfileRes mapToProfileRes(User user, Profile profile) {
         ProfileRes response = new ProfileRes();

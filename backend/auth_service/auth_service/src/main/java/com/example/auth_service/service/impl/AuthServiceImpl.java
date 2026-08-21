@@ -72,10 +72,11 @@ public class AuthServiceImpl implements AuthService{
         }
 
         // 3. Jika lolos, cetak Token JWT
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole().name());
 
         // 4. Susun data kembalian (Response)
         AuthRes response = new AuthRes();
+        response.setUserId(user.getId());
         response.setToken(token);
         response.setName(user.getName());
         response.setEmail(user.getEmail());

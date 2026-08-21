@@ -43,4 +43,14 @@ public class UserController {
             return message.badReq(e.getMessage(), 400);
         }
     }
+
+    @GetMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> getAllUsers() {
+        try {
+            return message.getData("Berhasil mengambil daftar pengguna (Khusus Admin)", userService.getAllUsers(), 200);
+        } catch (Exception e) {
+            return message.error(e.getMessage(), 500);
+        }
+    }
 }
