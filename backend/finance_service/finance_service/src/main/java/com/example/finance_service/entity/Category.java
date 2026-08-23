@@ -3,6 +3,8 @@ package com.example.finance_service.entity;
 import java.time.LocalDateTime;
 
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -20,6 +22,8 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "categories")
+@SQLDelete(sql = "UPDATE categories SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
