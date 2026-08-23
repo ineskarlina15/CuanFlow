@@ -3,6 +3,7 @@ package com.example.auth_service.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +28,7 @@ public class AuthController {
     private Message message;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterReq request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterReq request) {
         try {
             // Memanggil logika register di Service
             String result = authService.register(request);
@@ -41,7 +42,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginReq request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginReq request) {
         try {
             // Memanggil logika login di Service
             AuthRes data = authService.login(request);
