@@ -16,12 +16,6 @@ import com.example.auth_service.utility.JwtFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.security.config.Customizer;
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity // Diaktifkan agar nanti bisa pakai @PreAuthorize di Controller
