@@ -17,10 +17,10 @@ import reactor.core.publisher.Mono;
 public class RateLimitFilter implements GlobalFilter {
 
     @Value("${max_requests}")
-    int MAX_REQUEST;
+    private int MAX_REQUEST;
 
     @Value("${time_window_seconds}")
-    long WINDOW_SECONDS;
+    private long WINDOW_SECONDS;
 
     private final Map<String, RequestInfo> requests = new ConcurrentHashMap<>();
 
@@ -28,33 +28,33 @@ public class RateLimitFilter implements GlobalFilter {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String ip = exchange.getRequest().getRemoteAddress().getAddress().getHostAddress();
         long now = Instant.now().getEpochSecond();
-        
+
         RequestInfo info = requests.getOrDefault(ip, new RequestInfo(0, now));
-        
+
         // reset window setelah berlalu X detik
         if (now - info.windowStart >= WINDOW_SECONDS) {
             info.count = 0;
             info.windowStart = now;
         }
-        
+
         info.count++;
         requests.put(ip, info);
-        
+
         if (info.count > MAX_REQUEST) {
             exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
             exchange.getResponse().getHeaders().add("Content-Type", "application/json");
-            String body = "{\n  \"message\": \"Rate limit exceeded. Terlalu banyak request!\",\n  \"status\": 429\n}";
+            String body = "{\n  \"message\": \"Rate limit exceeded\",\n  \"status\": 429\n}";
             var buffer = exchange.getResponse().bufferFactory().wrap(body.getBytes());
             return exchange.getResponse().writeWith(Mono.just(buffer));
         }
-        
+
         return chain.filter(exchange);
     }
-    
+
     static class RequestInfo {
         int count;
         long windowStart;
-        
+
         RequestInfo(int count, long windowStart) {
             this.count = count;
             this.windowStart = windowStart;
