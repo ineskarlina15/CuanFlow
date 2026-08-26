@@ -26,7 +26,6 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<?> getMyProfile(Authentication auth) {
         try {
-            // auth.getName() otomatis berisi email dari token JWT
             ProfileRes data = userService.getMyProfile(auth.getName());
             return message.getData("Berhasil mengambil data profil", data, 200);
         } catch (Exception e) {
@@ -35,9 +34,9 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateMyProfile(Authentication auth, @RequestBody UpdateProfileReq request) {
+    public ResponseEntity<?> updateMyProfile(Authentication auth, @RequestBody UpdateProfileReq payload) {
         try {
-            ProfileRes data = userService.updateMyProfile(auth.getName(), request);
+            ProfileRes data = userService.updateMyProfile(auth.getName(), payload);
             return message.getData("Profil berhasil diperbarui", data, 200);
         } catch (Exception e) {
             return message.badReq(e.getMessage(), 400);

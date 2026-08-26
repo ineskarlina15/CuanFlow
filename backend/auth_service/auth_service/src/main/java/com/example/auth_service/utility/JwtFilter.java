@@ -32,8 +32,8 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             // Memotong kata "Bearer " untuk mengambil murni tokennya saja
             String token = authHeader.substring(7);
-            if (jwtUtil.isValid(token)) {
-                String email = jwtUtil.extractEmail(token);
+            if (token != null && jwtUtil.isValid(token)) {
+                String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
                 
                 java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new java.util.ArrayList<>();
@@ -42,9 +42,9 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
 
                 // Membuat object User dari Spring Security
-                // (Password dikosongkan karena kita hanya butuh verifikasi email dari token)
+                // (Password dikosongkan karena kita hanya butuh verifikasi username dari token)
                 User user = new User(
-                        email,
+                        username,
                         "",
                         authorities);
 

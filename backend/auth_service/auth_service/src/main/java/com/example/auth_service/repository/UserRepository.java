@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, Integer>{
 
     // Fungsi ini mengecek apakah email sudah dipakai (return true/false), untuk mencegah duplikasi email saat Register
     boolean existsByEmail(String email);
+
+    Optional<User> findByUsername(String username);
+    boolean existsByUsername(String username);
 }

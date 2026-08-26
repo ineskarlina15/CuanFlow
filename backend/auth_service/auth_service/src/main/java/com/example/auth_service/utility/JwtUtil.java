@@ -2,6 +2,7 @@ package com.example.auth_service.utility;
 
 import java.security.Key;
 import java.util.Date;
+import java.util.function.Function;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -26,9 +27,9 @@ public class JwtUtil {
         );
     }
 
-    public String generateToken(Integer userId, String email, String role) {
+    public String generateToken(Integer userId, String username, String role) {
         return Jwts.builder()
-                .subject(email)
+                .subject(username)
                 .claim("userId", userId)
                 .claim("role", role)
                 .issuedAt(new Date())
@@ -37,14 +38,25 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extractEmail(String token) {
-        Claims claims = Jwts.parser()
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
                 .verifyWith((javax.crypto.SecretKey) getKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
-                
-        return claims.getSubject();
+    }
+
+    private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
+    }
+
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractEmail(String token) {
+        return extractClaim(token, Claims::getSubject);
     }
 
     public Integer extractUserId(String token) {

@@ -33,9 +33,16 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public String register(RegisterReq request) throws Exception {
-        // 1. Validasi apakah email sudah terdaftar
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new Exception("Pendaftaran gagal: Email sudah terdaftar!");
+        // 1. Validasi apakah username sudah terdaftar
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new Exception("Pendaftaran gagal: Username sudah terdaftar!");
+        }
+        
+        // Opsional: cek email jika email diisi
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new Exception("Pendaftaran gagal: Email sudah terdaftar!");
+            }
         }
 
         // 2. Enkripsi password menggunakan Bcrypt
@@ -44,6 +51,7 @@ public class AuthServiceImpl implements AuthService{
         // 3. Masukkan data ke entitas User
         User newUser = new User();
         newUser.setName(request.getName());
+        newUser.setUsername(request.getUsername());
         newUser.setEmail(request.getEmail());
         newUser.setPassword(encryptedPassword); // Simpan password yang sudah di-hash
         newUser.setPhone(request.getPhone());
@@ -61,9 +69,9 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public AuthRes login(LoginReq request) throws Exception {
-        // 1. Cari user di database berdasarkan email
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new Exception("User tidak ditemukan!"));
+        // 1. Cari user di database berdasarkan username (karena sekarang login pakai username)
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new Exception("Username tidak ditemukan!"));
 
         // 2. Verifikasi password menggunakan fitur matches() dari Bcrypt
         // (Parameter pertama: password asli dari user, Parameter kedua: password hash dari DB)
@@ -72,13 +80,14 @@ public class AuthServiceImpl implements AuthService{
         }
 
         // 3. Jika lolos, cetak Token JWT
-        String token = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole().name());
 
         // 4. Susun data kembalian (Response)
         AuthRes response = new AuthRes();
         response.setUserId(user.getId());
         response.setToken(token);
         response.setName(user.getName());
+        response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
 

@@ -22,8 +22,8 @@ public class UserServiceImpl implements UserService{
     private ProfileRepository profileRepository;
 
     @Override
-    public ProfileRes getMyProfile(String email) throws Exception {
-        User user = userRepository.findByEmail(email)
+    public ProfileRes getMyProfile(String username) throws Exception {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new Exception("User tidak ditemukan"));
         
         Profile profile = profileRepository.findByUserId(user.getId())
@@ -34,8 +34,8 @@ public class UserServiceImpl implements UserService{
 
     @Override
     @Transactional
-    public ProfileRes updateMyProfile(String email, UpdateProfileReq request) throws Exception {
-        User user = userRepository.findByEmail(email)
+    public ProfileRes updateMyProfile(String username, UpdateProfileReq request) throws Exception {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new Exception("User tidak ditemukan"));
         
         Profile profile = profileRepository.findByUserId(user.getId())
@@ -67,6 +67,7 @@ public class UserServiceImpl implements UserService{
         ProfileRes response = new ProfileRes();
         response.setUserId(user.getId());
         response.setName(user.getName());
+        response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setPhone(user.getPhone());
         response.setRole(user.getRole().name());

@@ -13,6 +13,7 @@ import lombok.Data;
 public class ProfileRes {
     private Integer userId;
     private String name;
+    private String username;
     private String email;
     private String phone;
     private String role;

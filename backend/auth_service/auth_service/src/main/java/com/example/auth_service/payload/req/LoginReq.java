@@ -11,9 +11,8 @@ import jakarta.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginReq {
-    @NotBlank(message = "Email tidak boleh kosong")
-    @Email(message = "Format email tidak valid")
-    private String email;
+    @NotBlank(message = "Username tidak boleh kosong")
+    private String username;
 
     @NotBlank(message = "Password tidak boleh kosong")
     private String password;
