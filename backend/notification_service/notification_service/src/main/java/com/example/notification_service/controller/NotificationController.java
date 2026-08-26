@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.notification_service.service.NotificationService;
 import com.example.notification_service.utility.Message;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/notifications")
+@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class NotificationController {
 
     @Autowired

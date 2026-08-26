@@ -1,5 +1,6 @@
 package com.example.notification_service.utility;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 
 import javax.crypto.spec.SecretKeySpec;
@@ -12,14 +13,25 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
+    private static final String TOKEN_TYPE = "tokenType";
+    private static final String ACCESS_TOKEN = "ACCESS";
+
     @org.springframework.beans.factory.annotation.Value("${jwt.secret}")
     private String SECRET;
 
     private Key getKey() {
         return new SecretKeySpec(
-                SECRET.getBytes(),
+                SECRET.getBytes(StandardCharsets.UTF_8),
                 SignatureAlgorithm.HS256.getJcaName()
         );
+    }
+
+    private Claims extractClaims(String token) {
+        return Jwts.parser()
+                .verifyWith((javax.crypto.SecretKey) getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public String extractEmail(String token) {
@@ -63,5 +75,9 @@ public class JwtUtil {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public boolean isAccessToken(String token) {
+        return ACCESS_TOKEN.equals(extractClaims(token).get(TOKEN_TYPE, String.class));
     }
 }
