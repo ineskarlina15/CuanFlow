@@ -1,9 +1,21 @@
 {
     "info": {
-        "name": "CuanFlow API (S1 Project)",
-        "description": "Dokumentasi API lengkap untuk proyek S1 CuanFlow (Microservices).",
+        "name": "CuanFlow API",
+        "description": "Dokumentasi API lengkap untuk proyek S1 CuanFlow (Microservices). Membutuhkan profil dev untuk akun Admin (admin cuanflow).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8024",
+            "type": "string"
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "string"
+        }
+    ],
     "item": [
         {
             "name": "1. Auth Service",
@@ -13,27 +25,236 @@
                     "request": {
                         "method": "POST",
                         "header": [
-                            {"key": "Content-Type", "value": "application/json"}
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Budi Santoso\",\n    \"email\": \"budi@example.com\",\n    \"password\": \"rahasia123\",\n    \"phone\": \"08123456789\"\n}"
+                            "raw": "{\n    \"name\": \"Budi Santoso\",\n    \"username\": \"budisantoso\",\n    \"email\": \"budi@example.com\",\n    \"password\": \"Password1!\",\n    \"phone\": \"08123456789\"\n}"
                         },
-                        "url": {"raw": "http://localhost:8024/api/v1/auth/register", "protocol": "http", "host": ["localhost"], "port": "8024", "path": ["api", "v1", "auth", "register"]}
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/auth/register",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "auth",
+                                "register"
+                            ]
+                        }
                     }
                 },
                 {
                     "name": "Login",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.token) {",
+                                    "    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
-                            {"key": "Content-Type", "value": "application/json"}
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"email\": \"budi@example.com\",\n    \"password\": \"rahasia123\"\n}"
+                            "raw": "{\n    \"username\": \"budisantoso\",\n    \"password\": \"Password1!\"\n}"
                         },
-                        "url": {"raw": "http://localhost:8024/api/v1/auth/login", "protocol": "http", "host": ["localhost"], "port": "8024", "path": ["api", "v1", "auth", "login"]}
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/auth/login",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Forgot Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"budi@example.com\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/auth/forgot-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "auth",
+                                "forgot-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Reset Password",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"token\": \"<UUID_DARI_RESPONSE_FORGOT_PASSWORD>\",\n    \"newPassword\": \"PasswordBaru2!\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/auth/reset-password",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "auth",
+                                "reset-password"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Logout",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/auth/logout",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "auth",
+                                "logout"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/users/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "users",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Update Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Budi Santoso Updated\",\n    \"phone\": \"08111111111\",\n    \"avatarUrl\": \"https://example.com/avatar.png\",\n    \"dateOfBirth\": \"2000-01-01\",\n    \"gender\": \"MALE\",\n    \"address\": \"Jakarta\",\n    \"occupation\": \"Developer\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/users/profile",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "users",
+                                "profile"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Get All Users (Admin Only)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "authSvc",
+                                "api",
+                                "v1",
+                                "users"
+                            ]
+                        }
                     }
                 }
             ]
@@ -42,21 +263,425 @@
             "name": "2. Finance Service",
             "item": [
                 {
-                    "name": "Get Transactions (Pagination & Filter)",
+                    "name": "Categories",
+                    "item": [
+                        {
+                            "name": "Create Category",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Makanan\",\n    \"type\": \"EXPENSE\",\n    \"description\": \"Makan sehari-hari\",\n    \"icon\": \"food\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "categories"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get All Categories",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "categories"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Category By ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "categories",
+                                        "1"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Update Category",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Makanan Updated\",\n    \"type\": \"EXPENSE\",\n    \"description\": \"Makan sehari-hari\",\n    \"icon\": \"food\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "categories",
+                                        "1"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete Category",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "categories",
+                                        "1"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Transactions",
+                    "item": [
+                        {
+                            "name": "Create Transaction (No File)",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
+                                        {
+                                            "key": "data",
+                                            "value": "{\n  \"categoryId\": 1,\n  \"type\": \"EXPENSE\",\n  \"amount\": 25000,\n  \"title\": \"Makan siang\",\n  \"description\": \"Makan siang\",\n  \"transactionDate\": \"2026-08-26\",\n  \"paymentMethod\": \"CASH\"\n}",
+                                            "type": "text"
+                                        }
+                                    ]
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "transactions"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get All Transactions",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions?page=0&size=10",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "transactions"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "page",
+                                            "value": "0"
+                                        },
+                                        {
+                                            "key": "size",
+                                            "value": "10"
+                                        }
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Transaction By ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "transactions",
+                                        "1"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Delete Transaction",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/1",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "transactions",
+                                        "1"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Dashboard & Reports",
+                    "item": [
+                        {
+                            "name": "Get Dashboard",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/dashboard",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "transactions",
+                                        "dashboard"
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Analytics",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/reports/analytics?startDate=2026-08-01&endDate=2026-08-31",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "reports",
+                                        "analytics"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "startDate",
+                                            "value": "2026-08-01"
+                                        },
+                                        {
+                                            "key": "endDate",
+                                            "value": "2026-08-31"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Budgets",
+                    "item": [
+                        {
+                            "name": "Create Budget",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"categoryId\": 1,\n    \"amount\": 1500000,\n    \"month\": 8,\n    \"year\": 2026\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/budgets",
+                                    "host": [
+                                        "{{baseUrl}}"
+                                    ],
+                                    "path": [
+                                        "financeSvc",
+                                        "api",
+                                        "v1",
+                                        "budgets"
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "3. Notification Service",
+            "item": [
+                {
+                    "name": "Get All Notifications",
                     "request": {
                         "method": "GET",
                         "header": [
-                            {"key": "Authorization", "value": "Bearer {{jwt_token}}"}
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
                         ],
                         "url": {
-                            "raw": "http://localhost:8024/api/v1/transactions?page=0&size=10",
-                            "protocol": "http",
-                            "host": ["localhost"],
-                            "port": "8024",
-                            "path": ["api", "v1", "transactions"],
-                            "query": [
-                                {"key": "page", "value": "0"},
-                                {"key": "size", "value": "10"}
+                            "raw": "{{baseUrl}}/notifSvc/api/v1/notifications",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "notifSvc",
+                                "api",
+                                "v1",
+                                "notifications"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Mark as Read",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/notifSvc/api/v1/notifications/1/read",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "notifSvc",
+                                "api",
+                                "v1",
+                                "notifications",
+                                "1",
+                                "read"
                             ]
                         }
                     }
