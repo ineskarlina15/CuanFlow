@@ -26,7 +26,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         String adminUsername = "admin";
-        
+
         // Cek apakah admin sudah ada di database
         if (!userRepository.existsByUsername(adminUsername)) {
             User admin = new User();
@@ -35,18 +35,18 @@ public class DataSeeder implements CommandLineRunner {
             admin.setEmail("nesikarlina344@gmail.com");
             String adminPassword = System.getenv("DEFAULT_ADMIN_PASSWORD");
             if (adminPassword == null || adminPassword.isBlank()) {
-                adminPassword = "password-admin";
+                adminPassword = "Cuanflow25#";
             }
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRole(UserRole.ADMIN);
             admin.setPhone("+6281226790847");
-            
+
             User savedAdmin = userRepository.save(admin);
-            
+
             Profile adminProfile = new Profile();
             adminProfile.setUser(savedAdmin);
             profileRepository.save(adminProfile);
-            
+
             System.out.println("Default Admin account created successfully!");
         }
     }
