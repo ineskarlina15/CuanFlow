@@ -12,6 +12,8 @@ import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.service.UserService;
 
 import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService{
@@ -58,8 +60,13 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public java.util.List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<ProfileRes> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> profileRepository.findByUserId(user.getId())
+                        .map(profile -> mapToProfileRes(user, profile))
+                        .orElse(null))
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     // Fungsi bantuan untuk memetakan Entity ke DTO

@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
+@org.springframework.context.annotation.Profile("dev")
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired
@@ -34,7 +35,7 @@ public class DataSeeder implements CommandLineRunner {
             admin.setEmail("nesikarlina344@gmail.com");
             String adminPassword = System.getenv("DEFAULT_ADMIN_PASSWORD");
             if (adminPassword == null || adminPassword.isBlank()) {
-                throw new IllegalStateException("DEFAULT_ADMIN_PASSWORD belum diatur");
+                adminPassword = "password-admin";
             }
             admin.setPassword(passwordEncoder.encode(adminPassword));
             admin.setRole(UserRole.ADMIN);

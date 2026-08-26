@@ -13,7 +13,7 @@ public class Message {
         Map<String, Object> res = new HashMap<>();
         res.put("message", message);
         res.put("status", status);
-        return new ResponseEntity<>(res, HttpStatus.OK);
+        return ResponseEntity.status(status).body(res);
     }
 
     public ResponseEntity<?> accessDenied() {
@@ -27,7 +27,7 @@ public class Message {
         Map<String, Object> res = new HashMap<>();
         res.put("message", message);
         res.put("status", status);
-        return new ResponseEntity<>(res, HttpStatus.INTERNAL_SERVER_ERROR);
+        return ResponseEntity.status(status).body(res);
     }
 
     public ResponseEntity<?> getData(String message, Object data, int status) {
@@ -35,21 +35,21 @@ public class Message {
         res.put("message", message);
         res.put("data", data);
         res.put("status", status);
-        return new ResponseEntity<>(res, HttpStatus.OK);
+        return ResponseEntity.status(status).body(res);
     }
 
     public ResponseEntity<?> conflict(String message, int status) {
         Map<String, Object> res = new HashMap<>();
         res.put("message", message);
         res.put("status", status);
-        return new ResponseEntity<>(res, HttpStatus.CONFLICT);
+        return ResponseEntity.status(status).body(res);
     }
 
     public ResponseEntity<?> badReq(String message, int status) {
         Map<String, Object> res = new HashMap<>();
         res.put("message", message);
         res.put("status", status);
-        return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(status).body(res);
     }
 
 }

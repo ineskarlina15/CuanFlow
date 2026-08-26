@@ -32,7 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             // Memotong kata "Bearer " untuk mengambil murni tokennya saja
             String token = authHeader.substring(7);
-            if (token != null && jwtUtil.isValid(token)) {
+            if (token != null && jwtUtil.isValid(token) && jwtUtil.isAccessToken(token)) {
                 String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
                 

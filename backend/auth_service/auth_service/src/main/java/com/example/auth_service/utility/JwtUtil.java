@@ -1,6 +1,7 @@
 package com.example.auth_service.utility;
 
 import java.security.Key;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -14,6 +15,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
+    private static final String TOKEN_TYPE = "tokenType";
+    private static final String ACCESS_TOKEN = "ACCESS";
+    private static final String PASSWORD_RESET_TOKEN = "PASSWORD_RESET";
     @org.springframework.beans.factory.annotation.Value("${jwt.secret}")
     private String SECRET;
     
@@ -22,7 +26,7 @@ public class JwtUtil {
 
     private Key getKey() {
         return new SecretKeySpec(
-                SECRET.getBytes(),
+            SECRET.getBytes(StandardCharsets.UTF_8),
                 SignatureAlgorithm.HS256.getJcaName()
         );
     }
@@ -30,6 +34,7 @@ public class JwtUtil {
     public String generateToken(Integer userId, String username, String role) {
         return Jwts.builder()
                 .subject(username)
+                .claim(TOKEN_TYPE, ACCESS_TOKEN)
                 .claim("userId", userId)
                 .claim("role", role)
                 .issuedAt(new Date())
@@ -92,10 +97,19 @@ public class JwtUtil {
         }
     }
 
+    public boolean isAccessToken(String token) {
+        return ACCESS_TOKEN.equals(extractAllClaims(token).get(TOKEN_TYPE, String.class));
+    }
+
+    public boolean isPasswordResetToken(String token) {
+        return PASSWORD_RESET_TOKEN.equals(extractAllClaims(token).get(TOKEN_TYPE, String.class));
+    }
+
     public String generateResetToken(String email) {
         long RESET_EXPIRATION = 1000 * 60 * 15; // Berlaku 15 menit saja
         return Jwts.builder()
                 .subject(email)
+                .claim(TOKEN_TYPE, PASSWORD_RESET_TOKEN)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + RESET_EXPIRATION))
                 .signWith(getKey())

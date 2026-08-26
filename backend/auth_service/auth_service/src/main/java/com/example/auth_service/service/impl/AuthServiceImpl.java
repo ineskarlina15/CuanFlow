@@ -73,6 +73,10 @@ public class AuthServiceImpl implements AuthService{
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new Exception("Username tidak ditemukan!"));
 
+        if (!Boolean.TRUE.equals(user.getIsActive()) || user.getDeletedAt() != null) {
+            throw new Exception("Akun tidak aktif atau sudah dihapus!");
+        }
+
         // 2. Verifikasi password menggunakan fitur matches() dari Bcrypt
         // (Parameter pertama: password asli dari user, Parameter kedua: password hash dari DB)
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -99,8 +103,10 @@ public class AuthServiceImpl implements AuthService{
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new Exception("Email tidak terdaftar!"));
 
-        // Generate token khusus reset
-        String resetToken = jwtUtil.generateResetToken(user.getEmail());
+        String resetToken = java.util.UUID.randomUUID().toString();
+        user.setResetPasswordToken(resetToken);
+        user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
 
         // CATATAN: Di dunia nyata, token ini dikirim via Email (JavaMailSender).
         // Karena kita belum setup SMTP Email untuk proyek ini, kita return saja tokennya
@@ -110,20 +116,16 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public String resetPassword(ResetPasswordReq request) throws Exception {
-        // 1. Validasi apakah token JWT-nya masih berlaku dan formatnya benar
-        if (!jwtUtil.isValid(request.getToken())) {
-            throw new Exception("Token tidak valid atau sudah kedaluwarsa!");
+        User user = userRepository.findByResetPasswordToken(request.getToken())
+                .orElseThrow(() -> new Exception("Token tidak valid atau salah!"));
+
+        if (user.getResetPasswordTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            throw new Exception("Token sudah kedaluwarsa!");
         }
 
-        // 2. Ekstrak email dari token tersebut
-        String email = jwtUtil.extractEmail(request.getToken());
-
-        // 3. Cari user berdasarkan email
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new Exception("User tidak ditemukan!"));
-
-        // 4. Timpa password lama dengan password baru (wajib di-hash Bcrypt lagi)
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
         userRepository.save(user);
 
         return "Password berhasil diubah! Silakan login menggunakan password baru Anda.";

@@ -56,7 +56,7 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordReq request) {
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordReq request) {
         try {
             String token = authService.forgotPassword(request);
             // Mengembalikan token reset (sementara) agar mudah di-copy di Postman
@@ -67,7 +67,7 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordReq request) {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordReq request) {
         try {
             String result = authService.resetPassword(request);
             return message.success(result, 200);
