@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.finance_service.payload.req.TagReq;
 import com.example.finance_service.service.TagService;
 import com.example.finance_service.utility.Message;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/tags")
+@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class TagController {
 
     @Autowired

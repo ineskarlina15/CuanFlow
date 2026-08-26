@@ -24,9 +24,11 @@ import com.example.finance_service.service.TransactionService;
 import com.example.finance_service.utility.Message;
 
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
+@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class TransactionController {
     @Autowired
     private TransactionService transactionService;

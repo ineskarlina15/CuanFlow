@@ -29,8 +29,9 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtUtil.isValid(token)) {
+            if (jwtUtil.isValid(token) && jwtUtil.isAccessToken(token)) {
                 String email = jwtUtil.extractEmail(token);
+                String role = jwtUtil.extractRole(token);
                 Integer userId = jwtUtil.extractUserId(token);
 
                 if (userId == null) {
@@ -39,7 +40,11 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
 
                 request.setAttribute("userId", userId);
-                User user = new User(email, "", java.util.List.of());
+                java.util.List<org.springframework.security.core.GrantedAuthority> authorities = new java.util.ArrayList<>();
+                if ("USER".equals(role) || "ADMIN".equals(role)) {
+                    authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
+                }
+                User user = new User(email, "", authorities);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                         user,
                         null,

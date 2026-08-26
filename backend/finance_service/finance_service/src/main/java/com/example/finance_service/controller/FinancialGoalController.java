@@ -17,9 +17,11 @@ import com.example.finance_service.service.FinancialGoalService;
 import com.example.finance_service.utility.Message;
 
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/goals")
+@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class FinancialGoalController {
     @Autowired
     private FinancialGoalService financialGoalService;

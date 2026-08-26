@@ -18,9 +18,11 @@ import com.example.finance_service.service.CategoryService;
 import com.example.finance_service.utility.Message;
 
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/categories")
+@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class CategoryController {
     @Autowired
     private CategoryService categoryService;

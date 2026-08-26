@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.finance_service.service.TransactionService;
 import com.example.finance_service.utility.Message;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/reports")
+@PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class ReportController {
     @Autowired
     private TransactionService transactionService;
