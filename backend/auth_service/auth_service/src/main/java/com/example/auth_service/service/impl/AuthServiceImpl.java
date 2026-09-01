@@ -17,7 +17,7 @@ import com.example.auth_service.repository.UserRepository;
 import com.example.auth_service.service.AuthService;
 
 @Service
-public class AuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService {
     @Autowired
     private UserRepository userRepository;
 
@@ -35,13 +35,13 @@ public class AuthServiceImpl implements AuthService{
     public String register(RegisterReq request) throws Exception {
         // 1. Validasi apakah username sudah terdaftar
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new Exception("Pendaftaran gagal: Username sudah terdaftar!");
+            throw new IllegalArgumentException("Pendaftaran gagal: Username sudah terdaftar!");
         }
-        
+
         // Opsional: cek email jika email diisi
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             if (userRepository.existsByEmail(request.getEmail())) {
-                throw new Exception("Pendaftaran gagal: Email sudah terdaftar!");
+                throw new IllegalArgumentException("Pendaftaran gagal: Email sudah terdaftar!");
             }
         }
 
@@ -87,7 +87,8 @@ public class AuthServiceImpl implements AuthService{
         }
 
         // 2. Verifikasi password menggunakan fitur matches() dari Bcrypt
-        // (Parameter pertama: password asli dari user, Parameter kedua: password hash dari DB)
+        // (Parameter pertama: password asli dari user, Parameter kedua: password hash
+        // dari DB)
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new Exception("Password salah!");
         }
@@ -118,9 +119,10 @@ public class AuthServiceImpl implements AuthService{
         userRepository.save(user);
 
         // CATATAN: Di dunia nyata, token ini dikirim via Email (JavaMailSender).
-        // Karena kita belum setup SMTP Email untuk proyek ini, kita return saja tokennya
+        // Karena kita belum setup SMTP Email untuk proyek ini, kita return saja
+        // tokennya
         // sebagai response agar Frontend/Postman bisa langsung menggunakannya.
-        return resetToken; 
+        return resetToken;
     }
 
     @Override
