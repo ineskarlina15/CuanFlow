@@ -11,7 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 @Component
-@org.springframework.context.annotation.Profile("dev")
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired
@@ -25,29 +24,33 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String adminUsername = "admin";
+        seedAdminUser("admin123", "System Admin", "admin@cuanflow.id", "admin123");
+        seedAdminUser("admin", "Admin CuanFlow", "admin.cuanflow@email.com", "admin123");
+    }
 
-        // Cek apakah admin sudah ada di database
-        if (!userRepository.existsByUsername(adminUsername)) {
-            User admin = new User();
-            admin.setName("Admin CuanFlow");
-            admin.setUsername(adminUsername);
-            admin.setEmail("nesikarlina344@gmail.com");
-            String adminPassword = System.getenv("DEFAULT_ADMIN_PASSWORD");
-            if (adminPassword == null || adminPassword.isBlank()) {
-                adminPassword = "Cuanflow25#";
-            }
-            admin.setPassword(passwordEncoder.encode(adminPassword));
-            admin.setRole(UserRole.ADMIN);
-            admin.setPhone("+6281226790847");
+    private void seedAdminUser(String username, String name, String email, String rawPassword) {
+        User user = userRepository.findByUsername(username).orElseGet(() -> {
+            User u = new User();
+            u.setUsername(username);
+            return u;
+        });
 
-            User savedAdmin = userRepository.save(admin);
-
-            Profile adminProfile = new Profile();
-            adminProfile.setUser(savedAdmin);
-            profileRepository.save(adminProfile);
-
-            System.out.println("Default Admin account created successfully!");
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        user.setRole(UserRole.ADMIN);
+        if (user.getPhone() == null) {
+            user.setPhone("+6281234567890");
         }
+
+        User savedUser = userRepository.save(user);
+
+        if (!profileRepository.findByUserId(savedUser.getId()).isPresent()) {
+            Profile profile = new Profile();
+            profile.setUser(savedUser);
+            profileRepository.save(profile);
+        }
+
+        System.out.println("Admin account '" + username + "' seeded/updated successfully!");
     }
 }

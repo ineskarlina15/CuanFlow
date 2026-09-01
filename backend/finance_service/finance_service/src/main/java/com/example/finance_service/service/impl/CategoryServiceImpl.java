@@ -6,12 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.finance_service.entity.Category;
+import com.example.finance_service.entity.CategoryType;
 import com.example.finance_service.payload.req.CategoryReq;
-import com.example.finance_service.service.CategoryService;
 import com.example.finance_service.repository.CategoryRepository;
+import com.example.finance_service.service.CategoryService;
 
 @Service
-public class CategoryServiceImpl implements CategoryService{
+public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
 
@@ -27,9 +28,46 @@ public class CategoryServiceImpl implements CategoryService{
         return categoryRepository.save(category);
     }
 
+    private void seedDefaultCategories(Integer userId) {
+        Object[][] defaults = {
+            {"Salary", CategoryType.INCOME, "Monthly salary"},
+            {"Food & Beverage", CategoryType.EXPENSE, "Meals and dining"},
+            {"Transport", CategoryType.EXPENSE, "Commute and gas"},
+            {"Shopping", CategoryType.EXPENSE, "Clothing and goods"},
+            {"Bills & Utilities", CategoryType.EXPENSE, "Water, electricity, internet"},
+            {"Investment", CategoryType.INCOME, "Dividends and stock returns"},
+            {"Others", CategoryType.EXPENSE, "Miscellaneous expenses"}
+        };
+        for (Object[] def : defaults) {
+            try {
+                String catName = (String) def[0];
+                if (!categoryRepository.existsByNameAndUserId(catName, userId) && !categoryRepository.existsByName(catName)) {
+                    Category c = new Category();
+                    c.setUserId(userId);
+                    c.setName(catName);
+                    c.setType((CategoryType) def[1]);
+                    c.setDescription((String) def[2]);
+                    categoryRepository.save(c);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+    }
+
     @Override
     public List<Category> getAllCategories(Integer userId) {
-        return categoryRepository.findAllActiveCategoriesByUserId(userId);
+        if (userId == null) {
+            userId = 1;
+        }
+        List<Category> categories = categoryRepository.findAllActiveCategoriesByUserId(userId);
+        if (categories == null || categories.isEmpty()) {
+            seedDefaultCategories(userId);
+            categories = categoryRepository.findAllActiveCategoriesByUserId(userId);
+        }
+        if (categories == null || categories.isEmpty()) {
+            categories = categoryRepository.findAll();
+        }
+        return categories;
     }
 
     @Override

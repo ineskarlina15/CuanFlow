@@ -11,9 +11,14 @@ import jakarta.validation.constraints.NotBlank;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginReq {
-    @NotBlank(message = "Username tidak boleh kosong")
     private String username;
+    private String email;
 
     @NotBlank(message = "Password tidak boleh kosong")
     private String password;
+
+    public LoginReq(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }

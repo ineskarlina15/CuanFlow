@@ -68,10 +68,9 @@ class AuthServiceImplTest {
     @Test
     void resetPasswordRejectsAccessToken() {
         ResetPasswordReq request = new ResetPasswordReq("access-token", "NewPassword1!");
-        when(jwtUtil.isValid("access-token")).thenReturn(true);
-        when(jwtUtil.isPasswordResetToken("access-token")).thenReturn(false);
+        when(userRepository.findByResetPasswordToken("access-token")).thenReturn(Optional.empty());
 
         assertThrows(Exception.class, () -> authService.resetPassword(request));
-        verify(userRepository, never()).findByEmail(any());
+        verify(userRepository, never()).save(any());
     }
 }

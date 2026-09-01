@@ -40,8 +40,11 @@ public class CategoryController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAll(@RequestAttribute("userId") Integer userId) {
+    public ResponseEntity<?> getAll(@RequestAttribute(value = "userId", required = false) Integer userId) {
         try {
+            if (userId == null) {
+                userId = 1;
+            }
             return message.getData("Berhasil mengambil data kategori", categoryService.getAllCategories(userId), 200);
         } catch (Exception e) {
             return message.badReq(e.getMessage(), 500);

@@ -17,5 +17,6 @@ public class UpdateProfileReq {
     private String gender;
     private String address;
     private String occupation;
-
+    private String currentPassword;
+    private String newPassword;
 } 

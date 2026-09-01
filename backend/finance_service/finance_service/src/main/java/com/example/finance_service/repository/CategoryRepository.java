@@ -18,6 +18,10 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     java.util.Optional<Category> findByIdAndUserId(Integer id, Integer userId);
 
+    boolean existsByName(String name);
+
+    boolean existsByNameAndUserId(String name, Integer userId);
+
     @Modifying
     @Transactional
     @Query("UPDATE Category c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.id = :id AND c.userId = :userId")

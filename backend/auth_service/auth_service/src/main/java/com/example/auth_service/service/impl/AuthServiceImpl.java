@@ -69,9 +69,18 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public AuthRes login(LoginReq request) throws Exception {
-        // 1. Cari user di database berdasarkan username (karena sekarang login pakai username)
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new Exception("Username tidak ditemukan!"));
+        String identifier = request.getUsername();
+        if (identifier == null || identifier.isBlank()) {
+            identifier = request.getEmail();
+        }
+        if (identifier == null || identifier.isBlank()) {
+            throw new Exception("Username atau Email tidak boleh kosong!");
+        }
+
+        final String searchId = identifier;
+        User user = userRepository.findByUsername(searchId)
+                .or(() -> userRepository.findByEmail(searchId))
+                .orElseThrow(() -> new Exception("Username atau Email tidak ditemukan!"));
 
         if (!Boolean.TRUE.equals(user.getIsActive()) || user.getDeletedAt() != null) {
             throw new Exception("Akun tidak aktif atau sudah dihapus!");

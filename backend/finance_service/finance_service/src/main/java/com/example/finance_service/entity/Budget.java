@@ -1,6 +1,7 @@
 package com.example.finance_service.entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -35,8 +36,20 @@ public class Budget {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @Column(length = 150)
+    private String name;
+
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "alert_threshold")
+    private Integer alertThreshold = 80;
+
+    @Column(length = 50)
+    private String status = "ACTIVE";
 
     // e.g., 1 for Jan, 2 for Feb, etc.
     @Column(nullable = false)
@@ -44,6 +57,12 @@ public class Budget {
 
     @Column(nullable = false)
     private Integer year;
+
+    @Column(name = "start_date")
+    private LocalDate startDate;
+
+    @Column(name = "end_date")
+    private LocalDate endDate;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -55,10 +74,32 @@ public class Budget {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        if (alertThreshold == null) {
+            alertThreshold = 80;
+        }
+        if (status == null) {
+            status = "ACTIVE";
+        }
+        if (month != null && year != null) {
+            if (startDate == null) {
+                startDate = LocalDate.of(year, month, 1);
+            }
+            if (endDate == null) {
+                endDate = LocalDate.of(year, month, startDate.lengthOfMonth());
+            }
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (month != null && year != null) {
+            if (startDate == null) {
+                startDate = LocalDate.of(year, month, 1);
+            }
+            if (endDate == null) {
+                endDate = LocalDate.of(year, month, startDate.lengthOfMonth());
+            }
+        }
     }
 }

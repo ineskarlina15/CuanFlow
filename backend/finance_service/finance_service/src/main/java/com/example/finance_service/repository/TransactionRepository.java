@@ -22,8 +22,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("SELECT t FROM Transaction t WHERE t.userId = :userId " +
            "AND t.deletedAt IS NULL " +
-           "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
-           "AND (:endDate IS NULL OR t.transactionDate <= :endDate) " +
+           "AND (CAST(:startDate AS date) IS NULL OR t.transactionDate >= :startDate) " +
+           "AND (CAST(:endDate AS date) IS NULL OR t.transactionDate <= :endDate) " +
            "ORDER BY t.transactionDate DESC")
     List<Transaction> findTransactionsForReport(
             @Param("userId") Integer userId,
@@ -34,10 +34,10 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
     // Syarat wajib proyek S1: "Search, Filter, Sorting, Pagination" dalam 1 API terpadu
     @Query("SELECT t FROM Transaction t WHERE t.userId = :userId " +
            "AND t.deletedAt IS NULL " +
-           "AND (:keyword IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%'))) " +
-           "AND (:categoryId IS NULL OR t.category.id = :categoryId) " +
-           "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
-           "AND (:endDate IS NULL OR t.transactionDate <= :endDate)")
+           "AND (CAST(:keyword AS string) IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) " +
+           "AND (CAST(:categoryId AS integer) IS NULL OR t.category.id = :categoryId) " +
+           "AND (CAST(:startDate AS date) IS NULL OR t.transactionDate >= :startDate) " +
+           "AND (CAST(:endDate AS date) IS NULL OR t.transactionDate <= :endDate)")
     Page<Transaction> findFilteredTransactions(
             @Param("userId") Integer userId,
             @Param("keyword") String keyword,
@@ -56,8 +56,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.userId = :userId AND t.deletedAt IS NULL AND CAST(t.type AS string) = :type " +
-           "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
-           "AND (:endDate IS NULL OR t.transactionDate <= :endDate)")
+           "AND (CAST(:startDate AS date) IS NULL OR t.transactionDate >= :startDate) " +
+           "AND (CAST(:endDate AS date) IS NULL OR t.transactionDate <= :endDate)")
     BigDecimal calculateTotalAmountByTypeAndDate(
             @Param("userId") Integer userId,
             @Param("type") String type,
@@ -76,8 +76,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("SELECT t.category.name, COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.userId = :userId AND t.deletedAt IS NULL AND CAST(t.type AS string) = :type " +
-           "AND (:startDate IS NULL OR t.transactionDate >= :startDate) " +
-           "AND (:endDate IS NULL OR t.transactionDate <= :endDate) " +
+           "AND (CAST(:startDate AS date) IS NULL OR t.transactionDate >= :startDate) " +
+           "AND (CAST(:endDate AS date) IS NULL OR t.transactionDate <= :endDate) " +
            "GROUP BY t.category.name ORDER BY COALESCE(SUM(t.amount), 0) DESC")
     List<Object[]> calculateCategorySummary(
             @Param("userId") Integer userId,

@@ -24,8 +24,7 @@ public class RegisterReq {
     private String email;
 
     @NotBlank(message = "Password tidak boleh kosong")
-    @Size(min = 8, max = 20, message = "Password harus antara 8 hingga 20 karakter")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!]).{8,20}$", message = "Password harus mengandung huruf besar, huruf kecil, angka, dan simbol khusus")
+    @Size(min = 6, max = 50, message = "Password harus minimal 6 karakter")
     private String password;
 
     private String phone;

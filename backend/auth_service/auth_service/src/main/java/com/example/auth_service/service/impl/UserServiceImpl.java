@@ -15,6 +15,8 @@ import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 public class UserServiceImpl implements UserService{
     @Autowired
@@ -22,6 +24,9 @@ public class UserServiceImpl implements UserService{
 
     @Autowired
     private ProfileRepository profileRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public ProfileRes getMyProfile(String username) throws Exception {
@@ -44,8 +49,22 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(() -> new Exception("Profil tidak ditemukan"));
 
         // Update data di tabel User jika ada perubahan
-        if (request.getName() != null) user.setName(request.getName());
+        if (request.getName() != null && !request.getName().trim().isEmpty()) {
+            user.setName(request.getName().trim());
+        }
         if (request.getPhone() != null) user.setPhone(request.getPhone());
+
+        // Update Password jika newPassword diisi
+        if (request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
+            String newPw = request.getNewPassword().trim();
+            if (request.getCurrentPassword() != null && !request.getCurrentPassword().isEmpty()) {
+                if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                    throw new Exception("Password lama (Current Password) tidak sesuai!");
+                }
+            }
+            user.setPassword(passwordEncoder.encode(newPw));
+        }
+
         userRepository.save(user);
 
         // Update data di tabel Profile jika ada perubahan

@@ -2,6 +2,7 @@ package com.example.finance_service.service.impl;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -48,9 +49,37 @@ public class BudgetServiceImpl implements BudgetService {
         Budget budget = new Budget();
         budget.setUserId(userId);
         budget.setCategory(category);
+        String budgetName = (request.getName() != null && !request.getName().isBlank())
+                ? request.getName()
+                : category.getName();
+        budget.setName(budgetName);
         budget.setAmount(request.getAmount());
+        if (request.getDescription() != null) {
+            budget.setDescription(request.getDescription());
+        }
+        if (request.getAlertThreshold() != null) {
+            budget.setAlertThreshold(request.getAlertThreshold());
+        } else {
+            budget.setAlertThreshold(80);
+        }
+        budget.setStatus("ACTIVE");
         budget.setMonth(request.getMonth());
         budget.setYear(request.getYear());
+
+        // Set start_date and end_date
+        if (request.getStartDate() != null) {
+            budget.setStartDate(request.getStartDate());
+        } else if (request.getMonth() != null && request.getYear() != null) {
+            LocalDate start = LocalDate.of(request.getYear(), request.getMonth(), 1);
+            budget.setStartDate(start);
+        }
+
+        if (request.getEndDate() != null) {
+            budget.setEndDate(request.getEndDate());
+        } else if (request.getMonth() != null && request.getYear() != null) {
+            LocalDate start = LocalDate.of(request.getYear(), request.getMonth(), 1);
+            budget.setEndDate(LocalDate.of(request.getYear(), request.getMonth(), start.lengthOfMonth()));
+        }
 
         return budgetRepository.save(budget);
     }
@@ -112,9 +141,34 @@ public class BudgetServiceImpl implements BudgetService {
         }
 
         budget.setCategory(category);
+        String budgetName = (request.getName() != null && !request.getName().isBlank())
+                ? request.getName()
+                : category.getName();
+        budget.setName(budgetName);
         budget.setAmount(request.getAmount());
+        if (request.getDescription() != null) {
+            budget.setDescription(request.getDescription());
+        }
+        if (request.getAlertThreshold() != null) {
+            budget.setAlertThreshold(request.getAlertThreshold());
+        }
         budget.setMonth(request.getMonth());
         budget.setYear(request.getYear());
+
+        // Update start_date & end_date
+        if (request.getStartDate() != null) {
+            budget.setStartDate(request.getStartDate());
+        } else if (request.getMonth() != null && request.getYear() != null) {
+            LocalDate start = LocalDate.of(request.getYear(), request.getMonth(), 1);
+            budget.setStartDate(start);
+        }
+
+        if (request.getEndDate() != null) {
+            budget.setEndDate(request.getEndDate());
+        } else if (request.getMonth() != null && request.getYear() != null) {
+            LocalDate start = LocalDate.of(request.getYear(), request.getMonth(), 1);
+            budget.setEndDate(LocalDate.of(request.getYear(), request.getMonth(), start.lengthOfMonth()));
+        }
 
         return budgetRepository.save(budget);
     }
@@ -122,6 +176,6 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public void deleteBudget(Integer userId, Integer id) throws Exception {
         Budget budget = getBudgetById(userId, id);
-        budgetRepository.delete(budget); // Hard delete karena tidak ada deletedAt
+        budgetRepository.delete(budget);
     }
 }

@@ -195,8 +195,30 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Page<Transaction> getFilteredTransactions(Integer userId, String keyword, Integer categoryId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy) {
-        // Pagination & Sorting Dinamis sesuai syarat kelulusan
-        Sort sort = Sort.by(Sort.Direction.DESC, sortBy != null ? sortBy : "transactionDate");
+        if (keyword != null && keyword.trim().isEmpty()) {
+            keyword = null;
+        }
+        Sort sort;
+        if (sortBy != null && !sortBy.isBlank()) {
+            String cleanSort = sortBy.trim();
+            if (cleanSort.equalsIgnoreCase("transactionDate_asc")) {
+                sort = Sort.by(Sort.Direction.ASC, "transactionDate");
+            } else if (cleanSort.equalsIgnoreCase("transactionDate_desc") || cleanSort.equalsIgnoreCase("transactionDate")) {
+                sort = Sort.by(Sort.Direction.DESC, "transactionDate");
+            } else if (cleanSort.equalsIgnoreCase("title_asc") || cleanSort.equalsIgnoreCase("title")) {
+                sort = Sort.by(Sort.Direction.ASC, "title");
+            } else if (cleanSort.equalsIgnoreCase("title_desc")) {
+                sort = Sort.by(Sort.Direction.DESC, "title");
+            } else if (cleanSort.equalsIgnoreCase("amount_asc")) {
+                sort = Sort.by(Sort.Direction.ASC, "amount");
+            } else if (cleanSort.equalsIgnoreCase("amount_desc")) {
+                sort = Sort.by(Sort.Direction.DESC, "amount");
+            } else {
+                sort = Sort.by(Sort.Direction.DESC, "transactionDate");
+            }
+        } else {
+            sort = Sort.by(Sort.Direction.DESC, "transactionDate");
+        }
         Pageable pageable = PageRequest.of(page, size, sort);
         
         return transactionRepository.findFilteredTransactions(userId, keyword, categoryId, startDate, endDate, pageable);
@@ -250,9 +272,13 @@ public class TransactionServiceImpl implements TransactionService {
         if (category.getDeletedAt() != null) {
             throw new Exception("Kategori ini sudah dihapus");
         }
-
-        if (!category.getType().name().equals(request.getType().name())) {
-            throw new Exception("Tipe kategori tidak sesuai dengan tipe transaksi");
+        if (category.getType() != null && request.getType() != null && !category.getType().name().equals(request.getType().name())) {
+            // Update category type to match transaction type enum
+            try {
+                category.setType(com.example.finance_service.entity.CategoryType.valueOf(request.getType().name()));
+                categoryRepository.save(category);
+            } catch (Exception ignored) {
+            }
         }
     }
 

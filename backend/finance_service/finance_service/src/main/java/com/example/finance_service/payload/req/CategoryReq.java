@@ -17,7 +17,7 @@ public class CategoryReq {
 
     @NotNull(message = "Tipe kategori wajib dipilih (INCOME atau EXPENSE)")
     private CategoryType type;
-    @NotBlank(message = "Deskripsi kategori tidak boleh kosong")
+
     private String description;
     private String icon;
 }
