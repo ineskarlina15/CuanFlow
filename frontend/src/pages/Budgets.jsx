@@ -44,7 +44,7 @@ export default function Budgets() {
         }
       }
     } catch {
-      showToast('Failed to load categories', 'error')
+      showToast('Gagal memuat kategori', 'error')
     }
   }
 
@@ -56,7 +56,7 @@ export default function Budgets() {
         setBudgets(res.data)
       }
     } catch (err) {
-      showToast(err.message || 'Failed to load budgets', 'error')
+      showToast(err.message || 'Gagal memuat anggaran', 'error')
     } finally {
       setLoading(false)
     }
@@ -101,11 +101,11 @@ export default function Budgets() {
 
   const validate = () => {
     const errors = {}
-    if (!formData.categoryId) errors.categoryId = 'Category is required'
+    if (!formData.categoryId) errors.categoryId = 'Kategori wajib diisi'
     if (!formData.amount || Number(formData.amount) <= 0) {
-      errors.amount = 'Amount must be greater than 0'
+      errors.amount = 'Nominal harus lebih dari 0'
     } else if (Number(formData.amount) > 9999999999999) { // Max 13 digits for DB precision 15,2 constraint
-      errors.amount = 'Maximum amount exceeded (Max: Rp 9.999.999.999.999)'
+      errors.amount = 'Batas maksimal terlampaui (Maks: Rp 9.999.999.999.999)'
     }
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -126,15 +126,15 @@ export default function Budgets() {
 
       if (modalType === 'add') {
         await api.post('/financeSvc/api/v1/budgets', payload)
-        showToast('Budget configured successfully!', 'success')
+        showToast('Anggaran berhasil dikonfigurasi!', 'success')
       } else {
         await api.put(`/financeSvc/api/v1/budgets/${selectedBudget.budget.id}`, payload)
-        showToast('Budget updated successfully!', 'success')
+        showToast('Anggaran berhasil diperbarui!', 'success')
       }
       setIsModalOpen(false)
       fetchBudgets()
     } catch (err) {
-      showToast(err.message || 'Failed to save budget', 'error')
+      showToast(err.message || 'Gagal menyimpan anggaran', 'error')
     } finally {
       setSaving(false)
     }
@@ -148,17 +148,17 @@ export default function Budgets() {
   const handleDelete = async () => {
     try {
       await api.delete(`/financeSvc/api/v1/budgets/${budgetToDelete.budget.id}`)
-      showToast('Budget deleted successfully!', 'success')
+      showToast('Anggaran berhasil dihapus!', 'success')
       setIsDeleteOpen(false)
       fetchBudgets()
     } catch (err) {
-      showToast(err.message || 'Failed to delete budget', 'error')
+      showToast(err.message || 'Gagal menghapus anggaran', 'error')
     }
   }
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
   ]
 
   const handlePrevMonth = () => {
@@ -184,8 +184,8 @@ export default function Budgets() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">Budgets</h1>
-          <p className="text-xs text-slate-400 mt-1">Set limits and track your spendings by category</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">Anggaran</h1>
+          <p className="text-xs text-slate-400 mt-1">Tetapkan batas dan pantau pengeluaran berdasarkan kategori</p>
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -213,7 +213,7 @@ export default function Budgets() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Set Budget</span>
+            <span>Atur Anggaran</span>
           </button>
         </div>
       </div>
@@ -222,20 +222,20 @@ export default function Budgets() {
       {loading ? (
         <div className="flex items-center justify-center min-h-[300px] text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-2" />
-          <span>Loading budgets...</span>
+          <span>Memuat anggaran...</span>
         </div>
       ) : budgets.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[300px] border border-slate-200 rounded-2xl bg-white p-8 text-center shadow-xs">
           <Landmark className="w-12 h-12 text-slate-300 mb-3" />
-          <h3 className="text-lg font-black text-slate-800 font-heading">No Budgets Set</h3>
+          <h3 className="text-lg font-black text-slate-800 font-heading">Belum Ada Anggaran</h3>
           <p className="text-xs text-slate-400 mt-1 max-w-sm">
-            Set budget goals for this month to monitor and restrict your expense categories.
+            Tetapkan target anggaran bulan ini untuk memantau pengeluaran.
           </p>
           <button
             onClick={() => openModal('add')}
             className="mt-4 px-5 py-2.5 text-sm font-bold text-blue-600 hover:bg-blue-50 border border-blue-200 bg-white rounded-xl transition-all cursor-pointer"
           >
-            Create Budget Limit
+            Buat Batas Anggaran
           </button>
         </div>
       ) : (
@@ -277,7 +277,7 @@ export default function Budgets() {
                        bRes.budget.category?.name?.toLowerCase().includes('bill') ? '⚡' : '💼'}
                     </span>
                     <div className="flex flex-col">
-                      <span className="text-base font-black text-slate-900">{bRes.budget.category?.name} Budget</span>
+                      <span className="text-base font-black text-slate-900">Anggaran {bRes.budget.category?.name}</span>
                       <span className="text-xs text-slate-500 font-semibold mt-0.5">{formatCurrency(bRes.budget.amount)}</span>
                     </div>
                   </div>
@@ -344,11 +344,11 @@ export default function Budgets() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalType === 'add' ? 'Configure Budget' : 'Edit Budget'}
+        title={modalType === 'add' ? 'Konfigurasi Anggaran' : 'Edit Anggaran'}
       >
         <form onSubmit={handleSave} className="flex flex-col gap-4 text-slate-800">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Category</label>
+            <label className="text-xs font-bold text-slate-700">Kategori</label>
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
@@ -357,7 +357,7 @@ export default function Budgets() {
               } rounded-xl py-3 px-3.5 text-slate-800 outline-none text-sm font-medium cursor-pointer transition-all`}
               disabled={modalType === 'edit'}
             >
-              <option value="">Select Category</option>
+              <option value="">Pilih Kategori</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
@@ -366,7 +366,7 @@ export default function Budgets() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Monthly Limit Amount (IDR)</label>
+            <label className="text-xs font-bold text-slate-700">Batas Limit Bulanan (IDR)</label>
             <input
               type="number"
               placeholder="1000000"
@@ -382,7 +382,7 @@ export default function Budgets() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Month</label>
+              <label className="text-xs font-bold text-slate-700">Bulan</label>
               <select
                 value={formData.month}
                 onChange={(e) => setFormData({ ...formData, month: e.target.value })}
@@ -396,7 +396,7 @@ export default function Budgets() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Year</label>
+              <label className="text-xs font-bold text-slate-700">Tahun</label>
               <input
                 type="number"
                 value={formData.year}
@@ -413,14 +413,14 @@ export default function Budgets() {
               onClick={() => setIsModalOpen(false)}
               className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer disabled:opacity-50"
             >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Limits</span>}
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Simpan Batas</span>}
             </button>
           </div>
         </form>
@@ -430,11 +430,11 @@ export default function Budgets() {
       <Modal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        title="Delete Budget Limit"
+        title="Hapus Batas Anggaran"
       >
         <div className="flex flex-col gap-4 text-center">
           <p className="text-sm text-slate-600">
-            Are you sure you want to delete the budget limit for category{' '}
+            Apakah Anda yakin ingin menghapus batas anggaran untuk kategori{' '}
             <span className="font-bold text-slate-900">"{budgetToDelete?.budget.category?.name}"</span>?
           </p>
           <div className="flex gap-3 mt-2">
@@ -442,13 +442,13 @@ export default function Budgets() {
               onClick={() => setIsDeleteOpen(false)}
               className="flex-1 py-3 border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 text-sm font-bold cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={handleDelete}
               className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 rounded-xl text-white text-sm font-bold cursor-pointer"
             >
-              Delete
+              Hapus
             </button>
           </div>
         </div>

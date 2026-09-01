@@ -14,10 +14,10 @@ export default function AdminDashboard() {
   })
 
   const [recentUsers, setRecentUsers] = useState([
-    { id: 1, name: 'Ahmad', email: 'ahmad@email.com', role: 'USER', status: 'Active', registered: '18 Aug 2024' },
-    { id: 2, name: 'Budi', email: 'budi@email.com', role: 'USER', status: 'Active', registered: '03 Aug 2024' },
-    { id: 3, name: 'Siti', email: 'siti@email.com', role: 'USER', status: 'Active', registered: '01 Aug 2024' },
-    { id: 4, name: 'Galang', email: 'galang@email.com', role: 'USER', status: 'Active', registered: '20 Aug 2024' }
+    { id: 1, name: 'Ahmad', email: 'ahmad@email.com', role: 'USER', status: 'Aktif', registered: '18 Agt 2024' },
+    { id: 2, name: 'Budi', email: 'budi@email.com', role: 'USER', status: 'Aktif', registered: '03 Agt 2024' },
+    { id: 3, name: 'Siti', email: 'siti@email.com', role: 'USER', status: 'Aktif', registered: '01 Agt 2024' },
+    { id: 4, name: 'Galang', email: 'galang@email.com', role: 'USER', status: 'Aktif', registered: '20 Agt 2024' }
   ])
 
   useEffect(() => {
@@ -31,8 +31,8 @@ export default function AdminDashboard() {
             name: u.name || u.username || 'User',
             email: u.email || 'user@cuanflow.id',
             role: u.role || 'USER',
-            status: 'Active',
-            registered: '18 Aug 2024'
+            status: 'Aktif',
+            registered: '18 Agt 2024'
           }))
           setRecentUsers(mapped)
           setStats((prev) => ({
@@ -57,9 +57,9 @@ export default function AdminDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            Admin Dashboard
+            Dasbor Admin
           </h1>
-          <p className="text-xs text-slate-400 mt-1">System-wide overview, user analytics, & transaction volume</p>
+          <p className="text-xs text-slate-400 mt-1">Ringkasan sistem, analitik pengguna, & volume transaksi</p>
         </div>
       </div>
 
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
         
         {/* Card 1: Total Users */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-5 flex flex-col gap-2 shadow-2xs">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Users</span>
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Pengguna</span>
           <span className="text-2xl sm:text-3xl font-black text-slate-900 font-heading">
             {stats.totalUsers}
           </span>
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
 
         {/* Card 2: Total Transactions */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-5 flex flex-col gap-2 shadow-2xs">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Transactions</span>
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Transaksi</span>
           <span className="text-2xl sm:text-3xl font-black text-slate-900 font-heading">
             {stats.totalTransactions}
           </span>
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
 
         {/* Card 3: Total Income */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-5 flex flex-col gap-2 shadow-2xs">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Income</span>
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Pemasukan</span>
           <span className="text-2xl sm:text-3xl font-black text-emerald-500 font-heading">
             {formatCurrency(stats.totalIncome)}
           </span>
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
 
         {/* Card 4: Total Expense */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-5 flex flex-col gap-2 shadow-2xs">
-          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Expense</span>
+          <span className="text-xs font-extrabold text-slate-400 uppercase tracking-wider">Total Pengeluaran</span>
           <span className="text-2xl sm:text-3xl font-black text-rose-500 font-heading">
             {formatCurrency(stats.totalExpense)}
           </span>
@@ -105,7 +105,7 @@ export default function AdminDashboard() {
         
         {/* Left Chart: User Growth SVG Line Chart */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 flex flex-col gap-4 shadow-2xs">
-          <h3 className="text-base font-black text-slate-900 font-heading">User Growth</h3>
+          <h3 className="text-base font-black text-slate-900 font-heading">Pertumbuhan Pengguna</h3>
 
           <div className="relative w-full h-48 pt-2">
             <svg viewBox="0 0 400 140" className="w-full h-full overflow-visible">
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
 
         {/* Right Chart: Transaction Activity SVG Bar Chart */}
         <div className="rounded-2xl border border-slate-200/80 bg-white p-6 flex flex-col gap-4 shadow-2xs">
-          <h3 className="text-base font-black text-slate-900 font-heading">Transaction Activity</h3>
+          <h3 className="text-base font-black text-slate-900 font-heading">Aktivitas Transaksi</h3>
 
           <div className="relative w-full h-48 pt-2 flex items-end justify-between gap-1.5 px-2 border-b border-slate-100">
             {[40, 65, 30, 80, 55, 90, 70, 45, 60, 85, 95, 75, 50, 65, 80, 70, 60, 40].map((val, idx) => (
@@ -172,12 +172,12 @@ export default function AdminDashboard() {
       {/* Bottom Table: Recent Users matching PDF GAMBARAN APLIKASI - ADMIN */}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-6 flex flex-col gap-4 shadow-2xs">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-slate-900 font-heading">Recent Users</h3>
+          <h3 className="text-base font-black text-slate-900 font-heading">Pengguna Terbaru</h3>
           <Link
             to="/admin/users"
             className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 hover:underline cursor-pointer"
           >
-            <span>View All Users</span>
+            <span>Lihat Semua Pengguna</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -186,11 +186,11 @@ export default function AdminDashboard() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 text-xs font-bold text-slate-400 uppercase tracking-wider">
-                <th className="py-3 px-4">Name</th>
+                <th className="py-3 px-4">Nama</th>
                 <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Role</th>
+                <th className="py-3 px-4">Peran</th>
                 <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Registered</th>
+                <th className="py-3 px-4">Terdaftar</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-700">

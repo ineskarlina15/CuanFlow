@@ -34,12 +34,12 @@ export default function Tags() {
 
     setTags([...tags, newTag])
     setNewTagName('')
-    showToast('New tag created successfully!', 'success')
+    showToast('Tag baru berhasil dibuat!', 'success')
   }
 
   const handleDeleteTag = (id) => {
     setTags(tags.filter((t) => t.id !== id))
-    showToast('Tag removed', 'info')
+    showToast('Tag dihapus', 'info')
   }
 
   return (
@@ -49,9 +49,9 @@ export default function Tags() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            Transaction Tags
+            Tag Transaksi
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Organize and label your financial transactions</p>
+          <p className="text-xs text-slate-400 mt-1">Atur dan beri label pada transaksi keuangan Anda</p>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export default function Tags() {
             <TagIcon className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Enter tag name (e.g. Vacation, Groceries)"
+              placeholder="Masukkan nama tag (cth. Liburan, Belanjaan)"
               value={newTagName}
               onChange={(e) => setNewTagName(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-2.5 pl-10 pr-4 text-slate-800 text-sm outline-none transition-all"
@@ -73,7 +73,7 @@ export default function Tags() {
             className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Tag</span>
+            <span>Tambah Tag</span>
           </button>
         </form>
       </div>
@@ -94,7 +94,7 @@ export default function Tags() {
             <button
               onClick={() => handleDeleteTag(tag.id)}
               className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-              title="Delete Tag"
+              title="Hapus Tag"
             >
               <Trash2 className="w-4 h-4" />
             </button>

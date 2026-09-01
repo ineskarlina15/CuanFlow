@@ -13,13 +13,13 @@ export default function Transactions() {
 
   // Default Categories Fallback
   const defaultCategories = [
-    { id: 1, name: 'Salary', type: 'INCOME' },
-    { id: 2, name: 'Food & Beverage', type: 'EXPENSE' },
-    { id: 3, name: 'Transport', type: 'EXPENSE' },
-    { id: 4, name: 'Shopping', type: 'EXPENSE' },
-    { id: 5, name: 'Bills & Utilities', type: 'EXPENSE' },
-    { id: 6, name: 'Investment', type: 'INCOME' },
-    { id: 7, name: 'Others', type: 'EXPENSE' }
+    { id: 1, name: 'Gaji', type: 'INCOME' },
+    { id: 2, name: 'Makanan & Minuman', type: 'EXPENSE' },
+    { id: 3, name: 'Transportasi', type: 'EXPENSE' },
+    { id: 4, name: 'Belanja', type: 'EXPENSE' },
+    { id: 5, name: 'Tagihan & Utilitas', type: 'EXPENSE' },
+    { id: 6, name: 'Investasi', type: 'INCOME' },
+    { id: 7, name: 'Lainnya', type: 'EXPENSE' }
   ]
 
   // State List Data
@@ -105,7 +105,7 @@ export default function Transactions() {
         setTotalElements(res.data.totalElements || 0)
       }
     } catch (err) {
-      showToast(err.message || 'Failed to load transactions', 'error')
+      showToast(err.message || 'Gagal memuat transaksi', 'error')
     } finally {
       setLoading(false)
     }
@@ -128,7 +128,7 @@ export default function Transactions() {
   const handleApplyFilter = () => {
     setPage(0)
     fetchTransactions({ page: 0 })
-    showToast('Filter Applied', 'info')
+    showToast('Filter Diterapkan', 'info')
   }
 
   const handleResetFilter = () => {
@@ -138,7 +138,7 @@ export default function Transactions() {
     setEndDate('')
     setPage(0)
     fetchTransactions({ keyword: '', categoryId: '', startDate: '', endDate: '', page: 0 })
-    showToast('Filter Reset', 'info')
+    showToast('Filter Direset', 'info')
   }
 
   const handleSearch = (e) => {
@@ -193,10 +193,10 @@ export default function Transactions() {
 
   const validateForm = () => {
     const errors = {}
-    if (!formData.title) errors.title = 'Title is required'
-    if (!formData.amount || Number(formData.amount) <= 0) errors.amount = 'Amount must be greater than 0'
-    if (!formData.categoryId) errors.categoryId = 'Category is required'
-    if (!formData.transactionDate) errors.transactionDate = 'Date is required'
+    if (!formData.title) errors.title = 'Judul wajib diisi'
+    if (!formData.amount || Number(formData.amount) <= 0) errors.amount = 'Nominal harus lebih dari 0'
+    if (!formData.categoryId) errors.categoryId = 'Kategori wajib dipilih'
+    if (!formData.transactionDate) errors.transactionDate = 'Tanggal wajib diisi'
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -227,18 +227,18 @@ export default function Transactions() {
         await api.post('/financeSvc/api/v1/transactions', multipart, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
-        showToast('Transaction added successfully!', 'success')
+        showToast('Transaksi berhasil ditambahkan!', 'success')
       } else {
         await api.put(`/financeSvc/api/v1/transactions/${selectedTx.id}`, multipart, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
-        showToast('Transaction updated successfully!', 'success')
+        showToast('Transaksi berhasil diperbarui!', 'success')
       }
 
       setIsModalOpen(false)
       fetchTransactions()
     } catch (err) {
-      showToast(err.message || 'Failed to save transaction', 'error')
+      showToast(err.message || 'Gagal menyimpan transaksi', 'error')
     } finally {
       setSaving(false)
     }
@@ -252,11 +252,11 @@ export default function Transactions() {
   const handleDelete = async () => {
     try {
       await api.delete(`/financeSvc/api/v1/transactions/${txToDelete.id}`)
-      showToast('Transaction deleted successfully!', 'success')
+      showToast('Transaksi berhasil dihapus!', 'success')
       setIsDeleteOpen(false)
       fetchTransactions()
     } catch (err) {
-      showToast(err.message || 'Failed to delete transaction', 'error')
+      showToast(err.message || 'Gagal menghapus transaksi', 'error')
     }
   }
 
@@ -271,13 +271,13 @@ export default function Transactions() {
       link.download = filename || 'attachment'
       link.click()
     } catch {
-      showToast('No attachment found or failed to download', 'error')
+      showToast('Lampiran tidak ditemukan atau gagal diunduh', 'error')
     }
   }
 
   const handleExportCSV = () => {
     if (transactions.length === 0) {
-      showToast('No transactions to export', 'info')
+      showToast('Tidak ada transaksi untuk diekspor', 'info')
       return
     }
     const headers = ['ID', 'Title', 'Type', 'Amount', 'Category', 'Date', 'Payment Method', 'Description']
@@ -299,7 +299,7 @@ export default function Transactions() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    showToast('Exported CSV successfully', 'success')
+    showToast('Berhasil mengekspor CSV', 'success')
   }
 
   return (
@@ -309,9 +309,9 @@ export default function Transactions() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            Transactions
+            Transaksi
           </h1>
-          <p className="text-xs text-slate-400 mt-1">View and manage your transaction ledger</p>
+          <p className="text-xs text-slate-400 mt-1">Lihat dan kelola buku besar transaksi Anda</p>
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -320,7 +320,7 @@ export default function Transactions() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm shadow-xs transition-all cursor-pointer"
           >
             <Download className="w-4 h-4 text-blue-600" />
-            <span>Export CSV</span>
+            <span>Ekspor CSV</span>
           </button>
 
           <button
@@ -328,7 +328,7 @@ export default function Transactions() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Transaction</span>
+            <span>Tambah Transaksi</span>
           </button>
         </div>
       </div>
@@ -341,7 +341,7 @@ export default function Transactions() {
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search transaction..."
+              placeholder="Cari transaksi..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               onKeyDown={handleSearch}
@@ -355,7 +355,7 @@ export default function Transactions() {
             onChange={(e) => { setCategoryId(e.target.value); setPage(0); }}
             className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3.5 text-slate-700 text-sm font-semibold outline-none cursor-pointer"
           >
-            <option value="">Category: All</option>
+            <option value="">Kategori: Semua</option>
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
@@ -382,7 +382,7 @@ export default function Transactions() {
               onChange={(e) => { setStartDate(e.target.value); setPage(0); }}
               className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3 text-slate-700 text-sm outline-none cursor-pointer"
             />
-            <span>to</span>
+            <span>ke</span>
             <input
               type="date"
               value={endDate}
@@ -407,7 +407,7 @@ export default function Transactions() {
             className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold shadow-md shadow-blue-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Filter className="w-4 h-4" />
-            <span>Apply Filter</span>
+            <span>Terapkan Filter</span>
           </button>
         </div>
       </div>
@@ -430,24 +430,24 @@ export default function Transactions() {
         {loading ? (
           <div className="flex items-center justify-center min-h-[300px] text-slate-400">
             <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-2" />
-            <span>Loading transactions...</span>
+            <span>Memuat transaksi...</span>
           </div>
         ) : transactions.length === 0 ? (
           <div className="flex items-center justify-center min-h-[250px] text-slate-400 text-sm font-medium">
-            No transactions found matching your criteria.
+            Tidak ada transaksi yang cocok dengan kriteria Anda.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/80 text-xs font-extrabold text-slate-400 uppercase tracking-wider">
-                  <th className="py-4 px-6">Date</th>
-                  <th className="py-4 px-6">Description</th>
-                  <th className="py-4 px-6">Type</th>
-                  <th className="py-4 px-6">Category</th>
-                  <th className="py-4 px-6">Amount</th>
-                  <th className="py-4 px-6 text-center">Attachment</th>
-                  <th className="py-4 px-6 text-right">Actions</th>
+                  <th className="py-4 px-6">Tanggal</th>
+                  <th className="py-4 px-6">Deskripsi</th>
+                  <th className="py-4 px-6">Tipe</th>
+                  <th className="py-4 px-6">Kategori</th>
+                  <th className="py-4 px-6">Nominal</th>
+                  <th className="py-4 px-6 text-center">Lampiran</th>
+                  <th className="py-4 px-6 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-sm">
@@ -466,7 +466,7 @@ export default function Transactions() {
                       <span className={`px-2.5 py-1 text-xs font-extrabold rounded-full ${
                         tx.type === 'INCOME' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
                       }`}>
-                        {tx.type === 'INCOME' ? 'Income' : 'Expense'}
+                        {tx.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -516,13 +516,41 @@ export default function Transactions() {
             </table>
           </div>
         )}
+
+        {/* Pagination UI */}
+        {!loading && transactions.length > 0 && (
+          <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
+            <span className="text-xs font-bold text-slate-500">
+              Menampilkan halaman <span className="text-slate-700 font-extrabold">{page + 1}</span> dari <span className="text-slate-700 font-extrabold">{totalPages || 1}</span> 
+              <span className="ml-1 text-slate-400 font-medium">({totalElements} Total Data)</span>
+            </span>
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <button
+                onClick={() => setPage((old) => Math.max(0, old - 1))}
+                disabled={page === 0}
+                className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-slate-600 font-bold text-xs hover:bg-white hover:shadow-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Sebelumnya</span>
+              </button>
+              <button
+                onClick={() => setPage((old) => (old + 1 < totalPages ? old + 1 : old))}
+                disabled={page >= totalPages - 1}
+                className="flex items-center gap-1 px-3 py-1.5 border border-slate-200 rounded-lg text-slate-600 font-bold text-xs hover:bg-white hover:shadow-xs disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
+              >
+                <span>Selanjutnya</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Add Transaction Modal matching Screen 4 of PDF Wireframe */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalType === 'add' ? 'Add Transaction' : 'Edit Transaction'}
+        title={modalType === 'add' ? 'Tambah Transaksi' : 'Edit Transaksi'}
       >
         <form onSubmit={handleSave} className="flex flex-col gap-4 text-slate-800">
           
@@ -537,7 +565,7 @@ export default function Transactions() {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Expense
+              Pengeluaran
             </button>
             <button
               type="button"
@@ -548,18 +576,18 @@ export default function Transactions() {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Income
+              Pemasukan
             </button>
           </div>
 
           {/* Title */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Title</label>
+            <label className="text-xs font-bold text-slate-700">Judul</label>
             <div className="relative">
               <FileText className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
               <input
                 type="text"
-                placeholder="Salary, Groceries, etc."
+                placeholder="Gaji, Belanjaan, dll."
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className={`w-full bg-slate-50 border ${
@@ -573,7 +601,7 @@ export default function Transactions() {
           {/* Amount & Category */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Amount (IDR)</label>
+              <label className="text-xs font-bold text-slate-700">Nominal (IDR)</label>
               <div className="relative">
                 <DollarSign className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <input
@@ -590,7 +618,7 @@ export default function Transactions() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Category</label>
+              <label className="text-xs font-bold text-slate-700">Kategori</label>
               <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
@@ -598,7 +626,7 @@ export default function Transactions() {
                   formErrors.categoryId ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 px-3.5 text-slate-800 outline-none text-sm font-medium cursor-pointer transition-all`}
               >
-                <option value="">Select Category</option>
+                <option value="">Pilih Kategori</option>
                 {categories.map((cat) => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
@@ -610,7 +638,7 @@ export default function Transactions() {
           {/* Date & Payment Method */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Transaction Date</label>
+              <label className="text-xs font-bold text-slate-700">Tanggal Transaksi</label>
               <div className="relative">
                 <Calendar className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <input
@@ -626,7 +654,7 @@ export default function Transactions() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Payment Method</label>
+              <label className="text-xs font-bold text-slate-700">Metode Pembayaran</label>
               <div className="relative">
                 <Wallet className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <select
@@ -634,12 +662,12 @@ export default function Transactions() {
                   onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
                   className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium cursor-pointer transition-all"
                 >
-                  <option value="CASH">Cash</option>
-                  <option value="BANK_TRANSFER">Bank Transfer</option>
+                  <option value="CASH">Tunai</option>
+                  <option value="BANK_TRANSFER">Transfer Bank</option>
                   <option value="E_WALLET">E-Wallet</option>
-                  <option value="DEBIT_CARD">Debit Card</option>
-                  <option value="CREDIT_CARD">Credit Card</option>
-                  <option value="OTHER">Other</option>
+                  <option value="DEBIT_CARD">Kartu Debit</option>
+                  <option value="CREDIT_CARD">Kartu Kredit</option>
+                  <option value="OTHER">Lainnya</option>
                 </select>
               </div>
             </div>
@@ -647,9 +675,9 @@ export default function Transactions() {
 
           {/* Description */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Description</label>
+            <label className="text-xs font-bold text-slate-700">Deskripsi</label>
             <textarea
-              placeholder="Add payment notes, tags or details..."
+              placeholder="Tambahkan catatan pembayaran, tag, atau detail..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows="3"
@@ -659,7 +687,7 @@ export default function Transactions() {
 
           {/* File Attachment */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Attachment (Receipt JPG/PNG/PDF)</label>
+            <label className="text-xs font-bold text-slate-700">Lampiran (Struk JPG/PNG/PDF)</label>
             <input
               type="file"
               onChange={(e) => setSelectedFile(e.target.files[0])}
@@ -674,14 +702,14 @@ export default function Transactions() {
               onClick={() => setIsModalOpen(false)}
               className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               type="submit"
               disabled={saving}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer disabled:opacity-50"
             >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Transaction</span>}
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Simpan Transaksi</span>}
             </button>
           </div>
         </form>
@@ -691,24 +719,24 @@ export default function Transactions() {
       <Modal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        title="Delete Transaction"
+        title="Hapus Transaksi"
       >
         <div className="flex flex-col gap-4 text-center">
           <p className="text-sm text-slate-600">
-            Are you sure you want to delete transaction <span className="font-bold text-slate-900">"{txToDelete?.title}"</span>?
+            Apakah Anda yakin ingin menghapus transaksi <span className="font-bold text-slate-900">"{txToDelete?.title}"</span>?
           </p>
           <div className="flex gap-3 mt-2">
             <button
               onClick={() => setIsDeleteOpen(false)}
               className="flex-1 py-3 border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-700 text-sm font-bold cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={handleDelete}
               className="flex-1 py-3 bg-rose-600 hover:bg-rose-700 rounded-xl text-white text-sm font-bold cursor-pointer"
             >
-              Delete
+              Hapus
             </button>
           </div>
         </div>

@@ -22,11 +22,11 @@ export default function Register() {
 
   const validate = () => {
     const newErrors = {}
-    if (!formData.name.trim()) newErrors.name = 'Full Name is required'
-    if (!formData.username.trim()) newErrors.username = 'Username is required'
-    if (!formData.email.trim()) newErrors.email = 'Email is required'
+    if (!formData.name.trim()) newErrors.name = 'Nama Lengkap wajib diisi'
+    if (!formData.username.trim()) newErrors.username = 'Username wajib diisi'
+    if (!formData.email.trim()) newErrors.email = 'Email wajib diisi'
     if (!formData.password || formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
+      newErrors.password = 'Kata sandi minimal 6 karakter'
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -39,10 +39,10 @@ export default function Register() {
     setLoading(true)
     try {
       await register(formData)
-      showToast('Registration successful! Please login to your new account.', 'success')
+      showToast('Pendaftaran berhasil! Silakan masuk ke akun baru Anda.', 'success')
       navigate('/login')
     } catch (err) {
-      showToast(err.message || 'Registration failed', 'error')
+      showToast(err.message || 'Pendaftaran gagal', 'error')
     } finally {
       setLoading(false)
     }
@@ -68,17 +68,17 @@ export default function Register() {
         {/* Header Title */}
         <div className="text-center">
           <h1 className="text-2xl font-black text-slate-900 tracking-tight font-heading">
-            Create an Account
+            Buat Akun
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Start managing your personal finance flow
+            Mulai kelola alur keuangan pribadimu
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Full Name</label>
+            <label className="text-xs font-bold text-slate-700">Nama Lengkap</label>
             <div className="relative">
               <User className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
               <input
@@ -109,7 +109,7 @@ export default function Register() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Email Address</label>
+            <label className="text-xs font-bold text-slate-700">Alamat Email</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
               <input
@@ -126,7 +126,7 @@ export default function Register() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Password</label>
+            <label className="text-xs font-bold text-slate-700">Kata Sandi</label>
             <div className="relative">
               <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
               <input
@@ -154,14 +154,14 @@ export default function Register() {
             disabled={loading}
             className="mt-2 w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Register Account</span>}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Daftar Akun</span>}
           </button>
         </form>
 
         <p className="text-sm text-slate-500 text-center">
-          Already have an account?{' '}
+          Sudah punya akun?{' '}
           <Link to="/login" className="font-bold text-blue-600 hover:underline">
-            Login
+            Masuk
           </Link>
         </p>
       </div>

@@ -73,15 +73,15 @@ export default function Categories() {
     try {
       if (modalType === 'add') {
         await api.post('/financeSvc/api/v1/categories', payload)
-        showToast('Category created successfully', 'success')
+        showToast('Kategori berhasil dibuat', 'success')
       } else {
         await api.put(`/financeSvc/api/v1/categories/${selectedCat.id}`, payload)
-        showToast('Category updated successfully', 'success')
+        showToast('Kategori berhasil diperbarui', 'success')
       }
       setIsModalOpen(false)
       fetchCategories()
     } catch (err) {
-      showToast(err.message || 'Action failed', 'error')
+      showToast(err.message || 'Aksi gagal', 'error')
     } finally {
       setSaving(false)
     }
@@ -91,11 +91,11 @@ export default function Categories() {
     if (!catToDelete) return
     try {
       await api.delete(`/financeSvc/api/v1/categories/${catToDelete.id}`)
-      showToast('Category deleted', 'info')
+      showToast('Kategori dihapus', 'info')
       setIsDeleteOpen(false)
       fetchCategories()
     } catch (err) {
-      showToast(err.message || 'Delete failed', 'error')
+      showToast(err.message || 'Gagal menghapus', 'error')
     }
   }
 
@@ -106,9 +106,9 @@ export default function Categories() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            Categories Management
+            Manajemen Kategori
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Configure income and expense categories</p>
+          <p className="text-xs text-slate-400 mt-1">Konfigurasi kategori pemasukan dan pengeluaran</p>
         </div>
 
         <button
@@ -116,7 +116,7 @@ export default function Categories() {
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 active:scale-[0.98] cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Category</span>
+          <span>Tambah Kategori</span>
         </button>
       </div>
 
@@ -124,11 +124,11 @@ export default function Categories() {
       {loading ? (
         <div className="flex items-center justify-center min-h-[300px] text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-2" />
-          <span>Loading categories...</span>
+          <span>Memuat kategori...</span>
         </div>
       ) : categories.length === 0 ? (
         <div className="py-16 text-center text-slate-400 text-sm border border-slate-200 rounded-2xl bg-white">
-          No categories created yet.
+          Belum ada kategori yang dibuat.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -143,7 +143,7 @@ export default function Categories() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold text-slate-900 text-base">{cat.name}</span>
-                  <span className="text-xs text-slate-400 font-semibold capitalize">{cat.type || 'Expense'}</span>
+                  <span className="text-xs text-slate-400 font-semibold capitalize">{cat.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}</span>
                 </div>
               </div>
 
@@ -158,7 +158,7 @@ export default function Categories() {
                 <button
                   onClick={() => { setCatToDelete(cat); setIsDeleteOpen(true); }}
                   className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                  title="Delete"
+                  title="Hapus"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -172,15 +172,15 @@ export default function Categories() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={modalType === 'add' ? 'New Category' : 'Edit Category'}
+        title={modalType === 'add' ? 'Kategori Baru' : 'Edit Kategori'}
       >
         <form onSubmit={handleSave} className="flex flex-col gap-4 text-slate-800">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Category Name</label>
+            <label className="text-xs font-bold text-slate-700">Nama Kategori</label>
             <input
               type="text"
               required
-              placeholder="e.g. Utilities, Salary, Groceries"
+              placeholder="cth. Listrik, Gaji, Belanjaan"
               value={formData.name}
               onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
               className="bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium transition-all"
@@ -188,14 +188,14 @@ export default function Categories() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Type</label>
+            <label className="text-xs font-bold text-slate-700">Tipe</label>
             <select
               value={formData.type}
               onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value }))}
               className="bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-3.5 text-slate-800 outline-none text-sm font-medium cursor-pointer transition-all"
             >
-              <option value="EXPENSE">Expense</option>
-              <option value="INCOME">Income</option>
+              <option value="EXPENSE">Pengeluaran</option>
+              <option value="INCOME">Pemasukan</option>
             </select>
           </div>
 
@@ -205,7 +205,7 @@ export default function Categories() {
               onClick={() => setIsModalOpen(false)}
               className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               type="submit"
@@ -213,7 +213,7 @@ export default function Categories() {
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-600/30 transition-all cursor-pointer"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              <span>Save Category</span>
+              <span>Simpan Kategori</span>
             </button>
           </div>
         </form>
@@ -223,24 +223,24 @@ export default function Categories() {
       <Modal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        title="Confirm Delete"
+        title="Konfirmasi Hapus"
       >
         <div className="flex flex-col gap-4 text-center">
           <p className="text-sm text-slate-600">
-            Are you sure you want to delete category <span className="font-bold text-slate-900">{catToDelete?.name}</span>?
+            Apakah Anda yakin ingin menghapus kategori <span className="font-bold text-slate-900">{catToDelete?.name}</span>?
           </p>
           <div className="flex justify-end gap-3">
             <button
               onClick={() => setIsDeleteOpen(false)}
               className="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-100 cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={handleDelete}
               className="flex-1 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold cursor-pointer"
             >
-              Delete
+              Hapus
             </button>
           </div>
         </div>

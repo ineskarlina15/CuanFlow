@@ -72,7 +72,7 @@ export default function Profile() {
         ctx.drawImage(img, 0, 0, width, height)
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7)
         setAvatarUrl(compressedBase64)
-        showToast('Foto profil berhasil dimuat & dioptimasi! Klik Save Changes untuk menyimpan.', 'success')
+        showToast('Foto profil berhasil dimuat & dioptimasi! Klik Simpan Perubahan untuk menyimpan.', 'success')
       }
       img.src = event.target.result
     }
@@ -94,7 +94,7 @@ export default function Profile() {
         return
       }
       if (!currentPassword) {
-        showToast('Harap masukkan Password Lama (Current Password) untuk memverifikasi perubahan password', 'error')
+        showToast('Harap masukkan Password Lama untuk memverifikasi perubahan password', 'error')
         return
       }
       if (confirmPassword && newPassword !== confirmPassword) {
@@ -217,7 +217,7 @@ export default function Profile() {
               type="button"
               onClick={() => {
                 setAvatarUrl(preset)
-                showToast('Avatar terpilih! Klik Save Changes untuk menyimpan.', 'info')
+                showToast('Avatar terpilih! Klik Simpan Perubahan untuk menyimpan.', 'info')
               }}
               className={`w-12 h-12 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer relative ${
                 avatarUrl === preset ? 'border-blue-600 ring-2 ring-blue-600/30 scale-105' : 'border-slate-200 hover:border-blue-400'
@@ -276,7 +276,7 @@ export default function Profile() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Password Lama (Current)</label>
+              <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Password Lama</label>
               <div className="relative">
                 <Key className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <input
@@ -297,7 +297,7 @@ export default function Profile() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Password Baru (New)</label>
+              <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Password Baru</label>
               <div className="relative">
                 <Key className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <input
@@ -347,7 +347,7 @@ export default function Profile() {
             className="mt-2 flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 active:scale-[0.98] cursor-pointer self-start disabled:opacity-50"
           >
             {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-            <span>Simpan Perubahan (Save Changes)</span>
+            <span>Simpan Perubahan</span>
           </button>
         </form>
       </div>

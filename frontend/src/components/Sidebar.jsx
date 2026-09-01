@@ -19,16 +19,16 @@ export default function Sidebar({ isOpen, onClose }) {
   const { logout, user } = useAuth()
 
   const links = [
-    { to: user?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    ...(user?.role === 'ADMIN' ? [{ to: '/admin/users', label: 'Users', icon: User }] : []),
-    { to: '/transactions', label: 'Transactions', icon: Receipt },
-    { to: '/budgets', label: 'Budgets', icon: Landmark },
-    { to: '/categories', label: 'Categories', icon: ShieldAlert },
-    { to: '/tags', label: 'Tags', icon: Tag },
-    { to: '/reports', label: 'Reports', icon: BarChart3 },
-    { to: '/notifications', label: 'Notifications', icon: Bell },
-    { to: '/profile', label: 'Profile', icon: User },
-    { to: '/settings', label: 'Settings', icon: Settings },
+    { to: user?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard', label: 'Beranda', icon: LayoutDashboard },
+    ...(user?.role === 'ADMIN' ? [{ to: '/admin/users', label: 'Pengguna', icon: User }] : []),
+    { to: '/transactions', label: 'Transaksi', icon: Receipt },
+    { to: '/budgets', label: 'Anggaran', icon: Landmark },
+    { to: '/categories', label: 'Kategori', icon: ShieldAlert },
+    { to: '/tags', label: 'Tag', icon: Tag },
+    { to: '/reports', label: 'Laporan', icon: BarChart3 },
+    { to: '/notifications', label: 'Notifikasi', icon: Bell },
+    { to: '/profile', label: 'Profil', icon: User },
+    { to: '/settings', label: 'Pengaturan', icon: Settings },
   ]
 
   const activeClass = 'flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 transition-all duration-200'
@@ -39,7 +39,7 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Mobile Sidebar Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-blue-950/70 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-blue-950/70 backdrop-blur-sm z-20 lg:hidden"
           onClick={onClose}
         />
       )}
@@ -53,7 +53,7 @@ export default function Sidebar({ isOpen, onClose }) {
         <div className="flex flex-col gap-4">
           {/* Mobile Close Button */}
           <div className="flex lg:hidden items-center justify-between pb-2 border-b border-blue-700/40">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Navigation Menu</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-200">Menu Navigasi</span>
             <button
               onClick={onClose}
               className="text-blue-200 hover:text-white p-1 rounded-lg hover:bg-white/10 cursor-pointer"
@@ -91,7 +91,7 @@ export default function Sidebar({ isOpen, onClose }) {
             className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-300 hover:text-rose-100 hover:bg-rose-500/20 transition-all font-semibold text-sm cursor-pointer w-full"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            <span>Logout</span>
+            <span>Keluar</span>
           </button>
         </div>
       </aside>

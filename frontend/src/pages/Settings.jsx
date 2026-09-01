@@ -29,7 +29,7 @@ export default function Settings() {
     // Notify all app components to re-render with new currency/threshold
     window.dispatchEvent(new Event('cuanflow_settings_updated'))
 
-    showToast(`Settings saved successfully! Currency: ${currency}, Alert Threshold: ${budgetAlertThreshold}%`, 'success')
+    showToast(`Pengaturan berhasil disimpan! Mata Uang: ${currency}, Ambang Batas Peringatan: ${budgetAlertThreshold}%`, 'success')
   }
 
   return (
@@ -39,9 +39,9 @@ export default function Settings() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            Account Settings
+            Pengaturan Akun
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Manage your application preferences and security</p>
+          <p className="text-xs text-slate-400 mt-1">Kelola preferensi aplikasi dan keamanan Anda</p>
         </div>
       </div>
 
@@ -52,9 +52,9 @@ export default function Settings() {
         <div className="flex flex-col gap-2 pb-6 border-b border-slate-100">
           <div className="flex items-center gap-2 text-sm font-black text-slate-900 font-heading">
             <Globe className="w-4 h-4 text-blue-600" />
-            <span>Currency & Formatting</span>
+            <span>Mata Uang & Format</span>
           </div>
-          <p className="text-xs text-slate-400">Choose primary currency for all financial totals</p>
+          <p className="text-xs text-slate-400">Pilih mata uang utama untuk semua total keuangan</p>
           
           <select
             value={currency}
@@ -73,9 +73,9 @@ export default function Settings() {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2 text-sm font-black text-slate-900 font-heading">
                 <Bell className="w-4 h-4 text-amber-500" />
-                <span>Budget Alerts & Notifications</span>
+                <span>Peringatan Anggaran & Notifikasi</span>
               </div>
-              <p className="text-xs text-slate-400">Receive alerts when expenses approach budget limits</p>
+              <p className="text-xs text-slate-400">Terima peringatan saat pengeluaran mendekati batas anggaran</p>
             </div>
 
             <input
@@ -88,17 +88,17 @@ export default function Settings() {
 
           {notificationsEnabled && (
             <div className="mt-3 flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Alert Threshold (%)</label>
+              <label className="text-xs font-bold text-slate-700">Ambang Batas Peringatan (%)</label>
               <select
                 value={budgetAlertThreshold}
                 onChange={(e) => setBudgetAlertThreshold(e.target.value)}
                 className="w-full sm:w-72 bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 text-sm font-semibold outline-none focus:border-blue-600 cursor-pointer transition-all"
               >
-                <option value="50">50% of Budget</option>
-                <option value="70">70% of Budget</option>
-                <option value="80">80% of Budget (Recommended)</option>
-                <option value="90">90% of Budget</option>
-                <option value="100">100% of Budget</option>
+                <option value="50">50% dari Anggaran</option>
+                <option value="70">70% dari Anggaran</option>
+                <option value="80">80% dari Anggaran (Disarankan)</option>
+                <option value="90">90% dari Anggaran</option>
+                <option value="100">100% dari Anggaran</option>
               </select>
             </div>
           )}
@@ -111,7 +111,7 @@ export default function Settings() {
             className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 active:scale-[0.98] transition-all cursor-pointer"
           >
             <Save className="w-4 h-4" />
-            <span>Save Settings</span>
+            <span>Simpan Pengaturan</span>
           </button>
         </div>
       </form>

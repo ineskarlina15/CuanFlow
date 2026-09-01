@@ -12,11 +12,11 @@ export default function AdminUsers() {
   
   // Default users matching PDF Screen 2. USERS MANAGEMENT
   const defaultUsers = [
-    { id: 1, name: 'Galang', email: 'galang@email.com', role: 'USER', status: 'Active', registered: '20 Aug 2024' },
-    { id: 2, name: 'Ahmad', email: 'ahmad@email.com', role: 'USER', status: 'Active', registered: '18 Aug 2024' },
-    { id: 3, name: 'Admin', email: 'admin@email.com', role: 'ADMIN', status: 'Active', registered: '15 Aug 2024' },
-    { id: 4, name: 'Budi', email: 'budi@email.com', role: 'USER', status: 'Active', registered: '03 Aug 2024' },
-    { id: 5, name: 'Siti', email: 'siti@email.com', role: 'USER', status: 'Active', registered: '01 Aug 2024' }
+    { id: 1, name: 'Galang', email: 'galang@email.com', role: 'USER', status: 'Aktif', registered: '20 Agt 2024' },
+    { id: 2, name: 'Ahmad', email: 'ahmad@email.com', role: 'USER', status: 'Aktif', registered: '18 Agt 2024' },
+    { id: 3, name: 'Admin', email: 'admin@email.com', role: 'ADMIN', status: 'Aktif', registered: '15 Agt 2024' },
+    { id: 4, name: 'Budi', email: 'budi@email.com', role: 'USER', status: 'Aktif', registered: '03 Agt 2024' },
+    { id: 5, name: 'Siti', email: 'siti@email.com', role: 'USER', status: 'Aktif', registered: '01 Agt 2024' }
   ]
 
   const [users, setUsers] = useState(defaultUsers)
@@ -40,8 +40,8 @@ export default function AdminUsers() {
           name: u.name || u.username || 'User',
           email: u.email || 'user@cuanflow.id',
           role: u.role || 'USER',
-          status: 'Active',
-          registered: '18 Aug 2024'
+          status: 'Aktif',
+          registered: '18 Agt 2024'
         }))
         setUsers(mapped)
       }
@@ -68,15 +68,15 @@ export default function AdminUsers() {
       prev.map((u) => (u.id === selectedUser.id ? { ...u, role: newRole } : u))
     )
     setIsEditOpen(false)
-    showToast(`User role updated to ${newRole}`, 'success')
+    showToast(`Peran pengguna diperbarui menjadi ${newRole}`, 'success')
   }
 
   const toggleStatus = (user) => {
-    const nextStatus = user.status === 'Active' ? 'Inactive' : 'Active'
+    const nextStatus = user.status === 'Aktif' ? 'Nonaktif' : 'Aktif'
     setUsers((prev) =>
       prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u))
     )
-    showToast(`User status updated to ${nextStatus}`, 'info')
+    showToast(`Status pengguna diperbarui menjadi ${nextStatus}`, 'info')
   }
 
   const confirmDelete = (user) => {
@@ -88,7 +88,7 @@ export default function AdminUsers() {
     if (!userToDelete) return
     setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id))
     setIsDeleteOpen(false)
-    showToast('User account deleted successfully', 'success')
+    showToast('Akun pengguna berhasil dihapus', 'success')
   }
 
   const filteredUsers = users.filter(
@@ -105,9 +105,9 @@ export default function AdminUsers() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            2. USERS MANAGEMENT
+            MANAJEMEN PENGGUNA
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Manage user roles, access control, & account statuses</p>
+          <p className="text-xs text-slate-400 mt-1">Kelola peran pengguna, hak akses, & status akun</p>
         </div>
       </div>
 
@@ -116,14 +116,14 @@ export default function AdminUsers() {
         
         {/* Sub Header & Search Bar matching PDF Screen 2 */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <h2 className="text-xl font-black text-slate-900 font-heading">Users</h2>
+          <h2 className="text-xl font-black text-slate-900 font-heading">Pengguna</h2>
 
           {/* Search Input Box matching PDF Screen 2 */}
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder="Cari pengguna..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-2 pl-10 pr-4 text-slate-800 text-sm outline-none transition-all"
@@ -136,19 +136,19 @@ export default function AdminUsers() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-200 text-xs font-black text-slate-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4">Name</th>
+                <th className="py-3.5 px-4">Nama</th>
                 <th className="py-3.5 px-4">Email</th>
-                <th className="py-3.5 px-4">Role</th>
+                <th className="py-3.5 px-4">Peran</th>
                 <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Registered Date</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4">Tanggal Daftar</th>
+                <th className="py-3.5 px-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm font-semibold text-slate-700">
               {filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="py-8 text-center text-slate-400 text-xs">
-                    No matching users found.
+                    Tidak ada pengguna yang cocok.
                   </td>
                 </tr>
               ) : (
@@ -173,7 +173,7 @@ export default function AdminUsers() {
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
                             : 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
                         }`}
-                        title="Click to toggle account status"
+                        title="Klik untuk mengubah status akun"
                       >
                         {u.status}
                       </button>
@@ -184,14 +184,14 @@ export default function AdminUsers() {
                         <button
                           onClick={() => handleEditRole(u)}
                           className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
-                          title="Edit User Role"
+                          title="Edit Peran Pengguna"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => confirmDelete(u)}
                           className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                          title="Delete User Account"
+                          title="Hapus Akun Pengguna"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -210,18 +210,18 @@ export default function AdminUsers() {
       <Modal
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
-        title={`Edit Role: ${selectedUser?.name}`}
+        title={`Edit Peran: ${selectedUser?.name}`}
       >
         <div className="flex flex-col gap-4 text-slate-800">
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Select Access Role</label>
+            <label className="text-xs font-bold text-slate-700">Pilih Peran Akses</label>
             <select
               value={newRole}
               onChange={(e) => setNewRole(e.target.value)}
               className="bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-800 outline-none text-sm font-semibold cursor-pointer"
             >
-              <option value="USER">USER (Standard Account Access)</option>
-              <option value="ADMIN">ADMIN (Full System & User Management Access)</option>
+              <option value="USER">USER (Akses Akun Standar)</option>
+              <option value="ADMIN">ADMIN (Akses Penuh Sistem & Manajemen)</option>
             </select>
           </div>
 
@@ -230,13 +230,13 @@ export default function AdminUsers() {
               onClick={() => setIsEditOpen(false)}
               className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={saveRoleUpdate}
               className="px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md cursor-pointer"
             >
-              Save Changes
+              Simpan Perubahan
             </button>
           </div>
         </div>
@@ -246,11 +246,11 @@ export default function AdminUsers() {
       <Modal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}
-        title="Confirm Account Deletion"
+        title="Konfirmasi Penghapusan Akun"
       >
         <div className="flex flex-col gap-4 text-slate-800">
           <p className="text-sm text-slate-600">
-            Are you sure you want to delete account <strong className="text-slate-900">{userToDelete?.name}</strong> ({userToDelete?.email})? This action cannot be undone.
+            Apakah Anda yakin ingin menghapus akun <strong className="text-slate-900">{userToDelete?.name}</strong> ({userToDelete?.email})? Tindakan ini tidak dapat dibatalkan.
           </p>
 
           <div className="flex justify-end gap-3 pt-2">
@@ -258,13 +258,13 @@ export default function AdminUsers() {
               onClick={() => setIsDeleteOpen(false)}
               className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
             >
-              Cancel
+              Batal
             </button>
             <button
               onClick={executeDelete}
               className="px-5 py-2 text-sm font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-all shadow-md cursor-pointer"
             >
-              Delete Account
+              Hapus Akun
             </button>
           </div>
         </div>

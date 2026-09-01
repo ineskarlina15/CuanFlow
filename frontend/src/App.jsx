@@ -20,6 +20,10 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminUsers from './pages/AdminUsers'
+import Unauthorized from './pages/Unauthorized'
+import Forbidden from './pages/Forbidden'
+import NotFound from './pages/NotFound'
+import ServerError from './pages/ServerError'
 
 // Wrapper for Private Routes (Requires login)
 function PrivateLayout() {
@@ -39,7 +43,7 @@ function PrivateLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-800">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans text-slate-800 overflow-x-hidden w-full">
       <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
       
       <div className="flex flex-1">
@@ -110,6 +114,12 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
+      {/* Global Error Pages */}
+      <Route path="/401" element={<Unauthorized />} />
+      <Route path="/403" element={<Forbidden />} />
+      <Route path="/500" element={<ServerError />} />
+      <Route path="/404" element={<NotFound />} />
+
       {/* Private Pages inside Dashboard Layout */}
       <Route element={<PrivateLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
@@ -129,8 +139,8 @@ function AppRoutes() {
         <Route path="/settings" element={<Settings />} />
       </Route>
 
-      {/* Catch-all redirect */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Catch-all redirect to 404 */}
+      <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   )
 }

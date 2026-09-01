@@ -159,7 +159,7 @@ export default function Dashboard() {
     return (
       <div className="flex-1 flex items-center justify-center min-h-[80vh] text-slate-500">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-2" />
-        <span className="font-medium text-sm">Loading dashboard overview...</span>
+        <span className="font-medium text-sm">Memuat ringkasan beranda...</span>
       </div>
     )
   }
@@ -179,9 +179,9 @@ export default function Dashboard() {
             Dashboard
           </h1>
           <p className="text-lg font-bold text-slate-700 mt-0.5">
-            Hello, {user?.name || user?.username || 'Galang'} 👋
+            Halo, {user?.name || user?.username || 'Galang'} 👋
           </p>
-          <p className="text-xs text-slate-400">Here's your financial overview</p>
+          <p className="text-xs text-slate-400">Berikut adalah ringkasan keuanganmu</p>
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
@@ -190,12 +190,12 @@ export default function Dashboard() {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Add Transaction</span>
+            <span>Tambah Transaksi</span>
           </Link>
           <button
             onClick={fetchData}
             className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all text-sm font-semibold cursor-pointer shadow-xs hover:rotate-180 duration-500"
-            title="Refresh Data"
+            title="Perbarui Data"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -222,7 +222,7 @@ export default function Dashboard() {
         {/* 2. Total Income */}
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-xs hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 min-w-0">
           <div className="flex justify-between items-center">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL INCOME</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL PEMASUKAN</span>
             <div className="p-2 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 shadow-xs flex-shrink-0">
               <TrendingUp className="w-5 h-5" />
             </div>
@@ -237,7 +237,7 @@ export default function Dashboard() {
         {/* 3. Total Expense */}
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-xs hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 min-w-0">
           <div className="flex justify-between items-center">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL EXPENSE</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">TOTAL PENGELUARAN</span>
             <div className="p-2 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 shadow-xs flex-shrink-0">
               <TrendingDown className="w-5 h-5" />
             </div>
@@ -252,7 +252,7 @@ export default function Dashboard() {
         {/* 4. Budget Alert */}
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 flex flex-col justify-between gap-3 shadow-xs hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 min-w-0">
           <div className="flex justify-between items-center">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">BUDGET ALERT</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">PERINGATAN ANGGARAN</span>
             <div className="p-2 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 shadow-xs flex-shrink-0">
               <ShieldAlert className="w-5 h-5" />
             </div>
@@ -262,7 +262,7 @@ export default function Dashboard() {
               {activeBudgetsCount}
             </span>
             <Link to="/budgets" className="flex items-center gap-1 mt-1 text-amber-600 text-xs font-bold hover:underline">
-              <span>View Limits</span>
+              <span>Lihat Batas</span>
               <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -277,16 +277,16 @@ export default function Dashboard() {
           <div className="flex justify-between items-center border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
               <BarChart2 className="w-5 h-5 text-blue-600" />
-              <h2 className="text-base font-bold text-slate-900 font-heading">Income vs Expense</h2>
+              <h2 className="text-base font-bold text-slate-900 font-heading">Pemasukan vs Pengeluaran</h2>
             </div>
             <div className="flex items-center gap-4 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-sm bg-emerald-500 shadow-xs" />
-                <span className="text-slate-600">Income</span>
+                <span className="text-slate-600">Pemasukan</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-sm bg-rose-500 shadow-xs" />
-                <span className="text-slate-600">Expense</span>
+                <span className="text-slate-600">Pengeluaran</span>
               </div>
             </div>
           </div>
@@ -338,7 +338,7 @@ export default function Dashboard() {
         <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 flex flex-col justify-between gap-4 shadow-xs hover:shadow-md transition-all">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
             <PieChartIcon className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base font-bold text-slate-900 font-heading">Expense by Category</h2>
+            <h2 className="text-base font-bold text-slate-900 font-heading">Pengeluaran per Kategori</h2>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-6 justify-around py-2">
@@ -373,7 +373,7 @@ export default function Dashboard() {
                 })}
               </svg>
               <div className="absolute flex flex-col items-center justify-center text-center">
-                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">EXPENSE</span>
+                <span className="text-[9px] uppercase font-bold text-slate-400 tracking-wider">PENGELUARAN</span>
                 <span className="text-xs font-black text-slate-900 mt-0.5 truncate max-w-[85px]">
                   {formatCurrency(totalCategoryExpense)}
                 </span>
@@ -411,7 +411,7 @@ export default function Dashboard() {
             to="/transactions"
             className="flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline"
           >
-            <span>View All</span>
+            <span>Lihat Semua</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -433,7 +433,7 @@ export default function Dashboard() {
                 <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                   tx.type === 'INCOME' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200'
                 }`}>
-                  {tx.type === 'INCOME' ? 'Income' : 'Expense'}
+                  {tx.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
                 </span>
 
                 <span className={`font-extrabold text-sm ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>

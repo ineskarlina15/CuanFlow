@@ -18,8 +18,8 @@ export default function Login() {
 
   const validate = () => {
     const newErrors = {}
-    if (!email.trim()) newErrors.email = 'Email or Username is required'
-    if (!password) newErrors.password = 'Password is required'
+    if (!email.trim()) newErrors.email = 'Email atau Username wajib diisi'
+    if (!password) newErrors.password = 'Kata sandi wajib diisi'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -31,10 +31,10 @@ export default function Login() {
     setLoading(true)
     try {
       await login(email, password)
-      showToast('Welcome back to CuanFlow!', 'success')
+      showToast('Selamat datang kembali di CuanFlow!', 'success')
       navigate('/dashboard')
     } catch (err) {
-      showToast(err.message || 'Login failed. Please check your credentials.', 'error')
+      showToast(err.message || 'Login gagal. Periksa kembali kredensial Anda.', 'error')
     } finally {
       setLoading(false)
     }
@@ -60,10 +60,10 @@ export default function Login() {
         {/* Welcome Back Titles */}
         <div className="text-center">
           <h1 className="text-2xl font-black text-slate-900 tracking-tight font-heading">
-            Welcome Back!
+            Selamat Datang!
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Login to your account
+            Masuk ke akun Anda
           </p>
         </div>
 
@@ -71,7 +71,7 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="w-full flex flex-col gap-4">
           {/* Email / Username Field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Email or Username</label>
+            <label className="text-xs font-bold text-slate-700">Email atau Username</label>
             <div className="relative">
               <Mail className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
               <input
@@ -90,7 +90,7 @@ export default function Login() {
           {/* Password Field */}
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
-              <label className="text-xs font-bold text-slate-700">Password</label>
+              <label className="text-xs font-bold text-slate-700">Kata Sandi</label>
             </div>
             <div className="relative">
               <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
@@ -126,7 +126,7 @@ export default function Login() {
             disabled={loading}
             className="mt-2 w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-600/30 transition-all active:scale-[0.98] cursor-pointer disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Login</span>}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Masuk</span>}
           </button>
         </form>
 

@@ -33,11 +33,11 @@ export default function Reports() {
 
   // Trend line chart data matching PDF Screen 6
   const trendPoints = [
-    { label: '1 Aug', income: 45, expense: 20 },
-    { label: '8 Aug', income: 68, expense: 35 },
-    { label: '15 Aug', income: 48, expense: 55 },
-    { label: '22 Aug', income: 72, expense: 38 },
-    { label: '29 Aug', income: 65, expense: 50 }
+    { label: '1 Agt', income: 45, expense: 20 },
+    { label: '8 Agt', income: 68, expense: 35 },
+    { label: '15 Agt', income: 48, expense: 55 },
+    { label: '22 Agt', income: 72, expense: 38 },
+    { label: '29 Agt', income: 65, expense: 50 }
   ]
 
   const fetchReports = async (overrideStart = null, overrideEnd = null) => {
@@ -92,7 +92,7 @@ export default function Reports() {
     setEndDate('')
     setPeriod('this_month')
     fetchReports('', '')
-    showToast('Report filter reset', 'info')
+    showToast('Filter laporan diatur ulang', 'info')
   }
 
   const [, setCurrencyTick] = useState(0)
@@ -106,24 +106,24 @@ export default function Reports() {
 
   const handleExportCSV = () => {
     const rows = [
-      ['Report Title', '6. REPORTS'],
-      ['Period', period],
-      ['Total Income', summary.totalIncome],
-      ['Total Expense', summary.totalExpense],
-      ['Net Balance', summary.netBalance],
+      ['Judul Laporan', '6. LAPORAN'],
+      ['Periode', period],
+      ['Total Pemasukan', summary.totalIncome],
+      ['Total Pengeluaran', summary.totalExpense],
+      ['Saldo Bersih', summary.netBalance],
       [],
-      ['Category Breakdown'],
+      ['Rincian Kategori'],
       ...categoryData.map((item) => [item.name, item.amount, `${item.percent}%`])
     ]
     const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n')
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `CuanFlow_Reports_${new Date().toISOString().split('T')[0]}.csv`)
+    link.setAttribute('download', `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.csv`)
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    showToast('Financial report exported to CSV', 'success')
+    showToast('Laporan keuangan diekspor ke CSV', 'success')
   }
 
   // SVG Solid Pie Chart Generator matching PDF Screen 6 EXACTLY
@@ -189,9 +189,9 @@ export default function Reports() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
-            6. REPORTS
+            LAPORAN
           </h1>
-          <p className="text-xs text-slate-400 mt-1">Financial analytics, line trends, and expense pie breakdown</p>
+          <p className="text-xs text-slate-400 mt-1">Analisis keuangan, tren garis, dan rincian pai pengeluaran</p>
         </div>
 
         <button
@@ -199,7 +199,7 @@ export default function Reports() {
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 active:scale-[0.98] cursor-pointer self-start sm:self-auto"
         >
           <Download className="w-4 h-4" />
-          <span>Export CSV Report</span>
+          <span>Ekspor Laporan CSV</span>
         </button>
       </div>
 
@@ -208,7 +208,7 @@ export default function Reports() {
         
         {/* Period Filter Dropdown matching PDF Screen 6 */}
         <div className="flex flex-col gap-1.5 w-48">
-          <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Period</label>
+          <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Periode</label>
           <div className="relative">
             <select
               value={period}
@@ -233,10 +233,10 @@ export default function Reports() {
               }}
               className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl py-2.5 px-4 pr-8 text-slate-800 font-extrabold text-sm outline-none cursor-pointer shadow-2xs transition-all appearance-none"
             >
-              <option value="this_month">This Month</option>
-              <option value="last_month">Last Month</option>
-              <option value="this_year">This Year</option>
-              <option value="all_time">All Time</option>
+              <option value="this_month">Bulan Ini</option>
+              <option value="last_month">Bulan Lalu</option>
+              <option value="this_year">Tahun Ini</option>
+              <option value="all_time">Semua Waktu</option>
             </select>
             <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
           </div>
@@ -274,7 +274,7 @@ export default function Reports() {
           
           {/* Left Chart: Income vs Expense SVG Line Chart */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 flex flex-col gap-4 shadow-2xs">
-            <h3 className="text-base font-black text-slate-900 font-heading">Income vs Expense</h3>
+            <h3 className="text-base font-black text-slate-900 font-heading">Pemasukan vs Pengeluaran</h3>
 
             <div className="relative w-full h-56 pt-2">
               <svg viewBox="0 0 400 160" className="w-full h-full overflow-visible">
@@ -327,7 +327,7 @@ export default function Reports() {
                 ))}
 
                 {/* X-Axis Labels matching PDF Screen 6 */}
-                {['1 Aug', '8 Aug', '15 Aug', '22 Aug', '29 Aug'].map((lbl, idx) => (
+                {['1 Agt', '8 Agt', '15 Agt', '22 Agt', '29 Agt'].map((lbl, idx) => (
                   <text
                     key={idx}
                     x={50 + idx * 80}
@@ -344,7 +344,7 @@ export default function Reports() {
 
           {/* Right Chart: Expense by Category SVG Pie Chart */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 flex flex-col gap-4 shadow-2xs">
-            <h3 className="text-base font-black text-slate-900 font-heading">Expense by Category</h3>
+            <h3 className="text-base font-black text-slate-900 font-heading">Pengeluaran per Kategori</h3>
 
             <div className="flex flex-col sm:flex-row items-center gap-8 pt-2 min-h-[200px]">
               {/* Solid SVG Pie Chart matching PDF Screen 6 */}
