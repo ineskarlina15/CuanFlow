@@ -68,7 +68,7 @@ export default function Profile() {
     }
   }, [token])
 
-  // Handle Photo File Upload
+  // Tangani Unggah File Foto
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -149,7 +149,7 @@ export default function Profile() {
     setSaving(true)
 
     try {
-      // Send PUT request to Backend User Controller
+      // Kirim permintaan PUT ke Controller User di Backend
       const response = await api.put(
         '/authSvc/api/v1/users/profile',
         {
@@ -172,7 +172,7 @@ export default function Profile() {
 
       const updatedData = response.data?.data || {}
 
-      // Update Local State & Context
+      // Perbarui Local State & Context
       updateUser({
         name: updatedData.name || name.trim(),
         avatarUrl: updatedData.avatarUrl || avatarUrl

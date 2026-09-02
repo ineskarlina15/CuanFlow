@@ -20,7 +20,7 @@ export default function Reports() {
 
   const [categoryData, setCategoryData] = useState([])
 
-  // Trend line chart currently not backed by API, set to empty for now
+  // Grafik garis tren saat ini belum didukung oleh API, biarkan kosong untuk sementara
   const [trendPoints, setTrendPoints] = useState([])
 
   const fetchReports = async (overrideStart = null, overrideEnd = null) => {

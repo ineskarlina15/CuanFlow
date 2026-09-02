@@ -122,7 +122,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteTransaction(Integer userId, Integer transactionId) throws Exception {
         Transaction transaction = getTransactionById(userId, transactionId);
-        // Soft delete instead of hard delete
+        // Hapus lunak (soft delete) alih-alih hapus permanen (hard delete)
         transactionRepository.softDeleteByIdAndUserId(transaction.getId(), userId);
     }
 
@@ -285,7 +285,7 @@ public class TransactionServiceImpl implements TransactionService {
             throw new Exception("Kategori ini sudah dihapus");
         }
         if (category.getType() != null && request.getType() != null && !category.getType().name().equals(request.getType().name())) {
-            // Update category type to match transaction type enum
+            // Perbarui tipe kategori agar sesuai dengan enum tipe transaksi
             try {
                 category.setType(com.example.finance_service.entity.CategoryType.valueOf(request.getType().name()));
                 categoryRepository.save(category);

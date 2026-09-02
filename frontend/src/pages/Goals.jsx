@@ -13,7 +13,7 @@ export default function Goals() {
   const [goals, setGoals] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Modals State
+  // State Modal
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('add') // 'add' | 'edit'
   const [selectedGoal, setSelectedGoal] = useState(null)
@@ -23,7 +23,7 @@ export default function Goals() {
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
 
-  // Form Data
+  // Data Formulir
   const [formData, setFormData] = useState({
     name: '',
     targetAmount: '',
@@ -118,7 +118,7 @@ export default function Goals() {
         await api.post('/financeSvc/api/v1/goals', payload)
         showToast('Target tabungan berhasil dibuat!', 'success')
       } else {
-        // preserve existing currentAmount when editing
+        // pertahankan currentAmount yang ada saat mengedit
         payload.currentAmount = selectedGoal.currentAmount || 0
         await api.put(`/financeSvc/api/v1/goals/${selectedGoal.id}`, payload)
         showToast('Target tabungan berhasil diperbarui!', 'success')
@@ -173,7 +173,7 @@ export default function Goals() {
 
   return (
     <div className="flex-grow p-4 sm:p-6 lg:p-8 flex flex-col gap-6 w-full max-w-7xl mx-auto animate-fade-in text-slate-800 font-sans">
-      {/* Header */}
+      {/* Bagian Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-heading">
@@ -191,7 +191,7 @@ export default function Goals() {
         </button>
       </div>
 
-      {/* Content Grid */}
+      {/* Jaringan Konten (Grid) */}
       {loading ? (
         <div className="flex items-center justify-center min-h-[300px] text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-2" />
@@ -221,7 +221,7 @@ export default function Goals() {
             
             const isCompleted = pct === 100
 
-            // Days remaining calculation
+            // Perhitungan sisa hari
             const today = new Date()
             const targetDate = new Date(goal.targetDate)
             const timeDiff = targetDate.getTime() - today.getTime()
@@ -246,7 +246,7 @@ export default function Goals() {
                 key={goal.id}
                 className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 flex flex-col gap-4 shadow-sm hover:shadow-md transition-all text-slate-800"
               >
-                {/* Card Header */}
+                {/* Header Kartu */}
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
                     <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase w-max ${daysColor}`}>
@@ -272,7 +272,7 @@ export default function Goals() {
                   </div>
                 </div>
 
-                {/* Progress Bar Area */}
+                {/* Area Bar Progres */}
                 <div className="flex flex-col gap-2 mt-2">
                   <div className="flex justify-between items-end text-xs font-extrabold">
                     <div className="flex flex-col">
@@ -294,7 +294,7 @@ export default function Goals() {
                   <span className="text-right text-[10px] font-black text-slate-400">{pct.toFixed(0)}%</span>
                 </div>
 
-                {/* Action Footer */}
+                {/* Footer Aksi */}
                 <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-auto">
                   <div className="text-xs text-slate-500 font-semibold flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
@@ -317,7 +317,7 @@ export default function Goals() {
         </div>
       )}
 
-      {/* Add/Edit Goal Modal */}
+      {/* Modal Tambah/Edit Tujuan */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -403,7 +403,7 @@ export default function Goals() {
         </form>
       </Modal>
 
-      {/* Top-Up (Add Savings) Modal */}
+      {/* Modal Top-Up (Tambah Tabungan) */}
       <Modal
         isOpen={isTopUpOpen}
         onClose={() => setIsTopUpOpen(false)}
@@ -450,7 +450,7 @@ export default function Goals() {
         </form>
       </Modal>
 
-      {/* Delete Confirmation */}
+      {/* Konfirmasi Hapus */}
       <Modal
         isOpen={isDeleteOpen}
         onClose={() => setIsDeleteOpen(false)}

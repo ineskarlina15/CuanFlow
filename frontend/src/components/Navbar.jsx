@@ -20,7 +20,7 @@ export default function Navbar({ onToggleSidebar }) {
   // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
-  // Fetch Notifications when dropdown opens
+  // Ambil Notifikasi saat dropdown terbuka
   useEffect(() => {
     if (notifOpen) {
       const fetchNotifs = async () => {

@@ -51,7 +51,7 @@ public class Budget {
     @Column(length = 50)
     private String status = "ACTIVE";
 
-    // e.g., 1 for Jan, 2 for Feb, etc.
+    // cth: 1 untuk Jan, 2 untuk Feb, dll.
     @Column(nullable = false)
     private Integer month;
 

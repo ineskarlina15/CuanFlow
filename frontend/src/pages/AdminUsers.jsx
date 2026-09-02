@@ -21,12 +21,12 @@ export default function AdminUsers() {
 
   const [users, setUsers] = useState(defaultUsers)
 
-  // Edit Role Modal State
+  // State Modal Edit Role
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
   const [newRole, setNewRole] = useState('USER')
 
-  // Delete User Modal State
+  // State Modal Hapus Pengguna
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
 
@@ -46,7 +46,7 @@ export default function AdminUsers() {
         setUsers(mapped)
       }
     } catch {
-      // Keep default PDF sample users on error fallback
+      // Pertahankan sampel pengguna PDF default saat terjadi kesalahan (fallback)
     } finally {
       setLoading(false)
     }

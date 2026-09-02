@@ -26,7 +26,7 @@ import Forbidden from './pages/Forbidden'
 import NotFound from './pages/NotFound'
 import ServerError from './pages/ServerError'
 
-// Wrapper for Private Routes (Requires login)
+// Pembungkus untuk Rute Privat (Membutuhkan login)
 function PrivateLayout() {
   const { isAuthenticated, loading } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -34,7 +34,7 @@ function PrivateLayout() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center text-slate-500">
-        <span>Restoring session parameters...</span>
+        <span>Memulihkan parameter sesi...</span>
       </div>
     )
   }
@@ -50,7 +50,7 @@ function PrivateLayout() {
       <div className="flex flex-1">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         
-        {/* Main Content Area inside Dashboard */}
+        {/* Area Konten Utama di dalam Dashboard */}
         <main className="flex-1 flex flex-col min-w-0 lg:pl-64 min-h-screen pt-16 overflow-y-auto">
           <Outlet />
         </main>
@@ -59,14 +59,14 @@ function PrivateLayout() {
   )
 }
 
-// Wrapper for Public Routes (Guests only, redirects to dashboard if already logged in)
+// Pembungkus untuk Rute Publik (Hanya untuk tamu, diarahkan ke dashboard jika sudah login)
 function PublicRoute() {
   const { isAuthenticated, loading } = useAuth()
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center text-slate-500">
-        <span>Checking session parameters...</span>
+        <span>Memeriksa parameter sesi...</span>
       </div>
     )
   }
@@ -78,14 +78,14 @@ function PublicRoute() {
   return <Outlet />
 }
 
-// Wrapper for Admin-Only Guarded Routes (Strict RBAC Protection)
+// Pembungkus untuk Rute Khusus Admin (Perlindungan RBAC Ketat)
 function AdminRoute() {
   const { user, isAuthenticated, loading } = useAuth()
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center text-slate-500">
-        <span>Verifying admin privileges...</span>
+        <span>Memverifikasi hak akses admin...</span>
       </div>
     )
   }
@@ -104,10 +104,10 @@ function AdminRoute() {
 function AppRoutes() {
   return (
     <Routes>
-      {/* Public Landing Page */}
+      {/* Halaman Landing Publik */}
       <Route path="/" element={<Landing />} />
 
-      {/* Public Guest-Only Pages */}
+      {/* Halaman Publik Khusus Tamu */}
       <Route element={<PublicRoute />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -115,17 +115,17 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
       </Route>
 
-      {/* Global Error Pages */}
+      {/* Halaman Error Global */}
       <Route path="/401" element={<Unauthorized />} />
       <Route path="/403" element={<Forbidden />} />
       <Route path="/500" element={<ServerError />} />
       <Route path="/404" element={<NotFound />} />
 
-      {/* Private Pages inside Dashboard Layout */}
+      {/* Halaman Privat di dalam Layout Dashboard */}
       <Route element={<PrivateLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
 
-        {/* Admin-Only Protected Routes */}
+        {/* Rute Terlindungi Khusus Admin */}
         <Route element={<AdminRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
@@ -141,7 +141,7 @@ function AppRoutes() {
         <Route path="/settings" element={<Settings />} />
       </Route>
 
-      {/* Catch-all redirect to 404 */}
+      {/* Pengalihan default ke 404 */}
       <Route path="*" element={<Navigate to="/404" replace />} />
     </Routes>
   )

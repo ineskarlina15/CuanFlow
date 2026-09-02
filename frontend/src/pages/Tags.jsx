@@ -65,7 +65,7 @@ export default function Tags() {
     }
   }
 
-  // Define stable colors for UI consistency based on ID or name length
+  // Tentukan warna stabil untuk konsistensi antarmuka berdasarkan ID atau panjang nama
   const getColorForTag = (name) => {
     const colors = [
       'bg-blue-100 text-blue-700 border-blue-200',
@@ -80,7 +80,7 @@ export default function Tags() {
   const filteredAndSortedTags = useMemo(() => {
     let result = [...tags]
 
-    // Search
+    // Pencarian
     if (searchQuery.trim()) {
       result = result.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()))
     }

@@ -9,7 +9,7 @@ const api = axios.create({
   },
 })
 
-// Request Interceptor: Attach JWT Token automatically
+// Interceptor Request: Menyematkan JWT Token secara otomatis
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token')
@@ -23,23 +23,23 @@ api.interceptors.request.use(
   }
 )
 
-// Response Interceptor: Standardize responses and capture common error statuses
+// Interceptor Response: Menstandarisasi respons dan menangkap status error umum
 api.interceptors.response.use(
   (response) => {
-    return response.data; // Server returns responses structured with { success, message, data, status }
+    return response.data; // Server mengembalikan respons terstruktur seperti { success, message, data, status }
   },
   (error) => {
     if (error.response) {
       const { status, data } = error.response
       
-      // Auto-logout user on expired or invalid token
+      // Logout otomatis jika token kedaluwarsa atau tidak valid
       if (status === 401 && localStorage.getItem('token')) {
         localStorage.removeItem('token')
         localStorage.removeItem('user')
         window.location.href = '/login'
       }
       
-      // Extract custom error message if returned from backend
+      // Mengambil pesan error khusus jika dikembalikan dari backend
       const errMsg = data?.message || error.message || 'An error occurred'
       return Promise.reject({ status, message: errMsg, data })
     }

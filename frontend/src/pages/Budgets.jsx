@@ -17,7 +17,7 @@ export default function Budgets() {
   const [month, setMonth] = useState(currentDate.getMonth() + 1)
   const [year, setYear] = useState(currentDate.getFullYear())
 
-  // Modal forms
+  // Formulir Modal
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('add')
   const [selectedBudget, setSelectedBudget] = useState(null)
@@ -31,7 +31,7 @@ export default function Budgets() {
   const [formErrors, setFormErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
-  // Delete modal
+  // Modal Hapus
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [budgetToDelete, setBudgetToDelete] = useState(null)
 

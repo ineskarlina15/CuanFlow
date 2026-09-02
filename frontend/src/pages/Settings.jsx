@@ -26,7 +26,7 @@ export default function Settings() {
     localStorage.setItem('cuanflow_notif_enabled', notificationsEnabled)
     localStorage.setItem('cuanflow_alert_threshold', budgetAlertThreshold)
 
-    // Notify all app components to re-render with new currency/threshold
+    // Beri tahu semua komponen aplikasi untuk memuat ulang dengan mata uang/batas baru
     window.dispatchEvent(new Event('cuanflow_settings_updated'))
 
     showToast(`Pengaturan berhasil disimpan! Mata Uang: ${currency}, Ambang Batas Peringatan: ${budgetAlertThreshold}%`, 'success')

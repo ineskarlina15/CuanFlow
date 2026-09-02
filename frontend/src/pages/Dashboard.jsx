@@ -21,7 +21,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   const { showToast } = useToast()
 
-  // Redirect Admin to Admin Dashboard automatically
+  // Arahkan Admin ke Dashboard Admin secara otomatis
   if (user?.role === 'ADMIN') {
     return <Navigate to="/admin/dashboard" replace />
   }

@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  // Initialize session from LocalStorage
+  // Inisialisasi sesi dari LocalStorage
   useEffect(() => {
     const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
@@ -26,7 +26,7 @@ export function AuthProvider({ children }) {
         email: emailOrUsername,
         password
       })
-      // Server returns custom structure like { data: { token, userId, name, username, email, role } }
+      // Server mengembalikan struktur kustom seperti { data: { token, userId, name, username, email, role } }
       const authData = response.data
       
       localStorage.setItem('token', authData.token)
@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (name, username, email, password, phone) => {
     try {
-      // Body matches backend's RegisterReq: name, username, email, password, phone
+      // Body sesuai dengan RegisterReq backend: name, username, email, password, phone
       await api.post('/authSvc/api/v1/auth/register', { name, username, email, password, phone })
     } catch (error) {
       throw error
@@ -66,9 +66,9 @@ export function AuthProvider({ children }) {
 
   const forgotPassword = useCallback(async (email) => {
     try {
-      // Body matches ForgotPasswordReq
+      // Body sesuai dengan ForgotPasswordReq
       const response = await api.post('/authSvc/api/v1/auth/forgot-password', { email })
-      return response.data; // Backend returns generated token (temporarily)
+      return response.data; // Backend mengembalikan token yang dibuat (sementara)
     } catch (error) {
       throw error
     }
@@ -76,7 +76,7 @@ export function AuthProvider({ children }) {
 
   const resetPassword = useCallback(async (token, newPassword) => {
     try {
-      // Body matches ResetPasswordReq
+      // Body sesuai dengan ResetPasswordReq
       await api.post('/authSvc/api/v1/auth/reset-password', { token, newPassword })
     } catch (error) {
       throw error

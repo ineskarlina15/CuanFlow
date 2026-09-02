@@ -16,7 +16,7 @@ export default function Transactions() {
   const [availableTags, setAvailableTags] = useState([])
   const [loading, setLoading] = useState(true)
 
-  // Filtering & Pagination State
+  // State Filter & Halaman (Pagination)
   const [keyword, setKeyword] = useState('')
   const [categoryId, setCategoryId] = useState('')
   const [startDate, setStartDate] = useState('')
@@ -45,11 +45,11 @@ export default function Transactions() {
   const [formErrors, setFormErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
-  // Delete Confirmation Modal State
+  // State Modal Konfirmasi Hapus
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [txToDelete, setTxToDelete] = useState(null)
 
-  // Fetch Categories & Transactions
+  // Ambil Kategori & Transaksi
   const fetchCategories = async () => {
     try {
       const res = await api.get('/financeSvc/api/v1/categories')
@@ -155,7 +155,7 @@ export default function Transactions() {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value)
   }
 
-  // Open Add/Edit Modal
+  // Buka Modal Tambah/Edit
   const openModal = (type, tx = null) => {
     if (categories.length === 0 && type === 'add') {
       showToast('Anda harus membuat kategori terlebih dahulu sebelum menambah transaksi.', 'error')
@@ -234,7 +234,7 @@ export default function Transactions() {
           showToast('Anggaran untuk kategori ini belum ada. Silakan buat anggaran terlebih dahulu.', 'error')
         }
       } catch (err) {
-        // Assume ok if endpoint fails or just warn
+        // Anggap berhasil jika endpoint gagal atau hanya tampilkan peringatan
       }
     }
 
@@ -338,7 +338,7 @@ export default function Transactions() {
       `"${(t.description || '').replace(/"/g, '""')}"`
     ])
     
-    // Add summary rows at the bottom
+    // Tambahkan baris ringkasan di bagian bawah
     const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0)
     const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0)
     

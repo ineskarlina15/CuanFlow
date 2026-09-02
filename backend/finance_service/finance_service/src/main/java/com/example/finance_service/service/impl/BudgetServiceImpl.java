@@ -66,7 +66,7 @@ public class BudgetServiceImpl implements BudgetService {
         budget.setMonth(request.getMonth());
         budget.setYear(request.getYear());
 
-        // Set start_date and end_date
+        // Atur start_date dan end_date
         if (request.getStartDate() != null) {
             budget.setStartDate(request.getStartDate());
         } else if (request.getMonth() != null && request.getYear() != null) {
@@ -155,7 +155,7 @@ public class BudgetServiceImpl implements BudgetService {
         budget.setMonth(request.getMonth());
         budget.setYear(request.getYear());
 
-        // Update start_date & end_date
+        // Perbarui start_date & end_date
         if (request.getStartDate() != null) {
             budget.setStartDate(request.getStartDate());
         } else if (request.getMonth() != null && request.getYear() != null) {
