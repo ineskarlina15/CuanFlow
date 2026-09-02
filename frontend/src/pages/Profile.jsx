@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import api from '../services/api'
@@ -37,7 +37,7 @@ export default function Profile() {
   const [loadingProfile, setLoadingProfile] = useState(true)
   const fileInputRef = useRef(null)
 
-  import { useEffect } from 'react'
+
 
   useEffect(() => {
     const fetchProfile = async () => {

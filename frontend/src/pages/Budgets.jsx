@@ -25,7 +25,8 @@ export default function Budgets() {
     categoryId: '',
     amount: '',
     month: month,
-    year: year
+    year: year,
+    description: ''
   })
   const [formErrors, setFormErrors] = useState({})
   const [saving, setSaving] = useState(false)
@@ -85,7 +86,8 @@ export default function Budgets() {
         categoryId: budgetRes.budget.category?.id || '',
         amount: budgetRes.budget.amount || '',
         month: budgetRes.budget.month || month,
-        year: budgetRes.budget.year || year
+        year: budgetRes.budget.year || year,
+        description: budgetRes.budget.description || ''
       })
     } else {
       setSelectedBudget(null)
@@ -93,7 +95,8 @@ export default function Budgets() {
         categoryId: categories[0]?.id || '',
         amount: '',
         month: month,
-        year: year
+        year: year,
+        description: ''
       })
     }
     setIsModalOpen(true)
@@ -133,7 +136,8 @@ export default function Budgets() {
         categoryId: Number(formData.categoryId),
         amount: Number(formData.amount),
         month: Number(formData.month),
-        year: Number(formData.year)
+        year: Number(formData.year),
+        description: formData.description
       }
 
       if (modalType === 'add') {
@@ -291,6 +295,11 @@ export default function Budgets() {
                     <div className="flex flex-col">
                       <span className="text-base font-black text-slate-900">Anggaran {bRes.budget.category?.name}</span>
                       <span className="text-xs text-slate-500 font-semibold mt-0.5">{formatCurrency(bRes.budget.amount)}</span>
+                      {bRes.budget.description && (
+                        <span className="text-[10px] text-slate-400 mt-0.5 italic line-clamp-1">
+                          "{bRes.budget.description}"
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -397,6 +406,17 @@ export default function Budgets() {
               } rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium transition-all`}
             />
             {formErrors.amount && <span className="text-xs text-rose-500 font-semibold">{formErrors.amount}</span>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-700">Deskripsi / Catatan Tambahan (Opsional)</label>
+            <textarea
+              placeholder="Contoh: Anggaran belanja bulanan keluarga..."
+              value={formData.description || ''}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows="2"
+              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium resize-none transition-all"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
