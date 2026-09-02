@@ -2,6 +2,7 @@ package com.example.finance_service.payload.req;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 import com.example.finance_service.entity.PaymentMethod;
 import com.example.finance_service.entity.TransactionType;
@@ -33,4 +34,6 @@ public class TransactionReq {
 
     @NotNull(message = "Metode pembayaran wajib dipilih")
     private PaymentMethod paymentMethod;
+
+    private List<Integer> tagIds;
 }

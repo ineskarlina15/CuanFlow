@@ -5,7 +5,7 @@ import Modal from '../components/Modal'
 import { formatCurrency } from '../utils/currency'
 import { 
   Search, Plus, Filter, ChevronLeft, ChevronRight, Edit2, Trash2, 
-  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Download 
+  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Download, Tag
 } from 'lucide-react'
 
 export default function Transactions() {
@@ -13,6 +13,7 @@ export default function Transactions() {
 
   const [transactions, setTransactions] = useState([])
   const [categories, setCategories] = useState([])
+  const [availableTags, setAvailableTags] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Filtering & Pagination State
@@ -37,7 +38,8 @@ export default function Transactions() {
     categoryId: '',
     transactionDate: new Date().toISOString().split('T')[0],
     paymentMethod: 'CASH',
-    description: ''
+    description: '',
+    tagIds: []
   })
   const [selectedFile, setSelectedFile] = useState(null)
   const [formErrors, setFormErrors] = useState({})
@@ -58,6 +60,19 @@ export default function Transactions() {
       }
     } catch {
       setCategories([])
+    }
+  }
+
+  const fetchTags = async () => {
+    try {
+      const res = await api.get('/financeSvc/api/v1/tags')
+      if (res?.data?.data && Array.isArray(res.data.data)) {
+        setAvailableTags(res.data.data)
+      } else {
+        setAvailableTags([])
+      }
+    } catch {
+      setAvailableTags([])
     }
   }
 
@@ -103,6 +118,7 @@ export default function Transactions() {
 
   useEffect(() => {
     fetchCategories()
+    fetchTags()
 
     const handleSettingsUpdate = () => setCurrencyTick((prev) => prev + 1)
     window.addEventListener('cuanflow_settings_updated', handleSettingsUpdate)
@@ -157,7 +173,8 @@ export default function Transactions() {
         categoryId: tx.categoryId ? String(tx.categoryId) : (categories[0]?.id ? String(categories[0].id) : ''),
         transactionDate: tx.transactionDate || '',
         paymentMethod: tx.paymentMethod || 'CASH',
-        description: tx.description || ''
+        description: tx.description || '',
+        tagIds: tx.tags ? tx.tags.map(t => t.id) : []
       })
     } else {
       setSelectedTx(null)
@@ -171,7 +188,8 @@ export default function Transactions() {
         categoryId: defaultCatId,
         transactionDate: new Date().toISOString().split('T')[0],
         paymentMethod: 'CASH',
-        description: ''
+        description: '',
+        tagIds: []
       })
     }
     setIsModalOpen(true)
@@ -238,7 +256,8 @@ export default function Transactions() {
         categoryId: Number(formData.categoryId),
         transactionDate: formData.transactionDate,
         paymentMethod: formData.paymentMethod,
-        description: formData.description
+        description: formData.description,
+        tagIds: formData.tagIds
       }
 
       const multipart = new FormData()
@@ -486,7 +505,7 @@ export default function Transactions() {
                   <th className="py-4 px-6">Tanggal</th>
                   <th className="py-4 px-6">Deskripsi</th>
                   <th className="py-4 px-6">Tipe</th>
-                  <th className="py-4 px-6">Kategori</th>
+                  <th className="py-4 px-6">Kategori & Tag</th>
                   <th className="py-4 px-6">Nominal</th>
                   <th className="py-4 px-6 text-center">Lampiran</th>
                   <th className="py-4 px-6 text-right">Aksi</th>
@@ -512,9 +531,20 @@ export default function Transactions() {
                       </span>
                     </td>
                     <td className="py-4 px-6">
-                      <span className="px-2.5 py-1 text-xs font-semibold rounded-full border border-slate-200 bg-slate-100 text-slate-700">
-                        {tx.categoryName || 'General'}
-                      </span>
+                      <div className="flex flex-col gap-1.5">
+                        <span className="w-max px-2.5 py-1 text-xs font-semibold rounded-full border border-slate-200 bg-slate-100 text-slate-700">
+                          {tx.categoryName || 'General'}
+                        </span>
+                        {tx.tags && tx.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {tx.tags.map(tag => (
+                              <span key={tag.id} className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-50 text-blue-600 border border-blue-100">
+                                #{tag.name}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td className="py-4 px-6">
                       <span className={`font-black ${tx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
@@ -670,6 +700,44 @@ export default function Transactions() {
                 ))}
               </select>
               {formErrors.categoryId && <span className="text-xs text-rose-500 font-semibold">{formErrors.categoryId}</span>}
+            </div>
+          </div>
+
+          {/* Tags Selection */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-700">Tag (Opsional)</label>
+            <div className="relative">
+              <Tag className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <div className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-10 pr-2 min-h-[46px] flex flex-wrap gap-1.5 items-center">
+                {availableTags.length === 0 ? (
+                  <span className="text-xs text-slate-400 font-medium py-1">Belum ada tag. Buat di menu Tag.</span>
+                ) : (
+                  availableTags.map(tag => {
+                    const isSelected = formData.tagIds.includes(tag.id)
+                    return (
+                      <button
+                        type="button"
+                        key={tag.id}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            tagIds: isSelected 
+                              ? prev.tagIds.filter(id => id !== tag.id)
+                              : [...prev.tagIds, tag.id]
+                          }))
+                        }}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all border cursor-pointer ${
+                          isSelected 
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm' 
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400 hover:text-blue-600'
+                        }`}
+                      >
+                        #{tag.name}
+                      </button>
+                    )
+                  })
+                )}
+              </div>
             </div>
           </div>
 

@@ -77,7 +77,7 @@ public class Transaction {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "transaction_tags",
         joinColumns = @JoinColumn(name = "transaction_id"),

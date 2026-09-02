@@ -24,10 +24,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.example.finance_service.entity.Attachment;
 import com.example.finance_service.entity.Category;
+import com.example.finance_service.entity.Tag;
 import com.example.finance_service.entity.Transaction;
 import com.example.finance_service.payload.req.TransactionReq;
 import com.example.finance_service.repository.AttachmentRepository;
 import com.example.finance_service.repository.CategoryRepository;
+import com.example.finance_service.repository.TagRepository;
 import com.example.finance_service.repository.TransactionRepository;
 import com.example.finance_service.service.TransactionService;
 import com.example.finance_service.utility.FileUtility;
@@ -39,6 +41,9 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private TagRepository tagRepository;
 
     @Autowired
     private AttachmentRepository attachmentRepository;
@@ -58,7 +63,7 @@ public class TransactionServiceImpl implements TransactionService {
         // 2. Simpan Data Transaksi Utama
         Transaction transaction = new Transaction();
         transaction.setUserId(userId);
-        applyTransactionData(transaction, category, request);
+        applyTransactionData(transaction, category, request, userId);
         
         Transaction savedTransaction = transactionRepository.save(transaction);
 
@@ -94,7 +99,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .orElseThrow(() -> new Exception("Kategori tidak ditemukan"));
         validateCategoryType(category, request);
 
-        applyTransactionData(transaction, category, request);
+        applyTransactionData(transaction, category, request, userId);
         Transaction savedTransaction = transactionRepository.save(transaction);
 
         if (file != null && !file.isEmpty()) {
@@ -258,7 +263,7 @@ public class TransactionServiceImpl implements TransactionService {
         return attachmentRepository.findByTransactionId(transaction.getId());
     }
 
-    private void applyTransactionData(Transaction transaction, Category category, TransactionReq request) {
+    private void applyTransactionData(Transaction transaction, Category category, TransactionReq request, Integer userId) {
         transaction.setCategory(category);
         transaction.setType(request.getType());
         transaction.setAmount(request.getAmount());
@@ -266,6 +271,13 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setDescription(request.getDescription());
         transaction.setTransactionDate(request.getTransactionDate());
         transaction.setPaymentMethod(request.getPaymentMethod());
+
+        if (request.getTagIds() != null && !request.getTagIds().isEmpty()) {
+            List<Tag> tags = tagRepository.findByIdInAndUserId(request.getTagIds(), userId);
+            transaction.setTags(tags);
+        } else {
+            transaction.setTags(new java.util.ArrayList<>());
+        }
     }
 
     private void validateCategoryType(Category category, TransactionReq request) throws Exception {

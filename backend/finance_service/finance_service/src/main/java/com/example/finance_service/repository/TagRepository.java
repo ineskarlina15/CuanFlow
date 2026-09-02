@@ -12,4 +12,5 @@ import com.example.finance_service.entity.Tag;
 public interface TagRepository extends JpaRepository<Tag, Integer> {
     List<Tag> findByUserId(Integer userId);
     Optional<Tag> findByIdAndUserId(Integer id, Integer userId);
+    List<Tag> findByIdInAndUserId(List<Integer> ids, Integer userId);
 }
