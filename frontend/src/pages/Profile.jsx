@@ -2,8 +2,7 @@ import { useState, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import api from '../services/api'
-import { User, Mail, Camera, Save, Loader2, Key, Check, ShieldCheck, Upload, Eye, EyeOff, Phone } from 'lucide-react'
-
+import { User, Mail, Camera, Save, Loader2, Key, Check, ShieldCheck, Upload, Eye, EyeOff, Phone, Calendar, MapPin, Briefcase, Users } from 'lucide-react'
 // Predefined Avatars
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
@@ -28,8 +27,46 @@ export default function Profile() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  
+  const [dateOfBirth, setDateOfBirth] = useState('')
+  const [gender, setGender] = useState('')
+  const [address, setAddress] = useState('')
+  const [occupation, setOccupation] = useState('')
+  
   const [saving, setSaving] = useState(false)
+  const [loadingProfile, setLoadingProfile] = useState(true)
   const fileInputRef = useRef(null)
+
+  import { useEffect } from 'react'
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await api.get('/authSvc/api/v1/users/profile', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        const data = res.data?.data
+        if (data) {
+          setName(data.name || '')
+          setPhone(data.phone || '')
+          setAvatarUrl(data.avatarUrl || '')
+          setDateOfBirth(data.dateOfBirth || '')
+          setGender(data.gender || '')
+          setAddress(data.address || '')
+          setOccupation(data.occupation || '')
+        }
+      } catch (error) {
+        // Silently fail if profile can't be loaded, user session might still be valid
+      } finally {
+        setLoadingProfile(false)
+      }
+    }
+    if (token) {
+      fetchProfile()
+    } else {
+      setLoadingProfile(false)
+    }
+  }, [token])
 
   // Handle Photo File Upload
   const handleFileUpload = (e) => {
@@ -119,6 +156,10 @@ export default function Profile() {
           name: name.trim(),
           phone: phone.trim() || undefined,
           avatarUrl: avatarUrl,
+          dateOfBirth: dateOfBirth || undefined,
+          gender: gender || undefined,
+          address: address.trim() || undefined,
+          occupation: occupation.trim() || undefined,
           currentPassword: currentPassword || undefined,
           newPassword: newPassword ? newPassword.trim() : undefined
         },
@@ -285,6 +326,65 @@ export default function Profile() {
                 placeholder="08xxxxxxxxxx"
                 className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Tanggal Lahir</label>
+              <div className="relative">
+                <Calendar className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <input
+                  type="date"
+                  value={dateOfBirth}
+                  onChange={(e) => setDateOfBirth(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Jenis Kelamin</label>
+              <div className="relative">
+                <Users className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all appearance-none"
+                >
+                  <option value="">Pilih Jenis Kelamin</option>
+                  <option value="LAKI_LAKI">Laki-Laki</option>
+                  <option value="PEREMPUAN">Perempuan</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Pekerjaan</label>
+            <div className="relative">
+              <Briefcase className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={occupation}
+                onChange={(e) => setOccupation(e.target.value)}
+                placeholder="Pekerjaan / Profesi Anda"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Alamat Lengkap</label>
+            <div className="relative">
+              <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <textarea
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Alamat domisili Anda saat ini"
+                rows="3"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all resize-none"
+              ></textarea>
             </div>
           </div>
 

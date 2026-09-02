@@ -7,17 +7,7 @@ import { ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2 } from 'lucide-react'
 export default function Categories() {
   const { showToast } = useToast()
 
-  const defaultCategories = [
-    { id: 1, name: 'Salary', type: 'INCOME' },
-    { id: 2, name: 'Food & Beverage', type: 'EXPENSE' },
-    { id: 3, name: 'Transport', type: 'EXPENSE' },
-    { id: 4, name: 'Shopping', type: 'EXPENSE' },
-    { id: 5, name: 'Bills & Utilities', type: 'EXPENSE' },
-    { id: 6, name: 'Investment', type: 'INCOME' },
-    { id: 7, name: 'Others', type: 'EXPENSE' }
-  ]
-
-  const [categories, setCategories] = useState(defaultCategories)
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -36,10 +26,10 @@ export default function Categories() {
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
         setCategories(res.data)
       } else {
-        setCategories(defaultCategories)
+        setCategories([])
       }
     } catch {
-      setCategories(defaultCategories)
+      setCategories([])
     } finally {
       setLoading(false)
     }
