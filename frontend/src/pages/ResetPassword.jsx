@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { KeyRound, Lock, ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import CuanFlowLogo from '../components/CuanFlowLogo'
+import api from '../services/api'
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams()
@@ -37,20 +38,10 @@ export default function ResetPassword() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          token: token,
-          newPassword: newPassword
-        })
+      await api.post('/authSvc/api/v1/auth/reset-password', {
+        token: token,
+        newPassword: newPassword
       })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Gagal mereset password')
-      }
 
       showSuccess('Password berhasil diperbarui! Silakan login dengan password baru Anda.')
       navigate('/login')

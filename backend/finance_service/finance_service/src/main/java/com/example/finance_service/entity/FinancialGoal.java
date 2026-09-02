@@ -41,6 +41,12 @@ public class FinancialGoal {
     @Column(name = "target_date")
     private LocalDate targetDate;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(length = 50)
+    private String status = "ACTIVE";
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

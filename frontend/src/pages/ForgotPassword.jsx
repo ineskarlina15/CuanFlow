@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Mail, ArrowLeft, Send, KeyRound } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import CuanFlowLogo from '../components/CuanFlowLogo'
+import api from '../services/api'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -20,21 +21,11 @@ export default function ForgotPassword() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/forgot-password', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Gagal memproses permintaan reset password')
-      }
+      const res = await api.post('/authSvc/api/v1/auth/forgot-password', { email })
 
       showSuccess('Token reset password berhasil dikirim!')
-      if (data.data) {
-        setSentToken(data.data)
+      if (res.data) {
+        setSentToken(res.data)
       }
     } catch (err) {
       showError(err.message || 'Terjadi kesalahan pada server')

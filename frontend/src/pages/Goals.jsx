@@ -27,7 +27,8 @@ export default function Goals() {
   const [formData, setFormData] = useState({
     name: '',
     targetAmount: '',
-    targetDate: new Date().toISOString().split('T')[0]
+    targetDate: new Date().toISOString().split('T')[0],
+    description: ''
   })
   const [formErrors, setFormErrors] = useState({})
   const [saving, setSaving] = useState(false)
@@ -36,8 +37,8 @@ export default function Goals() {
     setLoading(true)
     try {
       const res = await api.get('/financeSvc/api/v1/goals')
-      if (res?.data?.data) {
-        setGoals(res.data.data)
+      if (res?.data) {
+        setGoals(res.data)
       } else {
         setGoals([])
       }
@@ -60,14 +61,16 @@ export default function Goals() {
       setFormData({
         name: goal.name || '',
         targetAmount: goal.targetAmount || '',
-        targetDate: goal.targetDate || ''
+        targetDate: goal.targetDate || '',
+        description: goal.description || ''
       })
     } else {
       setSelectedGoal(null)
       setFormData({
         name: '',
         targetAmount: '',
-        targetDate: new Date().toISOString().split('T')[0]
+        targetDate: new Date().toISOString().split('T')[0],
+        description: ''
       })
     }
     setIsModalOpen(true)
@@ -106,7 +109,8 @@ export default function Goals() {
       const payload = {
         name: formData.name,
         targetAmount: Number(formData.targetAmount),
-        targetDate: formData.targetDate
+        targetDate: formData.targetDate,
+        description: formData.description
       }
 
       if (modalType === 'add') {
@@ -249,6 +253,7 @@ export default function Goals() {
                       {daysLabel}
                     </span>
                     <h3 className="text-base font-black text-slate-900 mt-1 line-clamp-1">{goal.name}</h3>
+                    {goal.description && <p className="text-[11px] text-slate-500 font-medium line-clamp-2 mt-0.5">{goal.description}</p>}
                   </div>
                   
                   <div className="flex gap-1">
@@ -367,6 +372,16 @@ export default function Goals() {
               />
             </div>
             {formErrors.targetDate && <span className="text-xs text-rose-500 font-semibold">{formErrors.targetDate}</span>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-700">Deskripsi (Opsional)</label>
+            <textarea
+              placeholder="Tambahkan catatan untuk tujuan ini..."
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium transition-all resize-none h-20"
+            />
           </div>
 
           <div className="flex justify-end gap-3 mt-4">

@@ -23,4 +23,8 @@ public class FinancialGoalReq {
 
     @NotNull(message = "Tanggal target tidak boleh kosong")
     private LocalDate targetDate;
+
+    private String description;
+    
+    private String status;
 }

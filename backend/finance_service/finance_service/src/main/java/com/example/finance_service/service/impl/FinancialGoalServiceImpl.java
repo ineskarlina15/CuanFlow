@@ -23,6 +23,8 @@ public class FinancialGoalServiceImpl implements FinancialGoalService {
         goal.setTargetAmount(request.getTargetAmount());
         goal.setCurrentAmount(request.getCurrentAmount() != null ? request.getCurrentAmount() : java.math.BigDecimal.ZERO);
         goal.setTargetDate(request.getTargetDate());
+        goal.setDescription(request.getDescription());
+        goal.setStatus(request.getStatus() != null ? request.getStatus() : "ACTIVE");
 
         return financialGoalRepository.save(goal);
     }
@@ -48,6 +50,10 @@ public class FinancialGoalServiceImpl implements FinancialGoalService {
             goal.setCurrentAmount(request.getCurrentAmount());
         }
         goal.setTargetDate(request.getTargetDate());
+        goal.setDescription(request.getDescription());
+        if (request.getStatus() != null) {
+            goal.setStatus(request.getStatus());
+        }
 
         return financialGoalRepository.save(goal);
     }
