@@ -302,10 +302,12 @@ export default function Profile() {
                 <Key className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
                 <input
                   type={showNewPassword ? 'text' : 'password'}
-                  placeholder="Minimal 6 karakter"
+                  placeholder="Ketik password baru"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-10 text-slate-800 outline-none text-sm font-medium transition-all"
+                  className={`w-full bg-slate-50 border ${
+                    newPassword && newPassword.length < 6 ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
+                  } focus:bg-white rounded-xl py-3 pl-10 pr-10 text-slate-800 outline-none text-sm font-medium transition-all`}
                 />
                 <button
                   type="button"
@@ -315,6 +317,9 @@ export default function Profile() {
                   {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {newPassword && newPassword.length < 6 && (
+                <span className="text-[10px] text-rose-500 font-bold">Password minimal terdiri dari 6 karakter</span>
+              )}
             </div>
           </div>
 

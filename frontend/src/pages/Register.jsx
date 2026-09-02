@@ -38,7 +38,7 @@ export default function Register() {
 
     setLoading(true)
     try {
-      await register(formData)
+      await register(formData.name, formData.username, formData.email, formData.password)
       showToast('Pendaftaran berhasil! Silakan masuk ke akun baru Anda.', 'success')
       navigate('/login')
     } catch (err) {

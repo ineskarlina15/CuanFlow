@@ -19,41 +19,6 @@ export default function Notifications() {
   const [filter, setFilter] = useState('all')
   const [markingAll, setMarkingAll] = useState(false)
 
-  const fallbackNotifications = [
-    {
-      id: 991,
-      title: 'Peringatan Anggaran',
-      message: 'Anggaran makanan telah mencapai 84%. Pertimbangkan untuk mengurangi pengeluaran makanan bulan ini.',
-      type: 'BUDGET_ALERT',
-      isRead: false,
-      createdAt: new Date().toISOString()
-    },
-    {
-      id: 992,
-      title: 'Pengingat Transaksi',
-      message: 'Jangan lupa catat pengeluaran hari ini agar anggaran tetap terkontrol.',
-      type: 'INFO',
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-    },
-    {
-      id: 993,
-      title: 'Anggaran Terlampaui',
-      message: 'Anggaran Transportasi terlampaui sebesar Rp 150.000!',
-      type: 'BUDGET_ALERT',
-      isRead: true,
-      createdAt: new Date(Date.now() - 86400000).toISOString()
-    },
-    {
-      id: 994,
-      title: 'Ringkasan Keuangan',
-      message: 'Laporan ringkasan keuangan bulanan Anda untuk periode ini telah siap.',
-      type: 'SYSTEM',
-      isRead: true,
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString()
-    }
-  ]
-
   const fetchNotifications = async () => {
     setLoading(true)
     try {
@@ -61,11 +26,11 @@ export default function Notifications() {
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
         setNotifications(res.data)
       } else {
-        setNotifications(fallbackNotifications)
+        setNotifications([])
       }
     } catch (err) {
-      console.warn('Failed to load notifications from server, displaying fallback list', err)
-      setNotifications(fallbackNotifications)
+      console.warn('Failed to load notifications from server')
+      setNotifications([])
     } finally {
       setLoading(false)
     }

@@ -41,7 +41,7 @@ public class CategoryServiceImpl implements CategoryService {
         for (Object[] def : defaults) {
             try {
                 String catName = (String) def[0];
-                if (!categoryRepository.existsByNameAndUserId(catName, userId) && !categoryRepository.existsByName(catName)) {
+                if (!categoryRepository.existsByNameAndUserId(catName, userId)) {
                     Category c = new Category();
                     c.setUserId(userId);
                     c.setName(catName);
@@ -60,13 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
             userId = 1;
         }
         List<Category> categories = categoryRepository.findAllActiveCategoriesByUserId(userId);
-        if (categories == null || categories.isEmpty()) {
-            seedDefaultCategories(userId);
-            categories = categoryRepository.findAllActiveCategoriesByUserId(userId);
-        }
-        if (categories == null || categories.isEmpty()) {
-            categories = categoryRepository.findAll();
-        }
+        // Jangan pernah me-return categoryRepository.findAll() karena akan mencampur kategori user lain
         return categories;
     }
 

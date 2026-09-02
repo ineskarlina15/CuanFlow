@@ -26,61 +26,13 @@ export default function Dashboard() {
     return <Navigate to="/admin/dashboard" replace />
   }
   
-  const [summary, setSummary] = useState({ totalIncome: 12000000, totalExpense: 3500000, currentBalance: 8500000 })
-  const [activeBudgetsCount, setActiveBudgetsCount] = useState(5)
+  const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0, currentBalance: 0 })
+  const [activeBudgetsCount, setActiveBudgetsCount] = useState(0)
   const [recentTransactions, setRecentTransactions] = useState([])
   const [analytics, setAnalytics] = useState({ expenseByCategory: [], incomeByCategory: [] })
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('monthly')
-
-  // Wireframe default figures matching Screen 2 of PDF
-  const wireframeSummary = {
-    totalIncome: 12000000,
-    totalExpense: 3500000,
-    currentBalance: 8500000
-  }
-
-  const wireframeCategories = [
-    ['Food', 1200000],
-    ['Transport', 850000],
-    ['Shopping', 650000],
-    ['Bills', 500000],
-    ['Others', 300000]
-  ]
-
-  const wireframeTransactions = [
-    {
-      id: 201,
-      title: 'Gaji',
-      categoryName: 'Salary',
-      transactionDate: '2026-08-10',
-      type: 'INCOME',
-      amount: 5000000
-    },
-    {
-      id: 202,
-      title: 'Makan Siang',
-      categoryName: 'Food',
-      transactionDate: '2026-08-10',
-      type: 'EXPENSE',
-      amount: 25000
-    },
-    {
-      id: 203,
-      title: 'Transport',
-      categoryName: 'Transport',
-      transactionDate: '2026-08-09',
-      type: 'EXPENSE',
-      amount: 50000
-    }
-  ]
-
-  const monthlyBarData = [
-    { month: 'May', income: 10000000, expense: 3000000 },
-    { month: 'Jun', income: 11000000, expense: 4000000 },
-    { month: 'Jul', income: 10500000, expense: 2800000 },
-    { month: 'Aug', income: 12000000, expense: 3500000 }
-  ]
+  const [monthlyBarData, setMonthlyBarData] = useState([])
 
   const fetchData = async () => {
     setLoading(true)
@@ -91,14 +43,7 @@ export default function Dashboard() {
         const inc = Number(summaryRes.data.totalIncome || 0)
         const exp = Number(summaryRes.data.totalExpense || 0)
         const bal = Number(summaryRes.data.currentBalance || 0)
-
-        if (inc === 0 && exp === 0 && bal === 0) {
-          setSummary(wireframeSummary)
-        } else {
-          setSummary({ totalIncome: inc, totalExpense: exp, currentBalance: bal })
-        }
-      } else {
-        setSummary(wireframeSummary)
+        setSummary({ totalIncome: inc, totalExpense: exp, currentBalance: bal })
       }
 
       // 2. Budget Alert count
@@ -106,12 +51,10 @@ export default function Dashboard() {
         const currentDate = new Date()
         const bRes = await api.get(`/financeSvc/api/v1/budgets?month=${currentDate.getMonth() + 1}&year=${currentDate.getFullYear()}`)
         if (bRes?.data && Array.isArray(bRes.data)) {
-          setActiveBudgetsCount(bRes.data.length || 5)
-        } else {
-          setActiveBudgetsCount(5)
+          setActiveBudgetsCount(bRes.data.length || 0)
         }
       } catch {
-        setActiveBudgetsCount(5)
+        setActiveBudgetsCount(0)
       }
 
       // 3. Recent Transactions
@@ -119,7 +62,7 @@ export default function Dashboard() {
       if (transactionsRes?.data?.content && transactionsRes.data.content.length > 0) {
         setRecentTransactions(transactionsRes.data.content)
       } else {
-        setRecentTransactions(wireframeTransactions)
+        setRecentTransactions([])
       }
 
       // 4. Analytics
@@ -131,15 +74,15 @@ export default function Dashboard() {
         })
       } else {
         setAnalytics({
-          expenseByCategory: wireframeCategories,
+          expenseByCategory: [],
           incomeByCategory: []
         })
       }
     } catch {
-      setSummary(wireframeSummary)
-      setActiveBudgetsCount(5)
-      setRecentTransactions(wireframeTransactions)
-      setAnalytics({ expenseByCategory: wireframeCategories, incomeByCategory: [] })
+      setSummary({ totalIncome: 0, totalExpense: 0, currentBalance: 0 })
+      setActiveBudgetsCount(0)
+      setRecentTransactions([])
+      setAnalytics({ expenseByCategory: [], incomeByCategory: [] })
     } finally {
       setLoading(false)
     }

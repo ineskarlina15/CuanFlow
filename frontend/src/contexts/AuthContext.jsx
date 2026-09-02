@@ -35,7 +35,8 @@ export function AuthProvider({ children }) {
         name: authData.name,
         username: authData.username,
         email: authData.email,
-        role: authData.role
+        role: authData.role,
+        avatarUrl: authData.avatarUrl
       }))
 
       setToken(authData.token)
@@ -44,7 +45,8 @@ export function AuthProvider({ children }) {
         name: authData.name,
         username: authData.username,
         email: authData.email,
-        role: authData.role
+        role: authData.role,
+        avatarUrl: authData.avatarUrl
       })
       
       return authData

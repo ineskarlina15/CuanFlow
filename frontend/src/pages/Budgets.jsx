@@ -104,9 +104,18 @@ export default function Budgets() {
     if (!formData.categoryId) errors.categoryId = 'Kategori wajib diisi'
     if (!formData.amount || Number(formData.amount) <= 0) {
       errors.amount = 'Nominal harus lebih dari 0'
-    } else if (Number(formData.amount) > 9999999999999) { // Max 13 digits for DB precision 15,2 constraint
+    } else if (Number(formData.amount) > 9999999999999) { 
       errors.amount = 'Batas maksimal terlampaui (Maks: Rp 9.999.999.999.999)'
     }
+
+    if (modalType === 'add') {
+      const existing = budgets.find(b => String(b.budget.category?.id) === String(formData.categoryId))
+      if (existing) {
+        errors.categoryId = 'Kategori ini sudah memiliki anggaran pada bulan ini'
+        showToast('Kategori ini sudah memiliki anggaran pada bulan yang dipilih.', 'error')
+      }
+    }
+
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -347,6 +356,13 @@ export default function Budgets() {
         title={modalType === 'add' ? 'Konfigurasi Anggaran' : 'Edit Anggaran'}
       >
         <form onSubmit={handleSave} className="flex flex-col gap-4 text-slate-800">
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex flex-col gap-1">
+             <p className="text-xs text-blue-700 font-medium leading-relaxed">
+               Bulan dan Tahun di bawah ini menentukan pada periode mana batas anggaran ini berlaku. Secara bawaan, periode akan mengikuti bulan yang sedang Anda lihat di halaman sebelumnya.
+             </p>
+          </div>
+
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-bold text-slate-700">Kategori</label>
             <select
@@ -382,7 +398,7 @@ export default function Budgets() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Bulan</label>
+              <label className="text-xs font-bold text-slate-700">Bulan (Periode)</label>
               <select
                 value={formData.month}
                 onChange={(e) => setFormData({ ...formData, month: e.target.value })}
@@ -396,7 +412,7 @@ export default function Budgets() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Tahun</label>
+              <label className="text-xs font-bold text-slate-700">Tahun (Periode)</label>
               <input
                 type="number"
                 value={formData.year}

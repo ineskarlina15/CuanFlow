@@ -12,33 +12,16 @@ export default function Reports() {
   const [period, setPeriod] = useState('this_month')
   const [, setLoading] = useState(false)
 
-  // Real backend analytics state with fallback defaults matching PDF Screen 6
   const [summary, setSummary] = useState({
-    totalIncome: 12000000,
-    totalExpense: 3500000,
-    netBalance: 8500000
+    totalIncome: 0,
+    totalExpense: 0,
+    netBalance: 0
   })
 
-  // PDF Wireframe Screen 6 Default Categories (5 categories)
-  const defaultPDFCategories = [
-    { name: 'Food', amount: 1400000, color: '#3B82F6', percent: 40 },
-    { name: 'Transport', amount: 875000, color: '#10B981', percent: 25 },
-    { name: 'Shopping', amount: 700000, color: '#F59E0B', percent: 20 },
-    { name: 'Bills', amount: 350000, color: '#8B5CF6', percent: 10 },
-    { name: 'Others', amount: 175000, color: '#EC4899', percent: 5 }
-  ]
+  const [categoryData, setCategoryData] = useState([])
 
-  // Category Expense breakdown matching PDF legend
-  const [categoryData, setCategoryData] = useState(defaultPDFCategories)
-
-  // Trend line chart data matching PDF Screen 6
-  const trendPoints = [
-    { label: '1 Agt', income: 45, expense: 20 },
-    { label: '8 Agt', income: 68, expense: 35 },
-    { label: '15 Agt', income: 48, expense: 55 },
-    { label: '22 Agt', income: 72, expense: 38 },
-    { label: '29 Agt', income: 65, expense: 50 }
-  ]
+  // Trend line chart currently not backed by API, set to empty for now
+  const [trendPoints, setTrendPoints] = useState([])
 
   const fetchReports = async (overrideStart = null, overrideEnd = null) => {
     setLoading(true)
@@ -59,29 +42,28 @@ export default function Reports() {
         const totalInc = incList.reduce((sum, item) => sum + Number(item[1] || 0), 0)
         const totalExp = expList.reduce((sum, item) => sum + Number(item[1] || 0), 0)
 
-        if (totalInc > 0 || totalExp > 0) {
-          setSummary({
-            totalIncome: totalInc || 12000000,
-            totalExpense: totalExp || 3500000,
-            netBalance: (totalInc || 12000000) - (totalExp || 3500000)
-          })
-        }
+        setSummary({
+          totalIncome: totalInc || 0,
+          totalExpense: totalExp || 0,
+          netBalance: (totalInc || 0) - (totalExp || 0)
+        })
 
-        if (expList.length >= 2) {
+        if (expList.length > 0) {
           const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
           const mapped = expList.map((item, idx) => ({
             name: (item[0] || 'Others').replace('& Beverage', ''),
             amount: Number(item[1] || 0),
             color: colors[idx % colors.length],
-            percent: totalExp > 0 ? Math.round((Number(item[1] || 0) / totalExp) * 100) : 20
+            percent: totalExp > 0 ? Math.round((Number(item[1] || 0) / totalExp) * 100) : 0
           }))
           setCategoryData(mapped)
         } else {
-          setCategoryData(defaultPDFCategories)
+          setCategoryData([])
         }
       }
     } catch {
-      setCategoryData(defaultPDFCategories)
+      setSummary({ totalIncome: 0, totalExpense: 0, netBalance: 0 })
+      setCategoryData([])
     } finally {
       setLoading(false)
     }

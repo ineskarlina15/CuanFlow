@@ -11,20 +11,8 @@ import {
 export default function Transactions() {
   const { showToast } = useToast()
 
-  // Default Categories Fallback
-  const defaultCategories = [
-    { id: 1, name: 'Gaji', type: 'INCOME' },
-    { id: 2, name: 'Makanan & Minuman', type: 'EXPENSE' },
-    { id: 3, name: 'Transportasi', type: 'EXPENSE' },
-    { id: 4, name: 'Belanja', type: 'EXPENSE' },
-    { id: 5, name: 'Tagihan & Utilitas', type: 'EXPENSE' },
-    { id: 6, name: 'Investasi', type: 'INCOME' },
-    { id: 7, name: 'Lainnya', type: 'EXPENSE' }
-  ]
-
-  // State List Data
   const [transactions, setTransactions] = useState([])
-  const [categories, setCategories] = useState(defaultCategories)
+  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
 
   // Filtering & Pagination State
@@ -46,7 +34,7 @@ export default function Transactions() {
     title: '',
     type: 'EXPENSE',
     amount: '',
-    categoryId: '2',
+    categoryId: '',
     transactionDate: new Date().toISOString().split('T')[0],
     paymentMethod: 'CASH',
     description: ''
@@ -66,10 +54,10 @@ export default function Transactions() {
       if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
         setCategories(res.data)
       } else {
-        setCategories(defaultCategories)
+        setCategories([])
       }
     } catch {
-      setCategories(defaultCategories)
+      setCategories([])
     }
   }
 
@@ -153,6 +141,10 @@ export default function Transactions() {
 
   // Open Add/Edit Modal
   const openModal = (type, tx = null) => {
+    if (categories.length === 0 && type === 'add') {
+      showToast('Anda harus membuat kategori terlebih dahulu sebelum menambah transaksi.', 'error')
+      return
+    }
     setModalType(type)
     setSelectedFile(null)
     setFormErrors({})
@@ -191,19 +183,39 @@ export default function Transactions() {
     setFormData(prev => ({ ...prev, type: newType, categoryId: nextCatId }))
   }
 
-  const validateForm = () => {
+  const validateForm = async () => {
     const errors = {}
     if (!formData.title) errors.title = 'Judul wajib diisi'
     if (!formData.amount || Number(formData.amount) <= 0) errors.amount = 'Nominal harus lebih dari 0'
     if (!formData.categoryId) errors.categoryId = 'Kategori wajib dipilih'
     if (!formData.transactionDate) errors.transactionDate = 'Tanggal wajib diisi'
+    
+    // Validasi Anggaran untuk pengeluaran (expense)
+    if (formData.type === 'EXPENSE' && formData.categoryId && formData.transactionDate) {
+      try {
+        const d = new Date(formData.transactionDate)
+        const month = d.getMonth() + 1
+        const year = d.getFullYear()
+        const bRes = await api.get(`/financeSvc/api/v1/budgets?month=${month}&year=${year}`)
+        const budgets = bRes.data || []
+        const hasBudget = budgets.some(b => String(b.categoryId) === String(formData.categoryId))
+        if (!hasBudget) {
+          errors.categoryId = 'Anggaran untuk kategori ini belum ada di bulan/tahun tersebut'
+          showToast('Anggaran untuk kategori ini belum ada. Silakan buat anggaran terlebih dahulu.', 'error')
+        }
+      } catch (err) {
+        // Assume ok if endpoint fails or just warn
+      }
+    }
+
     setFormErrors(errors)
     return Object.keys(errors).length === 0
   }
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!validateForm()) return
+    const isValid = await validateForm()
+    if (!isValid) return
 
     setSaving(true)
     try {
@@ -260,18 +272,21 @@ export default function Transactions() {
     }
   }
 
-  const handleDownloadAttachment = async (txId, filename) => {
+  const handleDownloadAttachment = async (txId) => {
     try {
-      const response = await api.get(`/financeSvc/api/v1/transactions/${txId}/attachments`, {
-        responseType: 'blob'
-      })
-      const blob = new Blob([response], { type: response.type })
-      const link = document.createElement('a')
-      link.href = window.URL.createObjectURL(blob)
-      link.download = filename || 'attachment'
-      link.click()
+      const res = await api.get(`/financeSvc/api/v1/transactions/${txId}/attachments`)
+      if (res?.data?.data && res.data.data.length > 0) {
+        const attachment = res.data.data[0]
+        if (attachment.fileUrl) {
+          window.open(attachment.fileUrl, '_blank')
+        } else {
+          showToast('URL file lampiran tidak valid', 'error')
+        }
+      } else {
+        showToast('Tidak ada lampiran untuk transaksi ini', 'info')
+      }
     } catch {
-      showToast('Lampiran tidak ditemukan atau gagal diunduh', 'error')
+      showToast('Gagal memuat info lampiran', 'error')
     }
   }
 
@@ -280,18 +295,33 @@ export default function Transactions() {
       showToast('Tidak ada transaksi untuk diekspor', 'info')
       return
     }
-    const headers = ['ID', 'Title', 'Type', 'Amount', 'Category', 'Date', 'Payment Method', 'Description']
+    const headers = ['ID', 'Tanggal', 'Judul', 'Tipe', 'Kategori', 'Nominal', 'Metode Pembayaran', 'Deskripsi']
     const rows = transactions.map(t => [
       t.id,
-      `"${t.title.replace(/"/g, '""')}"`,
-      t.type,
-      t.amount,
-      `"${(t.categoryName || '').replace(/"/g, '""')}"`,
       t.transactionDate,
+      `"${t.title.replace(/"/g, '""')}"`,
+      t.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran',
+      `"${(t.categoryName || 'General').replace(/"/g, '""')}"`,
+      t.amount,
       t.paymentMethod,
       `"${(t.description || '').replace(/"/g, '""')}"`
     ])
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n')
+    
+    // Add summary rows at the bottom
+    const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0)
+    const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0)
+    
+    const csvRows = [
+      headers.join(','), 
+      ...rows.map(e => e.join(',')),
+      '',
+      '"Ringkasan"',
+      `"Total Pemasukan",${totalIncome}`,
+      `"Total Pengeluaran",${totalExpense}`,
+      `"Saldo Akhir",${totalIncome - totalExpense}`
+    ]
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n')
     const encodedUri = encodeURI(csvContent)
     const link = document.createElement('a')
     link.setAttribute('href', encodedUri)
@@ -479,18 +509,14 @@ export default function Transactions() {
                         {tx.type === 'INCOME' ? '+' : '-'} {formatCurrency(tx.amount)}
                       </span>
                     </td>
-                    <td className="py-4 px-6 text-center">
-                      {tx.attachmentPath ? (
-                        <button
-                          onClick={() => handleDownloadAttachment(tx.id, tx.attachmentPath.split('/').pop())}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:underline cursor-pointer"
-                        >
-                          <Paperclip className="w-3.5 h-3.5" />
-                          <span>File</span>
-                        </button>
-                      ) : (
-                        <span className="text-slate-300">-</span>
-                      )}
+                    <td className="py-4 px-6 text-center flex justify-center">
+                      <button
+                        onClick={() => handleDownloadAttachment(tx.id)}
+                        className="inline-flex items-center justify-center p-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer group shadow-xs"
+                        title="Lihat Lampiran (jika ada)"
+                      >
+                        <Paperclip className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                      </button>
                     </td>
                     <td className="py-4 px-6 text-right">
                       <div className="flex justify-end gap-2">
