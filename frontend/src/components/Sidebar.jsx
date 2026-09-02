@@ -12,7 +12,8 @@ import {
   Settings, 
   LogOut, 
   X,
-  Home
+  Home,
+  Target
 } from 'lucide-react'
 
 export default function Sidebar({ isOpen, onClose }) {
@@ -23,6 +24,7 @@ export default function Sidebar({ isOpen, onClose }) {
     ...(user?.role === 'ADMIN' ? [{ to: '/admin/users', label: 'Pengguna', icon: User }] : []),
     { to: '/transactions', label: 'Transaksi', icon: Receipt },
     { to: '/budgets', label: 'Anggaran', icon: Landmark },
+    { to: '/goals', label: 'Tujuan Keuangan', icon: Target },
     { to: '/categories', label: 'Kategori', icon: ShieldAlert },
     { to: '/tags', label: 'Tag', icon: Tag },
     { to: '/reports', label: 'Laporan', icon: BarChart3 },

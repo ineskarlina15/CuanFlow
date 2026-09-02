@@ -12,6 +12,7 @@ import Budgets from './pages/Budgets'
 import Categories from './pages/Categories'
 import Tags from './pages/Tags'
 import Reports from './pages/Reports'
+import Goals from './pages/Goals'
 import Profile from './pages/Profile'
 import Notifications from './pages/Notifications'
 import Settings from './pages/Settings'
@@ -133,6 +134,7 @@ function AppRoutes() {
         <Route path="/budgets" element={<Budgets />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/tags" element={<Tags />} />
+        <Route path="/goals" element={<Goals />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/notifications" element={<Notifications />} />
         <Route path="/profile" element={<Profile />} />
