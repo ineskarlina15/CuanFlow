@@ -55,10 +55,10 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const register = useCallback(async (name, username, email, password) => {
+  const register = useCallback(async (name, username, email, password, phone) => {
     try {
-      // Body matches backend's RegisterReq: name, username, email, password, and default role (USER)
-      await api.post('/authSvc/api/v1/auth/register', { name, username, email, password })
+      // Body matches backend's RegisterReq: name, username, email, password, phone
+      await api.post('/authSvc/api/v1/auth/register', { name, username, email, password, phone })
     } catch (error) {
       throw error
     }

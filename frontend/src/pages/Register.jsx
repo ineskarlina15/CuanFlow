@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import CuanFlowLogo from '../components/CuanFlowLogo'
-import { User, Mail, Lock, Loader2, ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { User, Mail, Lock, Loader2, ArrowLeft, Eye, EyeOff, Phone } from 'lucide-react'
 
 export default function Register() {
   const { register } = useAuth()
@@ -25,6 +25,13 @@ export default function Register() {
     if (!formData.name.trim()) newErrors.name = 'Nama Lengkap wajib diisi'
     if (!formData.username.trim()) newErrors.username = 'Username wajib diisi'
     if (!formData.email.trim()) newErrors.email = 'Email wajib diisi'
+    
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Nomor HP wajib diisi'
+    } else if (!/^(08|62)[0-9]{8,13}$/.test(formData.phone)) {
+      newErrors.phone = 'Nomor HP tidak valid (diawali 08/62, 10-15 digit)'
+    }
+
     if (!formData.password || formData.password.length < 6) {
       newErrors.password = 'Kata sandi minimal 6 karakter'
     }
@@ -38,7 +45,7 @@ export default function Register() {
 
     setLoading(true)
     try {
-      await register(formData.name, formData.username, formData.email, formData.password)
+      await register(formData.name, formData.username, formData.email, formData.password, formData.phone)
       showToast('Pendaftaran berhasil! Silakan masuk ke akun baru Anda.', 'success')
       navigate('/login')
     } catch (err) {
@@ -123,6 +130,23 @@ export default function Register() {
               />
             </div>
             {errors.email && <span className="text-xs text-rose-500 font-medium">{errors.email}</span>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-700">Nomor HP</label>
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <input
+                type="tel"
+                placeholder="08xxxxxxxxxx"
+                value={formData.phone}
+                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                className={`w-full bg-slate-50 border ${
+                  errors.phone ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
+                } rounded-xl py-3 pl-10 pr-4 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
+              />
+            </div>
+            {errors.phone && <span className="text-xs text-rose-500 font-medium">{errors.phone}</span>}
           </div>
 
           <div className="flex flex-col gap-1.5">

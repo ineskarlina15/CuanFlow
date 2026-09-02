@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import api from '../services/api'
-import { User, Mail, Camera, Save, Loader2, Key, Check, ShieldCheck, Upload, Eye, EyeOff } from 'lucide-react'
+import { User, Mail, Camera, Save, Loader2, Key, Check, ShieldCheck, Upload, Eye, EyeOff, Phone } from 'lucide-react'
 
 // Predefined Avatars
 const AVATAR_PRESETS = [
@@ -20,6 +20,7 @@ export default function Profile() {
 
   const [name, setName] = useState(user?.name || '')
   const [email] = useState(user?.email || '')
+  const [phone, setPhone] = useState(user?.phone || '')
   const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl || '')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
@@ -86,6 +87,11 @@ export default function Profile() {
       showToast('Nama lengkap tidak boleh kosong', 'error')
       return
     }
+    
+    if (phone && !/^(08|62)[0-9]{8,13}$/.test(phone)) {
+      showToast('Nomor HP tidak valid (diawali 08/62, 10-15 digit)', 'error')
+      return
+    }
 
     // Password Validation
     if (newPassword) {
@@ -111,6 +117,7 @@ export default function Profile() {
         '/authSvc/api/v1/users/profile',
         {
           name: name.trim(),
+          phone: phone.trim() || undefined,
           avatarUrl: avatarUrl,
           currentPassword: currentPassword || undefined,
           newPassword: newPassword ? newPassword.trim() : undefined
@@ -263,6 +270,20 @@ export default function Profile() {
                 disabled
                 value={email}
                 className="w-full bg-slate-100 border border-slate-200 text-slate-500 rounded-xl py-3 pl-10 pr-4 text-sm font-medium cursor-not-allowed"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Nomor HP</label>
+            <div className="relative">
+              <Phone className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="08xxxxxxxxxx"
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
               />
             </div>
           </div>

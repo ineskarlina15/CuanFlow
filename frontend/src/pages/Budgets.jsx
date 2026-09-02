@@ -102,10 +102,13 @@ export default function Budgets() {
   const validate = () => {
     const errors = {}
     if (!formData.categoryId) errors.categoryId = 'Kategori wajib diisi'
-    if (!formData.amount || Number(formData.amount) <= 0) {
-      errors.amount = 'Nominal harus lebih dari 0'
-    } else if (Number(formData.amount) > 9999999999999) { 
-      errors.amount = 'Batas maksimal terlampaui (Maks: Rp 9.999.999.999.999)'
+    
+    if (!formData.amount) {
+      errors.amount = 'Nominal wajib diisi'
+    } else if (Number(formData.amount) < 1000) {
+      errors.amount = 'Nominal minimal Rp 1.000'
+    } else if (Number(formData.amount) > 1000000000) {
+      errors.amount = 'Nominal maksimal Rp 1.000.000.000 (1 Miliar)'
     }
 
     if (modalType === 'add') {

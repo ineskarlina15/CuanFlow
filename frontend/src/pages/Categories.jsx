@@ -62,7 +62,14 @@ export default function Categories() {
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!formData.name.trim()) return
+    if (!formData.name.trim()) {
+      showToast('Nama kategori wajib diisi', 'error')
+      return
+    }
+    if (formData.name.trim().length < 3 || formData.name.trim().length > 30) {
+      showToast('Nama kategori harus antara 3 hingga 30 karakter', 'error')
+      return
+    }
     setSaving(true)
     const payload = {
       name: formData.name.trim(),

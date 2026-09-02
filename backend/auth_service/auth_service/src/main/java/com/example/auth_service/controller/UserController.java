@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import com.example.auth_service.payload.req.UpdateProfileReq;
 import com.example.auth_service.payload.res.ProfileRes;
@@ -34,7 +35,7 @@ public class UserController {
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<?> updateMyProfile(Authentication auth, @RequestBody UpdateProfileReq payload) {
+    public ResponseEntity<?> updateMyProfile(Authentication auth, @Valid @RequestBody UpdateProfileReq payload) {
         try {
             ProfileRes data = userService.updateMyProfile(auth.getName(), payload);
             return message.getData("Profil berhasil diperbarui", data, 200);

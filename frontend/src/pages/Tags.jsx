@@ -33,7 +33,15 @@ export default function Tags() {
 
   const handleAddTag = async (e) => {
     e.preventDefault()
-    if (!newTagName.trim()) return
+    const trimmedName = newTagName.trim()
+    if (!trimmedName) {
+      showToast('Nama tag wajib diisi', 'error')
+      return
+    }
+    if (trimmedName.length < 3 || trimmedName.length > 30) {
+      showToast('Nama tag harus antara 3 hingga 30 karakter', 'error')
+      return
+    }
 
     try {
       const res = await api.post('/financeSvc/api/v1/tags', { name: newTagName.trim() })

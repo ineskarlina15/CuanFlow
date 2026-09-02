@@ -186,9 +186,21 @@ export default function Transactions() {
   const validateForm = async () => {
     const errors = {}
     if (!formData.title) errors.title = 'Judul wajib diisi'
-    if (!formData.amount || Number(formData.amount) <= 0) errors.amount = 'Nominal harus lebih dari 0'
+    
+    if (!formData.amount) {
+      errors.amount = 'Nominal wajib diisi'
+    } else if (Number(formData.amount) < 1000) {
+      errors.amount = 'Nominal minimal Rp 1.000'
+    } else if (Number(formData.amount) > 1000000000) {
+      errors.amount = 'Nominal maksimal Rp 1.000.000.000 (1 Miliar)'
+    }
+
     if (!formData.categoryId) errors.categoryId = 'Kategori wajib dipilih'
     if (!formData.transactionDate) errors.transactionDate = 'Tanggal wajib diisi'
+    
+    if (formData.description && formData.description.length > 100) {
+      errors.description = 'Deskripsi maksimal 100 karakter'
+    }
     
     // Validasi Anggaran untuk pengeluaran (expense)
     if (formData.type === 'EXPENSE' && formData.categoryId && formData.transactionDate) {
@@ -707,8 +719,11 @@ export default function Transactions() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               rows="3"
-              className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium resize-none transition-all"
+              className={`w-full bg-slate-50 border ${
+                formErrors.description ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
+              } rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium resize-none transition-all`}
             />
+            {formErrors.description && <span className="text-xs text-rose-500 font-semibold">{formErrors.description}</span>}
           </div>
 
           {/* File Attachment */}
