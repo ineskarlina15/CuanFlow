@@ -69,7 +69,14 @@ Anda dapat menggunakan akun demo berikut untuk menguji seluruh fitur sistem:
 
 ---
 
-## 🔄 Flowchart & Arsitektur Perancangan Sistem
+## 🔄 Flowchart & Dokumentasi Sistem
+
+Dokumentasi diagram alir (*flowchart*) sistem lengkap tersedia di berkas [**`flowchart/FLOWCHART_SISTEM.md`**](file:///flowchart/FLOWCHART_SISTEM.md), yang mencakup:
+1. **Alur Autentikasi & Keamanan**: Registrasi, Login JWT, Lupa & Reset Password.
+2. **Alur Transaksi Keuangan & Bukti Struk**: CRUD, Upload Gambar/PDF, Multi-Filter, Sorting, dan Soft Delete.
+3. **Alur Pengawasan Anggaran**: Perhitungan rasio pengeluaran riil dan notifikasi overbudget.
+4. **Alur Target Finansial**: Perencanaan tabungan, penambahan saldo bertahap (PATCH progress), hingga status selesai.
+5. **Alur Manajemen Pengguna Khusus Admin**: Proteksi RBAC, pergantian peran (*role*), aktivasi status, dan penghapusan akun.
 
 ```text
 [ User / Web Client (React + Vite) ]
@@ -92,9 +99,21 @@ Anda dapat menggunakan akun demo berikut untuk menguji seluruh fitur sistem:
             ▼
 ┌───────────────────────────────┐
 │     PostgreSQL Database       │
-│  (Users, Budgets, Transactions)
+│ (Users, Budgets, Transactions)│
 └───────────────────────────────┘
 ```
+
+---
+
+## 🗄️ Inisialisasi Database & Data Awal (Seed Data)
+
+Untuk memenuhi ketentuan pengujian akademik minimal **20 data per tabel utama**, telah disediakan berkas SQL DML siap pakai [**`seed_data.sql`**](file:///seed_data.sql).
+
+**Cara Menjalankan Seed Data di DBeaver / pgAdmin:**
+1. Buka DBeaver atau pgAdmin 4 dan hubungkan ke database `db_cuanflow`.
+2. Buka berkas `seed_data.sql`.
+3. Jalankan skrip (*Execute Script* / `Alt + X` atau `F5`).
+4. Seluruh tabel (`users`, `profiles`, `categories`, `tags`, `transactions`, `budgets`, `financial_goals`, `notifications`, `attachments`) akan otomatis terisi dengan 20+ baris data realistis dan sequence identity akan ter-sinkronisasi otomatis.
 
 ---
 
