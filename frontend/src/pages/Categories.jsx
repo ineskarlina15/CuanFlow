@@ -1,14 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
-import { ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2 } from 'lucide-react'
+import { ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2, Search, ArrowDownUp } from 'lucide-react'
 
 export default function Categories() {
   const { showToast } = useToast()
 
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('newest') // newest, oldest, az, za
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('add')
@@ -96,6 +99,33 @@ export default function Categories() {
     }
   }
 
+  const filteredAndSortedCategories = useMemo(() => {
+    let result = [...categories]
+
+    if (searchQuery.trim()) {
+      result = result.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    }
+
+    switch (sortBy) {
+      case 'az':
+        result.sort((a, b) => a.name.localeCompare(b.name))
+        break
+      case 'za':
+        result.sort((a, b) => b.name.localeCompare(a.name))
+        break
+      case 'newest':
+        result.sort((a, b) => b.id - a.id) // Assuming higher ID means newer
+        break
+      case 'oldest':
+        result.sort((a, b) => a.id - b.id)
+        break
+      default:
+        break
+    }
+
+    return result
+  }, [categories, searchQuery, sortBy])
+
   return (
     <div className="flex-grow p-4 sm:p-6 lg:p-8 flex flex-col gap-6 w-full max-w-7xl mx-auto animate-fade-in text-slate-800 font-sans">
       
@@ -117,19 +147,46 @@ export default function Categories() {
         </button>
       </div>
 
+      {/* Kontrol Pencarian dan Pengurutan */}
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Cari kategori..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-sm focus:border-blue-500 outline-none bg-white"
+          />
+        </div>
+        <div className="relative">
+          <ArrowDownUp className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="appearance-none border border-slate-200 rounded-xl py-2 pl-9 pr-8 text-sm focus:border-blue-500 outline-none bg-white cursor-pointer min-w-[160px]"
+          >
+            <option value="newest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+            <option value="az">A - Z</option>
+            <option value="za">Z - A</option>
+          </select>
+        </div>
+      </div>
+
       {/* Categories Grid */}
       {loading ? (
         <div className="flex items-center justify-center min-h-[300px] text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600 mr-2" />
           <span>Memuat kategori...</span>
         </div>
-      ) : categories.length === 0 ? (
+      ) : filteredAndSortedCategories.length === 0 ? (
         <div className="py-16 text-center text-slate-400 text-sm border border-slate-200 rounded-2xl bg-white">
-          Belum ada kategori yang dibuat.
+          Belum ada kategori yang dibuat atau ditemukan.
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {categories.map((cat) => (
+          {filteredAndSortedCategories.map((cat) => (
             <div
               key={cat.id}
               className="p-5 rounded-2xl border border-slate-200 bg-white flex items-center justify-between shadow-xs hover:shadow-md transition-all"

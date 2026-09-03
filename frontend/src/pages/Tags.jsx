@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Tag as TagIcon, Plus, Trash2, Search, ArrowDownUp } from 'lucide-react'
+import { Tag as TagIcon, Plus, Trash2, Search, ArrowDownUp, Edit2, Loader2 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
+import Modal from '../components/Modal'
 import api from '../services/api'
 
 export default function Tags() {
@@ -11,6 +12,12 @@ export default function Tags() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest') // newest, oldest, az, za
 
+  // State Modal Edit Tag
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [tagToEdit, setTagToEdit] = useState(null)
+  const [editTagName, setEditTagName] = useState('')
+  const [saving, setSaving] = useState(false)
+
   useEffect(() => {
     fetchTags()
   }, [])
@@ -19,8 +26,8 @@ export default function Tags() {
     try {
       setLoading(true)
       const res = await api.get('/financeSvc/api/v1/tags')
-      if (res.data?.data) {
-        setTags(res.data.data)
+      if (res?.data) {
+        setTags(res.data)
       } else {
         setTags([])
       }
@@ -45,13 +52,45 @@ export default function Tags() {
 
     try {
       const res = await api.post('/financeSvc/api/v1/tags', { name: newTagName.trim() })
-      if (res.data?.data) {
-        setTags((prev) => [...prev, res.data.data])
+      if (res?.data) {
+        setTags((prev) => [...prev, res.data])
       }
       setNewTagName('')
       showToast('Tag berhasil ditambahkan', 'success')
     } catch (err) {
       showToast(err.response?.data?.message || 'Gagal menambahkan tag', 'error')
+    }
+  }
+
+  const handleOpenEdit = (tag) => {
+    setTagToEdit(tag)
+    setEditTagName(tag.name)
+    setIsEditOpen(true)
+  }
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault()
+    const trimmed = editTagName.trim()
+    if (!trimmed) {
+      showToast('Nama tag wajib diisi', 'error')
+      return
+    }
+    if (trimmed.length < 3 || trimmed.length > 30) {
+      showToast('Nama tag harus antara 3 hingga 30 karakter', 'error')
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await api.put(`/financeSvc/api/v1/tags/${tagToEdit.id}`, { name: trimmed })
+      if (res?.data) {
+        setTags((prev) => prev.map((t) => (t.id === tagToEdit.id ? res.data : t)))
+      }
+      setIsEditOpen(false)
+      showToast('Tag berhasil diperbarui', 'success')
+    } catch (err) {
+      showToast(err.response?.data?.message || 'Gagal memperbarui tag', 'error')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -190,17 +229,63 @@ export default function Tags() {
                 </span>
               </div>
 
-              <button
-                onClick={() => handleDeleteTag(tag.id)}
-                className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                title="Hapus Tag"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleOpenEdit(tag)}
+                  className="text-slate-400 hover:text-blue-600 p-1.5 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
+                  title="Edit Nama Tag"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteTag(tag.id)}
+                  className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                  title="Hapus Tag"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Modal Edit Tag (Sesuai Ketentuan 5 CRUD S1) */}
+      <Modal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Edit Tag Transaksi"
+      >
+        <form onSubmit={handleSaveEdit} className="flex flex-col gap-4 text-slate-800">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-700">Nama Tag</label>
+            <input
+              type="text"
+              value={editTagName}
+              onChange={(e) => setEditTagName(e.target.value)}
+              placeholder="Masukkan nama tag baru..."
+              className="bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl p-3 text-sm outline-none font-semibold transition-all"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsEditOpen(false)}
+              className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md cursor-pointer disabled:opacity-50"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Simpan Perubahan</span>}
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

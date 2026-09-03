@@ -5,7 +5,7 @@ import Modal from '../components/Modal'
 import { formatCurrency } from '../utils/currency'
 import { 
   Search, Plus, Filter, ChevronLeft, ChevronRight, Edit2, Trash2, 
-  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Download, Tag
+  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Download, Tag, Eye, Info
 } from 'lucide-react'
 
 export default function Transactions() {
@@ -19,6 +19,7 @@ export default function Transactions() {
   // State Filter & Halaman (Pagination)
   const [keyword, setKeyword] = useState('')
   const [categoryId, setCategoryId] = useState('')
+  const [typeFilter, setTypeFilter] = useState('')
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [page, setPage] = useState(0)
@@ -45,9 +46,22 @@ export default function Transactions() {
   const [formErrors, setFormErrors] = useState({})
   const [saving, setSaving] = useState(false)
 
+  // State Modal Detail Data
+  const [isDetailOpen, setIsDetailOpen] = useState(false)
+  const [detailTx, setDetailTx] = useState(null)
+
   // State Modal Konfirmasi Hapus
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [txToDelete, setTxToDelete] = useState(null)
+
+  // State Modal Preview Lampiran
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState('')
+
+  const openDetail = (tx) => {
+    setDetailTx(tx)
+    setIsDetailOpen(true)
+  }
 
   // Ambil Kategori & Transaksi
   const fetchCategories = async () => {
@@ -66,8 +80,8 @@ export default function Transactions() {
   const fetchTags = async () => {
     try {
       const res = await api.get('/financeSvc/api/v1/tags')
-      if (res?.data?.data && Array.isArray(res.data.data)) {
-        setAvailableTags(res.data.data)
+      if (res?.data && Array.isArray(res.data)) {
+        setAvailableTags(res.data)
       } else {
         setAvailableTags([])
       }
@@ -81,13 +95,16 @@ export default function Transactions() {
     try {
       const activeKeyword = overrideParams.keyword !== undefined ? overrideParams.keyword : keyword
       const activeCategoryId = overrideParams.categoryId !== undefined ? overrideParams.categoryId : categoryId
+      const activeType = overrideParams.type !== undefined ? overrideParams.type : typeFilter
       const activeStartDate = overrideParams.startDate !== undefined ? overrideParams.startDate : startDate
       const activeEndDate = overrideParams.endDate !== undefined ? overrideParams.endDate : endDate
       const activePage = overrideParams.page !== undefined ? overrideParams.page : page
+      const activeSize = overrideParams.size !== undefined ? overrideParams.size : size
 
-      let url = `/financeSvc/api/v1/transactions?page=${activePage}&size=${size}&sortBy=${sortBy}`
+      let url = `/financeSvc/api/v1/transactions?page=${activePage}&size=${activeSize}&sortBy=${sortBy}`
       if (activeKeyword) url += `&keyword=${encodeURIComponent(activeKeyword)}`
       if (activeCategoryId) url += `&categoryId=${activeCategoryId}`
+      if (activeType) url += `&type=${activeType}`
       if (activeStartDate) url += `&startDate=${activeStartDate}`
       if (activeEndDate) url += `&endDate=${activeEndDate}`
 
@@ -127,7 +144,7 @@ export default function Transactions() {
 
   useEffect(() => {
     fetchTransactions()
-  }, [page, size, categoryId, startDate, endDate, sortBy])
+  }, [page, size, categoryId, typeFilter, startDate, endDate, sortBy])
 
   const handleApplyFilter = () => {
     setPage(0)
@@ -138,10 +155,11 @@ export default function Transactions() {
   const handleResetFilter = () => {
     setKeyword('')
     setCategoryId('')
+    setTypeFilter('')
     setStartDate('')
     setEndDate('')
     setPage(0)
-    fetchTransactions({ keyword: '', categoryId: '', startDate: '', endDate: '', page: 0 })
+    fetchTransactions({ keyword: '', categoryId: '', type: '', startDate: '', endDate: '', page: 0 })
     showToast('Filter Direset', 'info')
   }
 
@@ -228,7 +246,7 @@ export default function Transactions() {
         const year = d.getFullYear()
         const bRes = await api.get(`/financeSvc/api/v1/budgets?month=${month}&year=${year}`)
         const budgets = bRes.data || []
-        const hasBudget = budgets.some(b => String(b.categoryId) === String(formData.categoryId))
+        const hasBudget = budgets.some(b => String(b.budget?.category?.id) === String(formData.categoryId))
         if (!hasBudget) {
           errors.categoryId = 'Anggaran untuk kategori ini belum ada di bulan/tahun tersebut'
           showToast('Anggaran untuk kategori ini belum ada. Silakan buat anggaran terlebih dahulu.', 'error')
@@ -306,10 +324,11 @@ export default function Transactions() {
   const handleDownloadAttachment = async (txId) => {
     try {
       const res = await api.get(`/financeSvc/api/v1/transactions/${txId}/attachments`)
-      if (res?.data?.data && res.data.data.length > 0) {
-        const attachment = res.data.data[0]
+      if (res?.data && res.data.length > 0) {
+        const attachment = res.data[0]
         if (attachment.fileUrl) {
-          window.open(attachment.fileUrl, '_blank')
+          setPreviewUrl(`http://localhost:8024/financeSvc/${attachment.fileUrl}`)
+          setIsPreviewOpen(true)
         } else {
           showToast('URL file lampiran tidak valid', 'error')
         }
@@ -321,46 +340,52 @@ export default function Transactions() {
     }
   }
 
-  const handleExportCSV = () => {
-    if (transactions.length === 0) {
-      showToast('Tidak ada transaksi untuk diekspor', 'info')
-      return
-    }
-    const headers = ['ID', 'Tanggal', 'Judul', 'Tipe', 'Kategori', 'Nominal', 'Metode Pembayaran', 'Deskripsi']
-    const rows = transactions.map(t => [
-      t.id,
-      t.transactionDate,
-      `"${t.title.replace(/"/g, '""')}"`,
-      t.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran',
-      `"${(t.categoryName || 'General').replace(/"/g, '""')}"`,
-      t.amount,
-      t.paymentMethod,
-      `"${(t.description || '').replace(/"/g, '""')}"`
-    ])
-    
-    // Tambahkan baris ringkasan di bagian bawah
-    const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + Number(t.amount), 0)
-    const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + Number(t.amount), 0)
-    
-    const csvRows = [
-      headers.join(','), 
-      ...rows.map(e => e.join(',')),
-      '',
-      '"Ringkasan"',
-      `"Total Pemasukan",${totalIncome}`,
-      `"Total Pengeluaran",${totalExpense}`,
-      `"Saldo Akhir",${totalIncome - totalExpense}`
-    ]
+  const handleExportExcel = async () => {
+    try {
+      showToast('Sedang memproses Excel...', 'info')
+      let url = '/financeSvc/api/v1/reports/export/excel'
+      const params = new URLSearchParams()
+      if (startDate) params.append('startDate', startDate)
+      if (endDate) params.append('endDate', endDate)
+      if (params.toString()) url += `?${params.toString()}`
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n')
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `CuanFlow_Transactions_${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    showToast('Berhasil mengekspor CSV', 'success')
+      const res = await api.get(url, { responseType: 'blob' })
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.setAttribute('download', `CuanFlow_Transactions_${new Date().toISOString().split('T')[0]}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showToast('Berhasil mengekspor Excel', 'success')
+    } catch (error) {
+      showToast('Gagal mengekspor Excel', 'error')
+    }
+  }
+
+  const handleExportPdf = async () => {
+    try {
+      showToast('Sedang memproses PDF...', 'info')
+      let url = '/financeSvc/api/v1/reports/export/pdf'
+      const params = new URLSearchParams()
+      if (startDate) params.append('startDate', startDate)
+      if (endDate) params.append('endDate', endDate)
+      if (params.toString()) url += `?${params.toString()}`
+
+      const res = await api.get(url, { responseType: 'blob' })
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.setAttribute('download', `CuanFlow_Transactions_${new Date().toISOString().split('T')[0]}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showToast('Berhasil mengekspor PDF', 'success')
+    } catch (error) {
+      showToast('Gagal mengekspor PDF', 'error')
+    }
   }
 
   return (
@@ -376,13 +401,22 @@ export default function Transactions() {
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-sm shadow-xs transition-all cursor-pointer"
-          >
-            <Download className="w-4 h-4 text-blue-600" />
-            <span>Ekspor CSV</span>
-          </button>
+          <div className="flex bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-xs">
+            <button
+              onClick={handleExportExcel}
+              className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all border-r border-slate-200 cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-emerald-600" />
+              <span>Excel</span>
+            </button>
+            <button
+              onClick={handleExportPdf}
+              className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-rose-600" />
+              <span>PDF</span>
+            </button>
+          </div>
 
           <button
             onClick={() => openModal('add')}
@@ -422,6 +456,17 @@ export default function Transactions() {
             ))}
           </select>
 
+          {/* Status / Tipe Dropdown (Syarat Wajib Item 6: Filter Status) */}
+          <select
+            value={typeFilter}
+            onChange={(e) => { setTypeFilter(e.target.value); setPage(0); }}
+            className="bg-slate-50 border border-slate-200 rounded-xl py-2 px-3.5 text-slate-700 text-sm font-semibold outline-none cursor-pointer"
+          >
+            <option value="">Status/Tipe: Semua</option>
+            <option value="INCOME">Pemasukan (Income)</option>
+            <option value="EXPENSE">Pengeluaran (Expense)</option>
+          </select>
+
           {/* Sorting Dropdown (Requirement Item 6 PDF) */}
           <select
             value={sortBy}
@@ -454,7 +499,7 @@ export default function Transactions() {
         </div>
 
         <div className="flex items-center gap-2 self-end md:self-auto">
-          {(keyword || categoryId || startDate || endDate) && (
+          {(keyword || categoryId || typeFilter || startDate || endDate) && (
             <button
               onClick={handleResetFilter}
               className="px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-sm font-bold transition-all cursor-pointer"
@@ -476,7 +521,7 @@ export default function Transactions() {
       {/* Active Filter Result Count Indicator */}
       <div className="flex items-center justify-between text-xs font-bold text-slate-500 px-1">
         <span>
-          {(keyword || categoryId || startDate || endDate) ? (
+          {(keyword || categoryId || typeFilter || startDate || endDate) ? (
             <span className="text-blue-600 font-extrabold">
               🔍 Filter Aktif: Menampilkan {transactions.length} data transaksi
             </span>
@@ -563,6 +608,13 @@ export default function Transactions() {
                     <td className="py-4 px-6 text-right">
                       <div className="flex justify-end gap-2">
                         <button
+                          onClick={() => openDetail(tx)}
+                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                          title="Lihat Detail Transaksi"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
                           onClick={() => openModal('edit', tx)}
                           className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                           title="Edit"
@@ -585,14 +637,32 @@ export default function Transactions() {
           </div>
         )}
 
-        {/* Pagination UI */}
+        {/* Pagination UI Interaktif (Sesuai Ketentuan 7 S1) */}
         {!loading && transactions.length > 0 && (
-          <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/50">
-            <span className="text-xs font-bold text-slate-500">
-              Menampilkan halaman <span className="text-slate-700 font-extrabold">{page + 1}</span> dari <span className="text-slate-700 font-extrabold">{totalPages || 1}</span> 
-              <span className="ml-1 text-slate-400 font-medium">({totalElements} Total Data)</span>
-            </span>
-            <div className="flex items-center gap-2 self-end sm:self-auto">
+          <div className="px-6 py-4 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-xs font-bold text-slate-500">
+                Menampilkan halaman <span className="text-slate-700 font-extrabold">{page + 1}</span> dari <span className="text-slate-700 font-extrabold">{totalPages || 1}</span> 
+                <span className="ml-1 text-slate-400 font-medium">({totalElements} Total Data)</span>
+              </span>
+
+              {/* Pilihan Jumlah Data Per Halaman */}
+              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-semibold">
+                <span>Tampilkan:</span>
+                <select
+                  value={size}
+                  onChange={(e) => { setSize(Number(e.target.value)); setPage(0); }}
+                  className="bg-white border border-slate-200 rounded-lg py-1 px-2 text-slate-700 font-bold outline-none cursor-pointer"
+                >
+                  <option value={5}>5 / hal</option>
+                  <option value={10}>10 / hal</option>
+                  <option value={20}>20 / hal</option>
+                  <option value={50}>50 / hal</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 self-end md:self-auto flex-wrap">
               <button
                 onClick={() => setPage((old) => Math.max(0, old - 1))}
                 disabled={page === 0}
@@ -601,6 +671,33 @@ export default function Transactions() {
                 <ChevronLeft className="w-4 h-4" />
                 <span>Sebelumnya</span>
               </button>
+
+              {/* Tombol Nomor Halaman */}
+              {Array.from({ length: totalPages || 1 }, (_, i) => i).map((pageNum) => {
+                if (
+                  pageNum === 0 ||
+                  pageNum === (totalPages - 1) ||
+                  (pageNum >= page - 2 && pageNum <= page + 2)
+                ) {
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setPage(pageNum)}
+                      className={`min-w-[32px] h-8 px-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        page === pageNum
+                          ? 'bg-blue-600 text-white shadow-xs'
+                          : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {pageNum + 1}
+                    </button>
+                  )
+                } else if (pageNum === page - 3 || pageNum === page + 3) {
+                  return <span key={pageNum} className="text-slate-400 text-xs px-1">...</span>
+                }
+                return null
+              })}
+
               <button
                 onClick={() => setPage((old) => (old + 1 < totalPages ? old + 1 : old))}
                 disabled={page >= totalPages - 1}
@@ -849,6 +946,125 @@ export default function Transactions() {
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Modal Preview Lampiran */}
+      <Modal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        title="Pratinjau Lampiran"
+      >
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-full flex justify-center overflow-auto max-h-[60vh] bg-slate-50 rounded-xl p-2 border border-slate-100">
+            {previewUrl.toLowerCase().endsWith('.pdf') ? (
+              <iframe src={previewUrl} className="w-full h-[60vh] rounded-lg" title="PDF Preview" />
+            ) : (
+              <img src={previewUrl} alt="Lampiran" className="max-w-full max-h-[60vh] object-contain rounded-lg shadow-sm" />
+            )}
+          </div>
+          <div className="w-full flex justify-end gap-3 mt-2">
+            <button
+              onClick={() => setIsPreviewOpen(false)}
+              className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all cursor-pointer"
+            >
+              Tutup
+            </button>
+            <a
+              href={previewUrl}
+              download
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-md transition-all cursor-pointer"
+            >
+              Unduh File
+            </a>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal Detail Data Transaksi (Sesuai Ketentuan 5 S1) */}
+      <Modal
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+        title="Detail Data Transaksi"
+      >
+        {detailTx && (
+          <div className="flex flex-col gap-4 text-slate-800 text-sm">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex flex-col">
+                <span className="text-xs text-slate-400 font-semibold">Judul Transaksi</span>
+                <span className="text-base font-black text-slate-900">{detailTx.title}</span>
+              </div>
+              <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
+                detailTx.type === 'INCOME' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+              }`}>
+                {detailTx.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold">Nominal</span>
+                <span className={`text-lg font-black ${detailTx.type === 'INCOME' ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {detailTx.type === 'INCOME' ? '+' : '-'} {formatCurrency(detailTx.amount)}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold">Tanggal Transaksi</span>
+                <span className="font-bold text-slate-700">
+                  {new Date(detailTx.transactionDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold">Kategori</span>
+                <span className="font-bold text-slate-700">{detailTx.categoryName || 'General'}</span>
+              </div>
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold">Metode Pembayaran</span>
+                <span className="font-bold text-slate-700">{detailTx.paymentMethod || 'Tunai (CASH)'}</span>
+              </div>
+            </div>
+
+            {detailTx.tags && detailTx.tags.length > 0 && (
+              <div>
+                <span className="text-xs text-slate-400 block font-semibold mb-1.5">Tag Terkait</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {detailTx.tags.map(t => (
+                    <span key={t.id} className="px-2.5 py-0.5 text-xs font-bold rounded-md bg-blue-50 text-blue-600 border border-blue-100">
+                      #{t.name}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div>
+              <span className="text-xs text-slate-400 block font-semibold mb-1">Catatan / Deskripsi</span>
+              <p className="text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs leading-relaxed">
+                {detailTx.description || 'Tidak ada catatan tambahan untuk transaksi ini.'}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => handleDownloadAttachment(detailTx.id)}
+                className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+              >
+                <Paperclip className="w-3.5 h-3.5" />
+                <span>Download / Cek Lampiran Struk</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsDetailOpen(false)}
+                className="px-5 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer border border-slate-200"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </div>
   )

@@ -50,8 +50,13 @@ export function ToastProvider({ children }) {
     }
   }
 
+  const showSuccess = useCallback((msg, duration) => showToast(msg, 'success', duration), [showToast])
+  const showError = useCallback((msg, duration) => showToast(msg, 'error', duration), [showToast])
+  const showWarning = useCallback((msg, duration) => showToast(msg, 'warning', duration), [showToast])
+  const showInfo = useCallback((msg, duration) => showToast(msg, 'info', duration), [showToast])
+
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={{ showToast, showSuccess, showError, showWarning, showInfo }}>
       {children}
       
       {/* Toast Portal/Container */}

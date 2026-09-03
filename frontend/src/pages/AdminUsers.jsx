@@ -40,8 +40,10 @@ export default function AdminUsers() {
           name: u.name || u.username || 'User',
           email: u.email || 'user@cuanflow.id',
           role: u.role || 'USER',
-          status: 'Aktif',
-          registered: '18 Agt 2024'
+          status: u.isActive !== false ? 'Aktif' : 'Nonaktif',
+          registered: u.createdAt 
+            ? new Date(u.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) 
+            : '18 Agt 2024'
         }))
         setUsers(mapped)
       }
@@ -62,21 +64,31 @@ export default function AdminUsers() {
     setIsEditOpen(true)
   }
 
-  const saveRoleUpdate = () => {
+  const saveRoleUpdate = async () => {
     if (!selectedUser) return
-    setUsers((prev) =>
-      prev.map((u) => (u.id === selectedUser.id ? { ...u, role: newRole } : u))
-    )
-    setIsEditOpen(false)
-    showToast(`Peran pengguna diperbarui menjadi ${newRole}`, 'success')
+    try {
+      await api.put(`/authSvc/api/v1/users/${selectedUser.id}/role`, { role: newRole })
+      setUsers((prev) =>
+        prev.map((u) => (u.id === selectedUser.id ? { ...u, role: newRole } : u))
+      )
+      setIsEditOpen(false)
+      showToast(`Peran pengguna berhasil diperbarui menjadi ${newRole}`, 'success')
+    } catch (err) {
+      showToast(err.message || 'Gagal mengubah peran pengguna', 'error')
+    }
   }
 
-  const toggleStatus = (user) => {
-    const nextStatus = user.status === 'Aktif' ? 'Nonaktif' : 'Aktif'
-    setUsers((prev) =>
-      prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u))
-    )
-    showToast(`Status pengguna diperbarui menjadi ${nextStatus}`, 'info')
+  const toggleStatus = async (user) => {
+    try {
+      await api.patch(`/authSvc/api/v1/users/${user.id}/status`)
+      const nextStatus = user.status === 'Aktif' ? 'Nonaktif' : 'Aktif'
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, status: nextStatus } : u))
+      )
+      showToast(`Status akun pengguna berhasil diperbarui menjadi ${nextStatus}`, 'info')
+    } catch (err) {
+      showToast(err.message || 'Gagal memperbarui status pengguna', 'error')
+    }
   }
 
   const confirmDelete = (user) => {
@@ -84,11 +96,16 @@ export default function AdminUsers() {
     setIsDeleteOpen(true)
   }
 
-  const executeDelete = () => {
+  const executeDelete = async () => {
     if (!userToDelete) return
-    setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id))
-    setIsDeleteOpen(false)
-    showToast('Akun pengguna berhasil dihapus', 'success')
+    try {
+      await api.delete(`/authSvc/api/v1/users/${userToDelete.id}`)
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id))
+      setIsDeleteOpen(false)
+      showToast('Akun pengguna berhasil dihapus dari database', 'success')
+    } catch (err) {
+      showToast(err.message || 'Gagal menghapus akun pengguna', 'error')
+    }
   }
 
   const filteredUsers = users.filter(
@@ -169,7 +186,7 @@ export default function AdminUsers() {
                       <button
                         onClick={() => toggleStatus(u)}
                         className={`px-2.5 py-0.5 rounded-full text-xs font-black cursor-pointer transition-all border ${
-                          u.status === 'Active'
+                          (u.status === 'Aktif' || u.status === 'Active')
                             ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
                             : 'bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100'
                         }`}

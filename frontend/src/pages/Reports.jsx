@@ -86,26 +86,52 @@ export default function Reports() {
     return () => window.removeEventListener('cuanflow_settings_updated', handleSettingsUpdate)
   }, [])
 
-  const handleExportCSV = () => {
-    const rows = [
-      ['Judul Laporan', '6. LAPORAN'],
-      ['Periode', period],
-      ['Total Pemasukan', summary.totalIncome],
-      ['Total Pengeluaran', summary.totalExpense],
-      ['Saldo Bersih', summary.netBalance],
-      [],
-      ['Rincian Kategori'],
-      ...categoryData.map((item) => [item.name, item.amount, `${item.percent}%`])
-    ]
-    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map((e) => e.join(',')).join('\n')
-    const encodedUri = encodeURI(csvContent)
-    const link = document.createElement('a')
-    link.setAttribute('href', encodedUri)
-    link.setAttribute('download', `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    showToast('Laporan keuangan diekspor ke CSV', 'success')
+  const handleExportExcel = async () => {
+    try {
+      showToast('Sedang memproses Excel...', 'info')
+      let url = '/financeSvc/api/v1/reports/export/excel'
+      const params = new URLSearchParams()
+      if (startDate) params.append('startDate', startDate)
+      if (endDate) params.append('endDate', endDate)
+      if (params.toString()) url += `?${params.toString()}`
+
+      const res = await api.get(url, { responseType: 'blob' })
+      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.setAttribute('download', `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showToast('Berhasil mengekspor Laporan ke Excel', 'success')
+    } catch (error) {
+      showToast('Gagal mengekspor Laporan ke Excel', 'error')
+    }
+  }
+
+  const handleExportPdf = async () => {
+    try {
+      showToast('Sedang memproses PDF...', 'info')
+      let url = '/financeSvc/api/v1/reports/export/pdf'
+      const params = new URLSearchParams()
+      if (startDate) params.append('startDate', startDate)
+      if (endDate) params.append('endDate', endDate)
+      if (params.toString()) url += `?${params.toString()}`
+
+      const res = await api.get(url, { responseType: 'blob' })
+      const blob = new Blob([res.data], { type: 'application/pdf' })
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.setAttribute('download', `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      showToast('Berhasil mengekspor Laporan ke PDF', 'success')
+    } catch (error) {
+      showToast('Gagal mengekspor Laporan ke PDF', 'error')
+    }
   }
 
   // SVG Solid Pie Chart Generator matching PDF Screen 6 EXACTLY
@@ -176,13 +202,22 @@ export default function Reports() {
           <p className="text-xs text-slate-400 mt-1">Analisis keuangan, tren garis, dan rincian pai pengeluaran</p>
         </div>
 
-        <button
-          onClick={handleExportCSV}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all shadow-md shadow-blue-600/20 active:scale-[0.98] cursor-pointer self-start sm:self-auto"
-        >
-          <Download className="w-4 h-4" />
-          <span>Ekspor Laporan CSV</span>
-        </button>
+        <div className="flex bg-blue-600 border border-blue-600 rounded-xl overflow-hidden shadow-md shadow-blue-600/20 self-start sm:self-auto">
+          <button
+            onClick={handleExportExcel}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all border-r border-blue-700 cursor-pointer"
+          >
+            <Download className="w-4 h-4 text-emerald-300" />
+            <span>Ekspor Excel</span>
+          </button>
+          <button
+            onClick={handleExportPdf}
+            className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm transition-all cursor-pointer"
+          >
+            <Download className="w-4 h-4 text-rose-300" />
+            <span>Ekspor PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Container Card matching Screen 6 PDF */}

@@ -78,11 +78,33 @@ export default function Dashboard() {
           incomeByCategory: []
         })
       }
+
+      // 5. Monthly Bar Data
+      const year = new Date().getFullYear()
+      const allTxRes = await api.get(`/financeSvc/api/v1/transactions?size=1000&startDate=${year}-01-01&endDate=${year}-12-31`)
+      const transactions = allTxRes?.data?.content || []
+      
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+      const monthlyData = monthNames.map(m => ({ month: m, income: 0, expense: 0 }))
+      
+      transactions.forEach(tx => {
+        const txDate = new Date(tx.transactionDate)
+        const monthIndex = txDate.getMonth()
+        if (tx.type === 'INCOME') {
+          monthlyData[monthIndex].income += Number(tx.amount || 0)
+        } else {
+          monthlyData[monthIndex].expense += Number(tx.amount || 0)
+        }
+      })
+      
+      setMonthlyBarData(monthlyData)
+
     } catch {
       setSummary({ totalIncome: 0, totalExpense: 0, currentBalance: 0 })
       setActiveBudgetsCount(0)
       setRecentTransactions([])
       setAnalytics({ expenseByCategory: [], incomeByCategory: [] })
+      setMonthlyBarData([])
     } finally {
       setLoading(false)
     }
@@ -235,34 +257,35 @@ export default function Dashboard() {
           </div>
 
           {/* Chart Canvas with Y-axis gridlines matching Wireframe */}
-          <div className="relative h-60 w-full pt-4 pb-6 flex items-end">
+          <div className="relative h-60 w-full pt-4 pb-6 flex items-end overflow-x-auto overflow-y-hidden">
             {/* Y-Axis Ticks & Dashed Gridlines */}
-            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 text-[10px] text-slate-400 font-semibold">
-              <div className="border-b border-dashed border-slate-200 flex justify-between items-center w-full"><span>15M</span></div>
-              <div className="border-b border-dashed border-slate-200 flex justify-between items-center w-full"><span>10M</span></div>
-              <div className="border-b border-dashed border-slate-200 flex justify-between items-center w-full"><span>5M</span></div>
+            <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-6 text-[10px] text-slate-400 font-semibold min-w-[500px]">
+              <div className="border-b border-dashed border-slate-200 flex justify-between items-center w-full"><span>Maks</span></div>
+              <div className="border-b border-dashed border-slate-200 flex justify-between items-center w-full"><span>Tinggi</span></div>
+              <div className="border-b border-dashed border-slate-200 flex justify-between items-center w-full"><span>Rendah</span></div>
               <div className="border-b border-slate-200 flex justify-between items-center w-full"><span>0</span></div>
             </div>
 
             {/* Monthly Bar Columns */}
-            <div className="relative z-10 w-full h-full flex items-end justify-around gap-2 sm:gap-6 pl-8 pr-2">
+            <div className="relative z-10 w-full h-full flex items-end justify-between gap-1 sm:gap-2 pl-8 pr-2 min-w-[500px]">
               {monthlyBarData.map((d, idx) => {
-                const maxVal = 15000000
+                const globalMax = Math.max(1000, ...monthlyBarData.map(m => Math.max(m.income, m.expense)))
+                const maxVal = globalMax * 1.1 // Add 10% headroom
                 const incHeight = Math.min(100, (d.income / maxVal) * 100)
                 const expHeight = Math.min(100, (d.expense / maxVal) * 100)
 
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                    <div className="w-full flex justify-center items-end gap-1.5 sm:gap-2 h-full">
+                    <div className="w-full flex justify-center items-end gap-1 h-full">
                       {/* Income Bar */}
                       <div 
-                        className="w-4 sm:w-6 bg-emerald-500 hover:bg-emerald-600 rounded-t-md transition-all duration-500 shadow-xs group-hover:scale-y-105 origin-bottom cursor-pointer"
+                        className="w-3 sm:w-4 bg-emerald-500 hover:bg-emerald-600 rounded-t-sm transition-all duration-500 shadow-xs group-hover:scale-y-105 origin-bottom cursor-pointer"
                         style={{ height: `${incHeight}%` }}
                         title={`Income: ${formatCurrency(d.income)}`}
                       />
                       {/* Expense Bar */}
                       <div 
-                        className="w-4 sm:w-6 bg-rose-500 hover:bg-rose-600 rounded-t-md transition-all duration-500 shadow-xs group-hover:scale-y-105 origin-bottom cursor-pointer"
+                        className="w-3 sm:w-4 bg-rose-500 hover:bg-rose-600 rounded-t-sm transition-all duration-500 shadow-xs group-hover:scale-y-105 origin-bottom cursor-pointer"
                         style={{ height: `${expHeight}%` }}
                         title={`Expense: ${formatCurrency(d.expense)}`}
                       />

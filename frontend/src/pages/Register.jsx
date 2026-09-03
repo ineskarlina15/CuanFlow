@@ -14,34 +14,68 @@ export default function Register() {
     name: '',
     username: '',
     email: '',
-    password: ''
+    phone: '',
+    password: '',
+    confirmPassword: ''
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
-  const validate = () => {
-    const newErrors = {}
-    if (!formData.name.trim()) newErrors.name = 'Nama Lengkap wajib diisi'
-    if (!formData.username.trim()) newErrors.username = 'Username wajib diisi'
-    if (!formData.email.trim()) newErrors.email = 'Email wajib diisi'
-    
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Nomor HP wajib diisi'
-    } else if (!/^(08|62)[0-9]{8,13}$/.test(formData.phone)) {
-      newErrors.phone = 'Nomor HP tidak valid (diawali 08/62, 10-15 digit)'
+  const validateField = (field, value, currentForm) => {
+    let error = ''
+    if (field === 'name') {
+      if (!value.trim()) error = 'Nama Lengkap wajib diisi'
+      else if (value.trim().length < 3) error = 'Nama minimal 3 karakter'
+      else if (value.trim().length > 50) error = 'Nama maksimal 50 karakter'
+    } else if (field === 'username') {
+      if (!value.trim()) error = 'Username wajib diisi'
+      else if (value.trim().length < 3) error = 'Username minimal 3 karakter'
+      else if (value.trim().length > 30) error = 'Username maksimal 30 karakter'
+      else if (!/^[a-zA-Z0-9_]+$/.test(value.trim())) error = 'Username hanya boleh huruf, angka, dan underscore'
+    } else if (field === 'email') {
+      if (!value.trim()) error = 'Alamat email wajib diisi'
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) error = 'Format email tidak valid (contoh: user@mail.com)'
+    } else if (field === 'phone') {
+      if (!value.trim()) error = 'Nomor HP wajib diisi'
+      else if (!/^(08|62|\+62)[0-9]{8,13}$/.test(value.trim())) error = 'Nomor HP tidak valid (diawali 08/62, 10-15 digit)'
+    } else if (field === 'password') {
+      if (!value) error = 'Kata sandi wajib diisi'
+      else if (value.length < 6) error = 'Kata sandi minimal 6 karakter'
+      else if (value.length > 50) error = 'Kata sandi maksimal 50 karakter'
+      if (currentForm.confirmPassword && value !== currentForm.confirmPassword) {
+        setErrors(prev => ({ ...prev, confirmPassword: 'Konfirmasi kata sandi tidak cocok' }))
+      } else if (currentForm.confirmPassword && value === currentForm.confirmPassword) {
+        setErrors(prev => { const n = { ...prev }; delete n.confirmPassword; return n })
+      }
+    } else if (field === 'confirmPassword') {
+      if (!value) error = 'Konfirmasi kata sandi wajib diisi'
+      else if (value !== currentForm.password) error = 'Konfirmasi kata sandi tidak cocok'
     }
+    return error
+  }
 
-    if (!formData.password || formData.password.length < 6) {
-      newErrors.password = 'Kata sandi minimal 6 karakter'
-    }
+  const handleChange = (field, value) => {
+    const nextForm = { ...formData, [field]: value }
+    setFormData(nextForm)
+    const err = validateField(field, value, nextForm)
+    setErrors(prev => ({ ...prev, [field]: err }))
+  }
+
+  const validateAll = () => {
+    const newErrors = {}
+    Object.keys(formData).forEach(key => {
+      const err = validateField(key, formData[key], formData)
+      if (err) newErrors[key] = err
+    })
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validateAll()) return
 
     setLoading(true)
     try {
@@ -65,7 +99,7 @@ export default function Register() {
         <ArrowLeft className="w-4 h-4 text-blue-600" />
         <span>Kembali ke Homepage</span>
       </Link>
-      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-10 flex flex-col items-center gap-6">
+      <div className="w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-10 flex flex-col items-center gap-6 my-8">
         
         {/* CuanFlow Logo */}
         <div className="flex flex-col items-center gap-2 mb-2">
@@ -92,7 +126,7 @@ export default function Register() {
                 type="text"
                 placeholder="Masukkan Nama Lengkap"
                 value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => handleChange('name', e.target.value)}
                 className={`w-full bg-slate-50 border ${
                   errors.name ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 pl-10 pr-4 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
@@ -107,7 +141,7 @@ export default function Register() {
               type="text"
               placeholder="masukkan_username"
               value={formData.username}
-              onChange={(e) => setFormData((prev) => ({ ...prev, username: e.target.value }))}
+              onChange={(e) => handleChange('username', e.target.value)}
               className={`w-full bg-slate-50 border ${
                 errors.username ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
               } rounded-xl py-3 px-4 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
@@ -123,7 +157,7 @@ export default function Register() {
                 type="email"
                 placeholder="email@example.com"
                 value={formData.email}
-                onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => handleChange('email', e.target.value)}
                 className={`w-full bg-slate-50 border ${
                   errors.email ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 pl-10 pr-4 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
@@ -140,7 +174,7 @@ export default function Register() {
                 type="tel"
                 placeholder="08xxxxxxxxxx"
                 value={formData.phone}
-                onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) => handleChange('phone', e.target.value)}
                 className={`w-full bg-slate-50 border ${
                   errors.phone ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 pl-10 pr-4 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
@@ -157,7 +191,7 @@ export default function Register() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                onChange={(e) => handleChange('password', e.target.value)}
                 className={`w-full bg-slate-50 border ${
                   errors.password ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 pl-10 pr-10 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
@@ -171,6 +205,30 @@ export default function Register() {
               </button>
             </div>
             {errors.password && <span className="text-xs text-rose-500 font-medium">{errors.password}</span>}
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-bold text-slate-700">Konfirmasi Kata Sandi</label>
+            <div className="relative">
+              <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                className={`w-full bg-slate-50 border ${
+                  errors.confirmPassword ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
+                } rounded-xl py-3 pl-10 pr-10 text-slate-800 placeholder-slate-400 outline-none text-sm transition-all`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 cursor-pointer focus:outline-none"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            {errors.confirmPassword && <span className="text-xs text-rose-500 font-medium">{errors.confirmPassword}</span>}
           </div>
 
           <button
