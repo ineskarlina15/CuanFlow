@@ -37,4 +37,36 @@ public class ReportController {
             return message.badReq(e.getMessage(), 500);
         }
     }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportExcel(
+            @RequestAttribute("userId") Integer userId,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            byte[] data = transactionService.exportTransactionsReport(userId, startDate, endDate);
+            return org.springframework.http.ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Laporan_CuanFlow.xlsx")
+                    .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(data);
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportPdf(
+            @RequestAttribute("userId") Integer userId,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            byte[] data = transactionService.exportTransactionsPdf(userId, startDate, endDate);
+            return org.springframework.http.ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Laporan_CuanFlow.pdf")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                    .body(data);
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.badRequest().build();
+        }
+    }
 }

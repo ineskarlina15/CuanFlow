@@ -22,4 +22,6 @@ public class ProfileRes {
     private String gender;
     private String address;
     private String occupation;
+    private Boolean isActive;
+    private java.time.LocalDateTime createdAt;
 }

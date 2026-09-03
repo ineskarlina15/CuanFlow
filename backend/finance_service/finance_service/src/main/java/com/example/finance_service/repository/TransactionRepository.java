@@ -36,12 +36,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
            "AND t.deletedAt IS NULL " +
            "AND (CAST(:keyword AS string) IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) " +
            "AND (CAST(:categoryId AS integer) IS NULL OR t.category.id = :categoryId) " +
+           "AND (CAST(:type AS string) IS NULL OR CAST(t.type AS string) = :type) " +
            "AND (CAST(:startDate AS date) IS NULL OR t.transactionDate >= :startDate) " +
            "AND (CAST(:endDate AS date) IS NULL OR t.transactionDate <= :endDate)")
     Page<Transaction> findFilteredTransactions(
             @Param("userId") Integer userId,
             @Param("keyword") String keyword,
             @Param("categoryId") Integer categoryId,
+            @Param("type") String type,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             Pageable pageable);

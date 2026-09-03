@@ -51,4 +51,12 @@ public class Message {
         res.put("status", status);
         return ResponseEntity.status(status).body(res);
     }
+
+    public ResponseEntity<?> validationError(String message, Object errors, int status) {
+        Map<String, Object> res = new HashMap<>();
+        res.put("message", message);
+        res.put("errors", errors);
+        res.put("status", status);
+        return ResponseEntity.status(status).body(res);
+    }
 }

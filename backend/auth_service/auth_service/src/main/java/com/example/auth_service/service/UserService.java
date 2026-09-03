@@ -8,4 +8,7 @@ public interface UserService {
     ProfileRes getMyProfile(String email) throws Exception;
     ProfileRes updateMyProfile(String email, UpdateProfileReq request) throws Exception;
     List<ProfileRes> getAllUsers();
+    ProfileRes updateUserRole(Integer targetUserId, String role) throws Exception;
+    ProfileRes toggleUserStatus(Integer targetUserId) throws Exception;
+    void deleteUser(Integer targetUserId) throws Exception;
 }

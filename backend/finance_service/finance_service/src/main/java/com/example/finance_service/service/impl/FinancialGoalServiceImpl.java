@@ -59,6 +59,18 @@ public class FinancialGoalServiceImpl implements FinancialGoalService {
     }
 
     @Override
+    public FinancialGoal updateGoalProgress(Integer userId, Integer id, java.math.BigDecimal amount) throws Exception {
+        FinancialGoal goal = getGoalById(userId, id);
+        java.math.BigDecimal current = goal.getCurrentAmount() != null ? goal.getCurrentAmount() : java.math.BigDecimal.ZERO;
+        java.math.BigDecimal updated = current.add(amount != null ? amount : java.math.BigDecimal.ZERO);
+        goal.setCurrentAmount(updated);
+        if (goal.getTargetAmount() != null && updated.compareTo(goal.getTargetAmount()) >= 0) {
+            goal.setStatus("COMPLETED");
+        }
+        return financialGoalRepository.save(goal);
+    }
+
+    @Override
     public void deleteGoal(Integer userId, Integer id) throws Exception {
         FinancialGoal goal = getGoalById(userId, id);
         financialGoalRepository.delete(goal);

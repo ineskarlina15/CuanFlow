@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -45,6 +46,18 @@ public class NotificationController {
         try {
             notificationService.markAsRead(userId, id);
             return message.success("Notifikasi ditandai sudah dibaca", 200);
+        } catch (Exception e) {
+            return message.badReq(e.getMessage(), 400);
+        }
+    }
+
+    @PatchMapping("/{id}/read")
+    public ResponseEntity<?> patchMarkAsRead(
+            @RequestAttribute("userId") Integer userId,
+            @PathVariable Integer id) {
+        try {
+            notificationService.markAsRead(userId, id);
+            return message.success("Notifikasi ditandai sudah dibaca (PATCH)", 200);
         } catch (Exception e) {
             return message.badReq(e.getMessage(), 400);
         }

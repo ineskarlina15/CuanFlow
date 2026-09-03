@@ -19,12 +19,15 @@ public interface TransactionService {
 
     Transaction updateTransaction(Integer userId, Integer transactionId, TransactionReq request, MultipartFile file) throws Exception;
 
+    Transaction patchTransaction(Integer userId, Integer transactionId, Map<String, Object> updates) throws Exception;
+
     void deleteTransaction(Integer userId, Integer transactionId) throws Exception;
 
     byte[] exportTransactionsReport(Integer userId, LocalDate startDate, LocalDate endDate) throws Exception;
+    byte[] exportTransactionsPdf(Integer userId, LocalDate startDate, LocalDate endDate) throws Exception;
     
     // Fitur advanced: Multi-filter & Pagination
-    Page<Transaction> getFilteredTransactions(Integer userId, String keyword, Integer categoryId, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy);
+    Page<Transaction> getFilteredTransactions(Integer userId, String keyword, Integer categoryId, String type, LocalDate startDate, LocalDate endDate, int page, int size, String sortBy);
     
     // Fitur Dashboard: Kalkulasi
     Map<String, BigDecimal> getDashboardSummary(Integer userId);

@@ -9,5 +9,6 @@ public interface FinancialGoalService {
     List<FinancialGoal> getGoalsByUserId(Integer userId);
     FinancialGoal getGoalById(Integer userId, Integer id) throws Exception;
     FinancialGoal updateGoal(Integer userId, Integer id, FinancialGoalReq request) throws Exception;
+    FinancialGoal updateGoalProgress(Integer userId, Integer id, java.math.BigDecimal amount) throws Exception;
     void deleteGoal(Integer userId, Integer id) throws Exception;
 }

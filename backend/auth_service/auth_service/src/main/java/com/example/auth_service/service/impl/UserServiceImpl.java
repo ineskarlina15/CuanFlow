@@ -81,11 +81,63 @@ public class UserServiceImpl implements UserService{
     @Override
     public List<ProfileRes> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(user -> profileRepository.findByUserId(user.getId())
-                        .map(profile -> mapToProfileRes(user, profile))
-                        .orElse(null))
-                .filter(java.util.Objects::nonNull)
+                .filter(u -> u.getDeletedAt() == null)
+                .map(user -> {
+                    Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
+                        Profile p = new Profile();
+                        p.setUser(user);
+                        return p;
+                    });
+                    return mapToProfileRes(user, profile);
+                })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public ProfileRes updateUserRole(Integer targetUserId, String roleStr) throws Exception {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+        try {
+            com.example.auth_service.entity.UserRole role = com.example.auth_service.entity.UserRole.valueOf(roleStr.toUpperCase());
+            user.setRole(role);
+        } catch (IllegalArgumentException e) {
+            throw new Exception("Role tidak valid. Gunakan ADMIN atau USER.");
+        }
+        userRepository.save(user);
+        Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
+            Profile p = new Profile();
+            p.setUser(user);
+            return p;
+        });
+        return mapToProfileRes(user, profile);
+    }
+
+    @Override
+    @Transactional
+    public ProfileRes toggleUserStatus(Integer targetUserId) throws Exception {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+        boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : true;
+        user.setIsActive(!currentStatus);
+        userRepository.save(user);
+
+        Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
+            Profile p = new Profile();
+            p.setUser(user);
+            return p;
+        });
+        return mapToProfileRes(user, profile);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Integer targetUserId) throws Exception {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+        user.setDeletedAt(java.time.LocalDateTime.now());
+        user.setIsActive(false);
+        userRepository.save(user);
     }
 
     // Fungsi bantuan untuk memetakan Entity ke DTO
@@ -97,6 +149,8 @@ public class UserServiceImpl implements UserService{
         response.setEmail(user.getEmail());
         response.setPhone(user.getPhone());
         response.setRole(user.getRole().name());
+        response.setIsActive(user.getIsActive() != null ? user.getIsActive() : true);
+        response.setCreatedAt(user.getCreatedAt());
         response.setAvatarUrl(profile.getAvatarUrl());
         response.setDateOfBirth(profile.getDateOfBirth());
         response.setGender(profile.getGender());

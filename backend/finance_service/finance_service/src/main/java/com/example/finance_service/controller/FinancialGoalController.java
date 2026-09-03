@@ -1,9 +1,13 @@
 package com.example.finance_service.controller;
 
+import java.math.BigDecimal;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -60,6 +64,23 @@ public class FinancialGoalController {
     public ResponseEntity<?> update(@RequestAttribute("userId") Integer userId, @PathVariable Integer id, @Valid @RequestBody FinancialGoalReq request) {
         try {
             return message.getData("Target tabungan berhasil diperbarui", financialGoalService.updateGoal(userId, id, request), 200);
+        } catch (Exception e) {
+            return message.badReq(e.getMessage(), 400);
+        }
+    }
+
+    @PatchMapping("/{id}/progress")
+    public ResponseEntity<?> updateProgress(
+            @RequestAttribute("userId") Integer userId, 
+            @PathVariable Integer id, 
+            @RequestBody Map<String, BigDecimal> payload) {
+        try {
+            BigDecimal amount = payload.get("amount");
+            if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+                return message.badReq("Nominal progres harus lebih besar dari 0", 400);
+            }
+            return message.getData("Progres target tabungan berhasil diperbarui (PATCH)", 
+                    financialGoalService.updateGoalProgress(userId, id, amount), 200);
         } catch (Exception e) {
             return message.badReq(e.getMessage(), 400);
         }
