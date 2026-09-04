@@ -102,6 +102,23 @@ public class TransactionController {
         }
     }
 
+    @GetMapping("/export/pdf")
+    public ResponseEntity<?> exportTransactionsPdf(
+            @RequestAttribute("userId") Integer userId,
+            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        try {
+            byte[] report = transactionService.exportTransactionsPdf(userId, startDate, endDate);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=laporan-cuanflow.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(report);
+        } catch (Exception e) {
+            return message.badReq(e.getMessage(), 400);
+        }
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> updateTransaction(
             @RequestAttribute("userId") Integer userId,
