@@ -15,32 +15,30 @@ export default function Navbar({ onToggleSidebar }) {
   // Notification Dropdown State
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
   const [loadingNotifs, setLoadingNotifs] = useState(false)
   
   // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
-  // Ambil Notifikasi saat dropdown terbuka
-  useEffect(() => {
-    if (notifOpen) {
-      const fetchNotifs = async () => {
-        setLoadingNotifs(true)
-        try {
-          const res = await api.get('/notifSvc/api/v1/notifications')
-          if (res?.data && Array.isArray(res.data)) {
-            setNotifications(res.data.slice(0, 5)) // Take top 5
-          } else {
-            setNotifications([])
-          }
-        } catch {
-          setNotifications([])
-        } finally {
-          setLoadingNotifs(false)
-        }
-      }
-      fetchNotifs()
+  const fetchNotifs = async () => {
+    try {
+      const res = await api.get('/notifSvc/api/v1/notifications')
+      const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+      const count = list.filter(n => !n.isRead && !n.read).length
+      setUnreadCount(count)
+      setNotifications(list.slice(0, 5))
+    } catch {
+      // Fallback
     }
-  }, [notifOpen])
+  }
+
+  useEffect(() => {
+    fetchNotifs()
+    const handleNotifUpdate = () => fetchNotifs()
+    window.addEventListener('cuanflow_notifications_updated', handleNotifUpdate)
+    return () => window.removeEventListener('cuanflow_notifications_updated', handleNotifUpdate)
+  }, [])
 
   const handleLogout = () => {
     setIsLogoutModalOpen(false)
@@ -97,8 +95,11 @@ export default function Navbar({ onToggleSidebar }) {
               title="Notifikasi"
             >
               <Bell className="w-5 h-5" />
-              {/* Dummy indicator until we track unread count */}
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white animate-pulse" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-extrabold flex items-center justify-center shadow-xs animate-pulse">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </button>
             
             {notifOpen && (
@@ -106,7 +107,14 @@ export default function Navbar({ onToggleSidebar }) {
                 <div className="fixed inset-0 z-10" onClick={() => setNotifOpen(false)} />
                 <div className="absolute right-0 mt-2 w-72 sm:w-80 rounded-2xl border border-slate-200 bg-white shadow-xl flex flex-col overflow-hidden z-20 animate-fade-in origin-top-right">
                   <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                    <h3 className="text-sm font-black text-slate-900">Notifikasi Terbaru</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm font-black text-slate-900">Notifikasi</h3>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-600">
+                          {unreadCount} baru
+                        </span>
+                      )}
+                    </div>
                     <Link 
                       to="/notifications" 
                       onClick={() => setNotifOpen(false)}
@@ -127,13 +135,26 @@ export default function Navbar({ onToggleSidebar }) {
                       </div>
                     ) : (
                       notifications.map(n => (
-                        <div key={n.id} className="p-4 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 items-start">
-                          <div className={`mt-0.5 p-1.5 rounded-full ${n.type === 'BUDGET_ALERT' ? 'bg-rose-100' : 'bg-blue-100'}`}>
+                        <div 
+                          key={n.id} 
+                          onClick={async () => {
+                            try {
+                              await api.patch(`/notifSvc/api/v1/notifications/${n.id}/read`)
+                              setUnreadCount(prev => Math.max(0, prev - 1))
+                              setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, isRead: true, read: true } : item))
+                              window.dispatchEvent(new Event('cuanflow_notifications_updated'))
+                            } catch {}
+                          }}
+                          className={`p-3.5 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 items-start ${
+                            !n.isRead && !n.read ? 'bg-blue-50/50' : ''
+                          }`}
+                        >
+                          <div className={`mt-0.5 p-1.5 rounded-full shrink-0 ${n.type === 'BUDGET_ALERT' ? 'bg-rose-100' : 'bg-blue-100'}`}>
                             {getNotifIcon(n.type)}
                           </div>
-                          <div className="flex flex-col gap-1">
-                            <span className="text-sm font-bold text-slate-800 leading-tight">{n.title}</span>
-                            <span className="text-xs text-slate-500 line-clamp-2">{n.message}</span>
+                          <div className="flex flex-col gap-0.5">
+                            <span className="text-xs font-bold text-slate-800 leading-tight">{n.title}</span>
+                            <span className="text-[11px] text-slate-500 line-clamp-2">{n.message}</span>
                           </div>
                         </div>
                       ))
