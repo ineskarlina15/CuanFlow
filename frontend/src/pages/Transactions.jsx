@@ -4,8 +4,15 @@ import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
 import { formatCurrency } from '../utils/currency'
 import { 
+  formatAmountInput, 
+  parseAmountInput, 
+  getCurrencyPrefix, 
+  capitalizeWords, 
+  capitalizeFirstLetter 
+} from '../utils/formatters'
+import { 
   Search, Plus, Filter, ChevronLeft, ChevronRight, Edit2, Trash2, 
-  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Download, Tag, Eye, Info
+  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Tag, Eye, Info
 } from 'lucide-react'
 
 export default function Transactions() {
@@ -340,54 +347,6 @@ export default function Transactions() {
     }
   }
 
-  const handleExportExcel = async () => {
-    try {
-      showToast('Sedang memproses Excel...', 'info')
-      let url = '/financeSvc/api/v1/reports/export/excel'
-      const params = new URLSearchParams()
-      if (startDate) params.append('startDate', startDate)
-      if (endDate) params.append('endDate', endDate)
-      if (params.toString()) url += `?${params.toString()}`
-
-      const res = await api.get(url, { responseType: 'blob' })
-      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.setAttribute('download', `CuanFlow_Transactions_${new Date().toISOString().split('T')[0]}.xlsx`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      showToast('Berhasil mengekspor Excel', 'success')
-    } catch (error) {
-      showToast('Gagal mengekspor Excel', 'error')
-    }
-  }
-
-  const handleExportPdf = async () => {
-    try {
-      showToast('Sedang memproses PDF...', 'info')
-      let url = '/financeSvc/api/v1/reports/export/pdf'
-      const params = new URLSearchParams()
-      if (startDate) params.append('startDate', startDate)
-      if (endDate) params.append('endDate', endDate)
-      if (params.toString()) url += `?${params.toString()}`
-
-      const res = await api.get(url, { responseType: 'blob' })
-      const blob = new Blob([res.data], { type: 'application/pdf' })
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.setAttribute('download', `CuanFlow_Transactions_${new Date().toISOString().split('T')[0]}.pdf`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
-      showToast('Berhasil mengekspor PDF', 'success')
-    } catch (error) {
-      showToast('Gagal mengekspor PDF', 'error')
-    }
-  }
-
   return (
     <div className="flex-grow p-4 sm:p-6 lg:p-8 flex flex-col gap-6 w-full max-w-7xl mx-auto animate-fade-in text-slate-800 font-sans">
       
@@ -401,23 +360,6 @@ export default function Transactions() {
         </div>
 
         <div className="flex items-center gap-3 self-start sm:self-auto">
-          <div className="flex bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-            <button
-              onClick={handleExportExcel}
-              className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all border-r border-slate-200 cursor-pointer"
-            >
-              <Download className="w-4 h-4 text-emerald-600" />
-              <span>Excel</span>
-            </button>
-            <button
-              onClick={handleExportPdf}
-              className="flex items-center gap-2 px-3 py-2.5 bg-white hover:bg-slate-100 text-slate-700 font-bold text-sm transition-all cursor-pointer"
-            >
-              <Download className="w-4 h-4 text-rose-600" />
-              <span>PDF</span>
-            </button>
-          </div>
-
           <button
             onClick={() => openModal('add')}
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-md shadow-blue-600/20 transition-all cursor-pointer"
@@ -754,7 +696,7 @@ export default function Transactions() {
                 type="text"
                 placeholder="Gaji, Belanjaan, dll."
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, title: capitalizeWords(e.target.value) })}
                 className={`w-full bg-slate-50 border ${
                   formErrors.title ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
@@ -766,17 +708,25 @@ export default function Transactions() {
           {/* Amount & Category */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-bold text-slate-700">Nominal (IDR)</label>
+              <label className="text-xs font-bold text-slate-700">
+                Nominal ({getCurrencyPrefix().trim()})
+              </label>
               <div className="relative">
-                <DollarSign className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+                <span className="absolute left-3.5 top-3.5 text-xs font-bold text-slate-400 select-none">
+                  {getCurrencyPrefix()}
+                </span>
                 <input
-                  type="number"
-                  placeholder="50000"
-                  value={formData.amount}
-                  onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="50.000"
+                  value={formatAmountInput(formData.amount)}
+                  onChange={(e) => {
+                    const raw = parseAmountInput(e.target.value)
+                    setFormData({ ...formData, amount: raw || '' })
+                  }}
                   className={`w-full bg-slate-50 border ${
                     formErrors.amount ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
-                  } rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
+                  } rounded-xl py-3 pl-12 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
                 />
               </div>
               {formErrors.amount && <span className="text-xs text-rose-500 font-semibold">{formErrors.amount}</span>}

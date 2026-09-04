@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import { formatCurrency } from '../utils/currency'
+import { downloadBlob } from '../utils/formatters'
 import { Download, Calendar } from 'lucide-react'
 
 export default function Reports() {
@@ -9,8 +10,14 @@ export default function Reports() {
 
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
-  const [period, setPeriod] = useState('this_month')
+  const [period, setPeriod] = useState('all_time')
   const [, setLoading] = useState(false)
+
+  const [allTransactions, setAllTransactions] = useState([])
+  const [availableMonths, setAvailableMonths] = useState([])
+  const [availableYears, setAvailableYears] = useState([])
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd] = useState('')
 
   const [summary, setSummary] = useState({
     totalIncome: 0,
@@ -20,8 +27,47 @@ export default function Reports() {
 
   const [categoryData, setCategoryData] = useState([])
 
-  // Grafik garis tren saat ini belum didukung oleh API, biarkan kosong untuk sementara
-  const [trendPoints, setTrendPoints] = useState([])
+  const monthNamesId = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ]
+
+  const extractAvailablePeriods = (txList) => {
+    const monthsMap = new Map()
+    const yearsSet = new Set()
+
+    txList.forEach((t) => {
+      if (!t.transactionDate) return
+      const parts = t.transactionDate.split('-')
+      if (parts.length < 3) return
+      const yr = Number(parts[0])
+      const mo = Number(parts[1])
+      yearsSet.add(yr)
+
+      const key = `${yr}-${String(mo).padStart(2, '0')}`
+      if (!monthsMap.has(key)) {
+        const firstDay = `${yr}-${String(mo).padStart(2, '0')}-01`
+        const lastDay = new Date(yr, mo, 0).toISOString().split('T')[0]
+        monthsMap.set(key, {
+          id: `month_${key}`,
+          label: `${monthNamesId[mo - 1]} ${yr}`,
+          start: firstDay,
+          end: lastDay
+        })
+      }
+    })
+
+    const sortedMonths = Array.from(monthsMap.values()).sort((a, b) => b.id.localeCompare(a.id))
+    const sortedYears = Array.from(yearsSet).sort((a, b) => b - a).map((yr) => ({
+      id: `year_${yr}`,
+      label: `Tahun ${yr}`,
+      start: `${yr}-01-01`,
+      end: `${yr}-12-31`
+    }))
+
+    setAvailableMonths(sortedMonths)
+    setAvailableYears(sortedYears)
+  }
 
   const fetchReports = async (overrideStart = null, overrideEnd = null) => {
     setLoading(true)
@@ -49,7 +95,7 @@ export default function Reports() {
         })
 
         if (expList.length > 0) {
-          const colors = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899']
+          const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4', '#F97316', '#14B8A6', '#6366F1']
           const mapped = expList.map((item, idx) => ({
             name: (item[0] || 'Others').replace('& Beverage', ''),
             amount: Number(item[1] || 0),
@@ -69,18 +115,68 @@ export default function Reports() {
     }
   }
 
-  const handleReset = () => {
-    setStartDate('')
-    setEndDate('')
-    setPeriod('this_month')
-    fetchReports('', '')
-    showToast('Filter laporan diatur ulang', 'info')
+  const handlePeriodChange = (val) => {
+    setPeriod(val)
+    const now = new Date()
+
+    if (val === 'all_time') {
+      setStartDate('')
+      setEndDate('')
+      fetchReports('', '')
+    } else if (val === 'this_month') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+      setStartDate(firstDay)
+      setEndDate(lastDay)
+      fetchReports(firstDay, lastDay)
+    } else if (val === 'last_month') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]
+      const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0]
+      setStartDate(firstDay)
+      setEndDate(lastDay)
+      fetchReports(firstDay, lastDay)
+    } else if (val === 'this_year') {
+      const firstDay = `${now.getFullYear()}-01-01`
+      const lastDay = `${now.getFullYear()}-12-31`
+      setStartDate(firstDay)
+      setEndDate(lastDay)
+      fetchReports(firstDay, lastDay)
+    } else if (val.startsWith('month_')) {
+      const ym = val.replace('month_', '')
+      const [y, m] = ym.split('-')
+      const firstDay = `${y}-${m}-01`
+      const lastDay = new Date(Number(y), Number(m), 0).toISOString().split('T')[0]
+      setStartDate(firstDay)
+      setEndDate(lastDay)
+      fetchReports(firstDay, lastDay)
+    } else if (val.startsWith('year_')) {
+      const yr = val.replace('year_', '')
+      const firstDay = `${yr}-01-01`
+      const lastDay = `${yr}-12-31`
+      setStartDate(firstDay)
+      setEndDate(lastDay)
+      fetchReports(firstDay, lastDay)
+    } else if (val === 'custom') {
+      // Tunggu input manual tanggal dari user
+    }
   }
 
   const [, setCurrencyTick] = useState(0)
 
   useEffect(() => {
-    fetchReports()
+    const initData = async () => {
+      try {
+        const resTx = await api.get('/financeSvc/api/v1/transactions?size=500')
+        const txList = resTx?.data?.content || (Array.isArray(resTx?.data) ? resTx.data : [])
+        setAllTransactions(txList)
+        extractAvailablePeriods(txList)
+      } catch {
+        // Fallback
+      }
+      fetchReports('', '')
+    }
+    initData()
+
     const handleSettingsUpdate = () => setCurrencyTick((prev) => prev + 1)
     window.addEventListener('cuanflow_settings_updated', handleSettingsUpdate)
     return () => window.removeEventListener('cuanflow_settings_updated', handleSettingsUpdate)
@@ -88,7 +184,7 @@ export default function Reports() {
 
   const handleExportExcel = async () => {
     try {
-      showToast('Sedang memproses Excel...', 'info')
+      showToast('Sedang memproses unduh Excel...', 'info')
       let url = '/financeSvc/api/v1/reports/export/excel'
       const params = new URLSearchParams()
       if (startDate) params.append('startDate', startDate)
@@ -96,14 +192,8 @@ export default function Reports() {
       if (params.toString()) url += `?${params.toString()}`
 
       const res = await api.get(url, { responseType: 'blob' })
-      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.setAttribute('download', `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.xlsx`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      const filename = `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.xlsx`
+      downloadBlob(res, filename, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
       showToast('Berhasil mengekspor Laporan ke Excel', 'success')
     } catch (error) {
       showToast('Gagal mengekspor Laporan ke Excel', 'error')
@@ -112,7 +202,7 @@ export default function Reports() {
 
   const handleExportPdf = async () => {
     try {
-      showToast('Sedang memproses PDF...', 'info')
+      showToast('Sedang memproses unduh PDF...', 'info')
       let url = '/financeSvc/api/v1/reports/export/pdf'
       const params = new URLSearchParams()
       if (startDate) params.append('startDate', startDate)
@@ -120,73 +210,64 @@ export default function Reports() {
       if (params.toString()) url += `?${params.toString()}`
 
       const res = await api.get(url, { responseType: 'blob' })
-      const blob = new Blob([res.data], { type: 'application/pdf' })
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.setAttribute('download', `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.pdf`)
-      document.body.appendChild(link)
-      link.click()
-      link.remove()
+      const filename = `CuanFlow_Laporan_${new Date().toISOString().split('T')[0]}.pdf`
+      downloadBlob(res, filename, 'application/pdf')
       showToast('Berhasil mengekspor Laporan ke PDF', 'success')
     } catch (error) {
       showToast('Gagal mengekspor Laporan ke PDF', 'error')
     }
   }
 
-  // SVG Solid Pie Chart Generator matching PDF Screen 6 EXACTLY
+  // Modern Donut Chart Generator dengan Center Total & Hover Details
   const renderSvgPieChart = () => {
-    if (!categoryData || categoryData.length === 0) return null
-
-    // If only 1 category slice, render full circle
-    if (categoryData.length === 1) {
+    if (!categoryData || categoryData.length === 0) {
       return (
-        <svg viewBox="0 0 200 200" className="w-48 h-48 drop-shadow-md">
-          <circle cx="100" cy="100" r="80" fill={categoryData[0].color || '#3B82F6'} />
-        </svg>
+        <div className="w-48 h-48 rounded-full border-4 border-dashed border-slate-200 flex flex-col items-center justify-center text-slate-400 text-xs text-center p-4">
+          <span>Belum ada data pengeluaran</span>
+        </div>
       )
     }
 
-    let cumulativeAngle = 0
     const total = categoryData.reduce((sum, item) => sum + (item.amount || 0), 0) || 1
-
-    const slices = categoryData.map((slice, index) => {
-      const slicePercent = slice.amount / total
-      if (slicePercent <= 0) return null
-
-      const startAngle = cumulativeAngle
-      const angle = slicePercent * 360
-      cumulativeAngle += angle
-      const endAngle = cumulativeAngle
-
-      const startRad = ((startAngle - 90) * Math.PI) / 180
-      const endRad = ((endAngle - 90) * Math.PI) / 180
-
-      const x1 = 100 + 80 * Math.cos(startRad)
-      const y1 = 100 + 80 * Math.sin(startRad)
-      const x2 = 100 + 80 * Math.cos(endRad)
-      const y2 = 100 + 80 * Math.sin(endRad)
-
-      const largeArcFlag = angle > 180 ? 1 : 0
-
-      const pathData = `M 100 100 L ${x1} ${y1} A 80 80 0 ${largeArcFlag} 1 ${x2} ${y2} Z`
-
-      return (
-        <path
-          key={index}
-          d={pathData}
-          fill={slice.color}
-          className="hover:opacity-90 transition-opacity cursor-pointer stroke-white stroke-2"
-        >
-          <title>{`${slice.name}: ${formatCurrency(slice.amount)} (${Math.round(slicePercent * 100)}%)`}</title>
-        </path>
-      )
-    })
+    let cumulativePercent = 0
 
     return (
-      <svg viewBox="0 0 200 200" className="w-48 h-48 drop-shadow-md">
-        {slices}
-      </svg>
+      <div className="relative w-52 h-52 flex items-center justify-center">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="38" fill="transparent" stroke="#F1F5F9" strokeWidth="13" />
+          {categoryData.map((slice, index) => {
+            const pct = (slice.amount / total) * 100
+            if (pct <= 0) return null
+            const strokeDash = `${pct} ${100 - pct}`
+            const strokeOffset = 100 - cumulativePercent
+            cumulativePercent += pct
+
+            return (
+              <circle
+                key={index}
+                cx="50"
+                cy="50"
+                r="38"
+                fill="transparent"
+                stroke={slice.color}
+                strokeWidth="13"
+                strokeDasharray={strokeDash}
+                strokeDashoffset={strokeOffset}
+                pathLength="100"
+                className="transition-all duration-300 hover:stroke-[15px] cursor-pointer"
+              >
+                <title>{`${slice.name}: ${formatCurrency(slice.amount)} (${Math.round(pct)}%)`}</title>
+              </circle>
+            )
+          })}
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none p-3">
+          <span className="text-[10px] uppercase tracking-wider font-extrabold text-slate-400">Total</span>
+          <span className="text-xs sm:text-sm font-black text-slate-900 font-heading">
+            {formatCurrency(summary.totalExpense)}
+          </span>
+        </div>
+      </div>
     )
   }
 
@@ -224,39 +305,77 @@ export default function Reports() {
       <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 flex flex-col gap-8 shadow-xs">
         
         {/* Period Filter Dropdown matching PDF Screen 6 */}
-        <div className="flex flex-col gap-1.5 w-48">
-          <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Periode</label>
-          <div className="relative">
-            <select
-              value={period}
-              onChange={(e) => {
-                setPeriod(e.target.value)
-                const now = new Date()
-                if (e.target.value === 'this_month') {
-                  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-                  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
-                  setStartDate(firstDay)
-                  setEndDate(lastDay)
-                  fetchReports(firstDay, lastDay)
-                } else if (e.target.value === 'last_month') {
-                  const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]
-                  const lastDay = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0]
-                  setStartDate(firstDay)
-                  setEndDate(lastDay)
-                  fetchReports(firstDay, lastDay)
-                } else {
-                  handleReset()
-                }
-              }}
-              className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl py-2.5 px-4 pr-8 text-slate-800 font-extrabold text-sm outline-none cursor-pointer shadow-2xs transition-all appearance-none"
-            >
-              <option value="this_month">Bulan Ini</option>
-              <option value="last_month">Bulan Lalu</option>
-              <option value="this_year">Tahun Ini</option>
-              <option value="all_time">Semua Waktu</option>
-            </select>
-            <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="flex flex-col gap-1.5 min-w-[210px] w-full sm:w-auto">
+            <label className="text-xs font-black text-slate-400 uppercase tracking-wider">Periode</label>
+            <div className="relative">
+              <select
+                value={period}
+                onChange={(e) => handlePeriodChange(e.target.value)}
+                className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl py-2.5 px-4 pr-9 text-slate-800 font-extrabold text-sm outline-none cursor-pointer shadow-2xs transition-all appearance-none"
+              >
+                <option value="all_time">Semua Waktu</option>
+
+                {availableMonths.length > 0 && (
+                  <optgroup label="Bulan Transaksi">
+                    {availableMonths.map((m) => (
+                      <option key={m.id} value={m.id}>{m.label}</option>
+                    ))}
+                  </optgroup>
+                )}
+
+                {availableYears.length > 0 && (
+                  <optgroup label="Tahun Transaksi">
+                    {availableYears.map((y) => (
+                      <option key={y.id} value={y.id}>{y.label}</option>
+                    ))}
+                  </optgroup>
+                )}
+
+                <optgroup label="Kalender Berjalan">
+                  <option value="this_month">Bulan Ini</option>
+                  <option value="last_month">Bulan Lalu</option>
+                  <option value="this_year">Tahun Ini</option>
+                </optgroup>
+
+                <option value="custom">Kustom Tanggal...</option>
+              </select>
+              <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-3 pointer-events-none" />
+            </div>
           </div>
+
+          {period === 'custom' && (
+            <div className="flex flex-wrap items-center gap-2 animate-fade-in">
+              <input
+                type="date"
+                value={customStart}
+                onChange={(e) => setCustomStart(e.target.value)}
+                className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none shadow-2xs"
+              />
+              <span className="text-xs text-slate-400 font-bold">s/d</span>
+              <input
+                type="date"
+                value={customEnd}
+                onChange={(e) => setCustomEnd(e.target.value)}
+                className="bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 outline-none shadow-2xs"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  if (!customStart || !customEnd) {
+                    showToast('Pilih tanggal awal dan akhir terlebih dahulu', 'warning')
+                    return
+                  }
+                  setStartDate(customStart)
+                  setEndDate(customEnd)
+                  fetchReports(customStart, customEnd)
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer transition-all"
+              >
+                Terapkan
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Top 3 Stat Cards matching PDF Screen 6 EXACTLY */}
@@ -294,89 +413,194 @@ export default function Reports() {
             <h3 className="text-base font-black text-slate-900 font-heading">Pemasukan vs Pengeluaran</h3>
 
             <div className="relative w-full h-56 pt-2">
-              <svg viewBox="0 0 400 160" className="w-full h-full overflow-visible">
-                {/* Y-Axis Grid Lines & Labels matching PDF Screen 6 */}
-                {[
-                  { val: 100, y: 20 },
-                  { val: 75, y: 50 },
-                  { val: 50, y: 80 },
-                  { val: 25, y: 110 },
-                  { val: 0, y: 140 }
-                ].map((g, idx) => (
-                  <g key={idx}>
-                    <line x1="35" y1={g.y} x2="390" y2={g.y} stroke="#E2E8F0" strokeDasharray="3 3" strokeWidth="1" />
-                    <text x="25" y={g.y + 4} textAnchor="end" className="text-[10px] fill-slate-400 font-bold">
-                      {g.val}
-                    </text>
-                  </g>
-                ))}
+              {(() => {
+                const filteredTxs = allTransactions.filter((t) => {
+                  if (!t.transactionDate) return false
+                  if (startDate && t.transactionDate < startDate) return false
+                  if (endDate && t.transactionDate > endDate) return false
+                  return true
+                })
 
-                {/* SVG Polylines matching PDF curves */}
-                <polyline
-                  fill="none"
-                  stroke="#10B981"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  points="50,96 130,62 210,88 290,56 370,68"
-                />
-                <polyline
-                  fill="none"
-                  stroke="#3B82F6"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  points="50,116 130,102 210,72 290,92 370,80"
-                />
+                const formatCompact = (val) => {
+                  if (!val || val === 0) return '0'
+                  if (val >= 1000000000) return `${(val / 1000000000).toFixed(1)} M`
+                  if (val >= 1000000) return `${(val / 1000000).toFixed(val % 1000000 === 0 ? 0 : 1)} jt`
+                  if (val >= 1000) return `${(val / 1000).toFixed(0)} rb`
+                  return String(val)
+                }
 
-                {/* SVG Dots on data points */}
-                {[
-                  { x: 50, y1: 96, y2: 116 },
-                  { x: 130, y1: 62, y2: 102 },
-                  { x: 210, y1: 88, y2: 72 },
-                  { x: 290, y1: 56, y2: 92 },
-                  { x: 370, y1: 68, y2: 80 }
-                ].map((pt, idx) => (
-                  <g key={idx}>
-                    <circle cx={pt.x} cy={pt.y1} r="4" fill="#10B981" stroke="#FFFFFF" strokeWidth="2" />
-                    <circle cx={pt.x} cy={pt.y2} r="4" fill="#3B82F6" stroke="#FFFFFF" strokeWidth="2" />
-                  </g>
-                ))}
+                const trendData = (() => {
+                  if (filteredTxs.length === 0) {
+                    return {
+                      hasData: false,
+                      maxVal: 10000000,
+                      points: [
+                        { x: 50, yInc: 140, yExp: 140, inc: 0, exp: 0, label: 'P1' },
+                        { x: 130, yInc: 140, yExp: 140, inc: 0, exp: 0, label: 'P2' },
+                        { x: 210, yInc: 140, yExp: 140, inc: 0, exp: 0, label: 'P3' },
+                        { x: 290, yInc: 140, yExp: 140, inc: 0, exp: 0, label: 'P4' },
+                        { x: 370, yInc: 140, yExp: 140, inc: 0, exp: 0, label: 'P5' }
+                      ]
+                    }
+                  }
 
-                {/* X-Axis Labels matching PDF Screen 6 */}
-                {['1 Agt', '8 Agt', '15 Agt', '22 Agt', '29 Agt'].map((lbl, idx) => (
-                  <text
-                    key={idx}
-                    x={50 + idx * 80}
-                    y="156"
-                    textAnchor="middle"
-                    className="text-[10px] fill-slate-400 font-bold"
-                  >
-                    {lbl}
-                  </text>
-                ))}
-              </svg>
+                  const sorted = [...filteredTxs].sort((a, b) => a.transactionDate.localeCompare(b.transactionDate))
+                  const firstDate = new Date(sorted[0].transactionDate)
+                  const lastDate = new Date(sorted[sorted.length - 1].transactionDate)
+                  const diffMs = Math.max(86400000 * 4, lastDate.getTime() - firstDate.getTime())
+                  const sliceMs = diffMs / 4
+
+                  const slices = []
+                  for (let i = 0; i < 5; i++) {
+                    const targetDate = new Date(firstDate.getTime() + i * sliceMs)
+                    const day = targetDate.getDate()
+                    const mo = monthNamesId[targetDate.getMonth()]?.slice(0, 3) || 'Bln'
+                    slices.push({
+                      label: `${day} ${mo}`,
+                      targetTime: targetDate.getTime(),
+                      inc: 0,
+                      exp: 0
+                    })
+                  }
+
+                  sorted.forEach((t) => {
+                    const tTime = new Date(t.transactionDate).getTime()
+                    let closestIdx = 0
+                    let minDiff = Math.abs(tTime - slices[0].targetTime)
+                    for (let i = 1; i < 5; i++) {
+                      const d = Math.abs(tTime - slices[i].targetTime)
+                      if (d < minDiff) {
+                        minDiff = d
+                        closestIdx = i
+                      }
+                    }
+                    const amt = Number(t.amount || 0)
+                    if (t.type === 'INCOME') {
+                      slices[closestIdx].inc += amt
+                    } else {
+                      slices[closestIdx].exp += amt
+                    }
+                  })
+
+                  const maxVal = Math.max(1000000, ...slices.map((s) => Math.max(s.inc, s.exp))) * 1.2
+                  const xs = [50, 130, 210, 290, 370]
+                  const zeroY = 140
+                  const usableH = 115
+
+                  const points = slices.map((s, idx) => {
+                    const yInc = zeroY - Math.min(usableH, (s.inc / maxVal) * usableH)
+                    const yExp = zeroY - Math.min(usableH, (s.exp / maxVal) * usableH)
+                    return {
+                      x: xs[idx],
+                      yInc,
+                      yExp,
+                      inc: s.inc,
+                      exp: s.exp,
+                      label: s.label
+                    }
+                  })
+
+                  return { hasData: true, maxVal, points }
+                })()
+
+                const incPointsStr = trendData.points.map((p) => `${p.x},${p.yInc.toFixed(1)}`).join(' ')
+                const expPointsStr = trendData.points.map((p) => `${p.x},${p.yExp.toFixed(1)}`).join(' ')
+
+                return (
+                  <svg viewBox="0 0 400 160" className="w-full h-full overflow-visible">
+                    {/* Y-Axis Grid Lines & Labels */}
+                    {[
+                      { val: formatCompact(trendData.maxVal * 0.9), y: 25 },
+                      { val: formatCompact(trendData.maxVal * 0.6), y: 60 },
+                      { val: formatCompact(trendData.maxVal * 0.3), y: 98 },
+                      { val: '0', y: 140 }
+                    ].map((g, idx) => (
+                      <g key={idx}>
+                        <line x1="35" y1={g.y} x2="390" y2={g.y} stroke="#E2E8F0" strokeDasharray="3 3" strokeWidth="1" />
+                        <text x="25" y={g.y + 4} textAnchor="end" className="text-[10px] fill-slate-400 font-bold">
+                          {g.val}
+                        </text>
+                      </g>
+                    ))}
+
+                    {/* SVG Polylines matching curves */}
+                    <polyline
+                      fill="none"
+                      stroke="#10B981"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      points={incPointsStr}
+                    />
+                    <polyline
+                      fill="none"
+                      stroke="#3B82F6"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      points={expPointsStr}
+                    />
+
+                    {/* SVG Dots on data points */}
+                    {trendData.points.map((pt, idx) => (
+                      <g key={idx} className="cursor-pointer">
+                        <circle cx={pt.x} cy={pt.yInc} r="4" fill="#10B981" stroke="#FFFFFF" strokeWidth="2">
+                          <title>{`${pt.label} Pemasukan: ${formatCurrency(pt.inc)}`}</title>
+                        </circle>
+                        <circle cx={pt.x} cy={pt.yExp} r="4" fill="#3B82F6" stroke="#FFFFFF" strokeWidth="2">
+                          <title>{`${pt.label} Pengeluaran: ${formatCurrency(pt.exp)}`}</title>
+                        </circle>
+                      </g>
+                    ))}
+
+                    {/* X-Axis Labels */}
+                    {trendData.points.map((pt, idx) => (
+                      <text
+                        key={idx}
+                        x={pt.x}
+                        y="156"
+                        textAnchor="middle"
+                        className="text-[10px] fill-slate-400 font-bold"
+                      >
+                        {pt.label}
+                      </text>
+                    ))}
+                  </svg>
+                )
+              })()}
             </div>
           </div>
 
-          {/* Right Chart: Expense by Category SVG Pie Chart */}
+          {/* Right Chart: Expense by Category SVG Donut Chart */}
           <div className="rounded-2xl border border-slate-200/80 bg-white p-6 flex flex-col gap-4 shadow-2xs">
             <h3 className="text-base font-black text-slate-900 font-heading">Pengeluaran per Kategori</h3>
 
-            <div className="flex flex-col sm:flex-row items-center gap-8 pt-2 min-h-[200px]">
-              {/* Solid SVG Pie Chart matching PDF Screen 6 */}
+            <div className="flex flex-col sm:flex-row items-center gap-6 pt-2 min-h-[200px]">
+              {/* Modern SVG Donut Chart */}
               <div className="shrink-0 flex items-center justify-center">
                 {renderSvgPieChart()}
               </div>
 
-              {/* Category Legend List matching PDF Screen 6 EXACTLY */}
-              <div className="flex-1 flex flex-col gap-3 w-full">
-                {categoryData.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 text-xs font-bold text-slate-700">
-                    <span className="w-3.5 h-3.5 rounded-xs shrink-0" style={{ backgroundColor: item.color }} />
-                    <span className="min-w-[80px]">{item.name}</span>
-                  </div>
-                ))}
+              {/* Category Legend List dengan Persentase & Nominal Rapi */}
+              <div className="flex-1 flex flex-col gap-2.5 w-full max-h-[220px] overflow-y-auto pr-1">
+                {categoryData.length === 0 ? (
+                  <span className="text-xs text-slate-400">Tidak ada pengeluaran pada periode ini.</span>
+                ) : (
+                  categoryData.map((item, idx) => (
+                    <div key={idx} className="flex items-center justify-between gap-2 text-xs font-bold text-slate-700 hover:bg-slate-50 p-1.5 rounded-lg transition-colors">
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span className="w-3 h-3 rounded-full shrink-0 shadow-xs" style={{ backgroundColor: item.color }} />
+                        <span className="truncate">{item.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-slate-500 font-medium">{formatCurrency(item.amount)}</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-slate-100 text-slate-700">
+                          {item.percent}%
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
