@@ -24,23 +24,27 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        seedAdminUser("admin123", "System Admin", "admin@cuanflow.id", "admin123");
-        seedAdminUser("admin", "Admin CuanFlow", "admin.cuanflow@email.com", "admin123");
+        seedUser("admin", "System Administrator", "admin@cuanflow.id", "admin123", UserRole.ADMIN);
+        seedUser("galang", "Galang Pratama", "galang@gmail.com", "password123", UserRole.USER);
     }
 
-    private void seedAdminUser(String username, String name, String email, String rawPassword) {
-        User user = userRepository.findByUsername(username).orElseGet(() -> {
-            User u = new User();
-            u.setUsername(username);
-            return u;
-        });
+    private void seedUser(String username, String name, String email, String rawPassword, UserRole role) {
+        User user = userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(email))
+                .orElseGet(() -> {
+                    User u = new User();
+                    u.setUsername(username);
+                    return u;
+                });
 
         user.setName(name);
+        user.setUsername(username);
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode(rawPassword));
-        user.setRole(UserRole.ADMIN);
+        user.setRole(role);
+        user.setIsActive(true);
         if (user.getPhone() == null) {
-            user.setPhone("+6281234567890");
+            user.setPhone("081234567890");
         }
 
         User savedUser = userRepository.save(user);
@@ -51,6 +55,6 @@ public class DataSeeder implements CommandLineRunner {
             profileRepository.save(profile);
         }
 
-        System.out.println("Admin account '" + username + "' seeded/updated successfully!");
+        System.out.println("User account '" + username + "' seeded/updated successfully!");
     }
 }
