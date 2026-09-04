@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import api from '../services/api'
+import { capitalizeWords } from '../utils/formatters'
 import { User, Mail, Camera, Save, Loader2, Key, Check, ShieldCheck, Upload, Eye, EyeOff, Phone, Calendar, MapPin, Briefcase, Users } from 'lucide-react'
 // Predefined Avatars
 const AVATAR_PRESETS = [
@@ -42,10 +43,11 @@ export default function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        setLoadingProfile(true)
         const res = await api.get('/authSvc/api/v1/users/profile', {
           headers: { Authorization: `Bearer ${token}` }
         })
-        const data = res.data?.data
+        const data = res?.data || (res?.name ? res : null)
         if (data) {
           setName(data.name || '')
           setPhone(data.phone || '')
@@ -170,12 +172,17 @@ export default function Profile() {
         }
       )
 
-      const updatedData = response.data?.data || {}
+      const updatedData = response?.data || (response?.name ? response : {})
 
       // Perbarui Local State & Context
       updateUser({
         name: updatedData.name || name.trim(),
-        avatarUrl: updatedData.avatarUrl || avatarUrl
+        avatarUrl: updatedData.avatarUrl || avatarUrl,
+        phone: updatedData.phone || phone.trim(),
+        dateOfBirth: updatedData.dateOfBirth || dateOfBirth,
+        gender: updatedData.gender || gender,
+        address: updatedData.address || address.trim(),
+        occupation: updatedData.occupation || occupation.trim()
       })
 
       showToast('Profil & Password berhasil diperbarui!', 'success')
@@ -295,7 +302,7 @@ export default function Profile() {
                 type="text"
                 required
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(capitalizeWords(e.target.value))}
                 placeholder="Nama Lengkap Anda"
                 className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
               />
@@ -367,7 +374,7 @@ export default function Profile() {
               <input
                 type="text"
                 value={occupation}
-                onChange={(e) => setOccupation(e.target.value)}
+                onChange={(e) => setOccupation(capitalizeWords(e.target.value))}
                 placeholder="Pekerjaan / Profesi Anda"
                 className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
               />
@@ -380,7 +387,7 @@ export default function Profile() {
               <MapPin className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
               <textarea
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => setAddress(capitalizeWords(e.target.value))}
                 placeholder="Alamat domisili Anda saat ini"
                 rows="3"
                 className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 focus:bg-white rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all resize-none"

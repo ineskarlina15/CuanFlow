@@ -3,6 +3,7 @@ import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
 import { formatCurrency, getAlertThreshold } from '../utils/currency'
+import { formatAmountInput, parseAmountInput, getCurrencyPrefix, capitalizeFirstLetter } from '../utils/formatters'
 import { Landmark, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 
 export default function Budgets() {
@@ -394,17 +395,27 @@ export default function Budgets() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Batas Limit Bulanan (IDR)</label>
-            <input
-              type="number"
-              placeholder="1000000"
-              max="9999999999999"
-              value={formData.amount}
-              onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              className={`w-full bg-slate-50 border ${
-                formErrors.amount ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
-              } rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium transition-all`}
-            />
+            <label className="text-xs font-bold text-slate-700">
+              Batas Limit Bulanan ({getCurrencyPrefix().trim()})
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-3.5 text-xs font-bold text-slate-400 select-none">
+                {getCurrencyPrefix()}
+              </span>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="1.000.000"
+                value={formatAmountInput(formData.amount)}
+                onChange={(e) => {
+                  const raw = parseAmountInput(e.target.value)
+                  setFormData({ ...formData, amount: raw || '' })
+                }}
+                className={`w-full bg-slate-50 border ${
+                  formErrors.amount ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
+                } rounded-xl py-3 pl-12 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
+              />
+            </div>
             {formErrors.amount && <span className="text-xs text-rose-500 font-semibold">{formErrors.amount}</span>}
           </div>
 
@@ -413,7 +424,7 @@ export default function Budgets() {
             <textarea
               placeholder="Contoh: Anggaran belanja bulanan keluarga..."
               value={formData.description || ''}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, description: capitalizeFirstLetter(e.target.value) })}
               rows="2"
               className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium resize-none transition-all"
             />

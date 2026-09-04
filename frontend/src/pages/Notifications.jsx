@@ -23,11 +23,8 @@ export default function Notifications() {
     setLoading(true)
     try {
       const res = await api.get('/notifSvc/api/v1/notifications')
-      if (res?.data && Array.isArray(res.data) && res.data.length > 0) {
-        setNotifications(res.data)
-      } else {
-        setNotifications([])
-      }
+      const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+      setNotifications(list)
     } catch (err) {
       console.warn('Failed to load notifications from server')
       setNotifications([])
@@ -42,15 +39,17 @@ export default function Notifications() {
 
   const handleMarkAsRead = async (id) => {
     try {
-      await api.put(`/notifSvc/api/v1/notifications/${id}/read`)
+      await api.patch(`/notifSvc/api/v1/notifications/${id}/read`)
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, isRead: true, read: true } : n))
       )
+      window.dispatchEvent(new Event('cuanflow_notifications_updated'))
       showToast('Notifikasi ditandai sudah dibaca', 'success')
     } catch (err) {
       setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
+        prev.map((n) => (n.id === id ? { ...n, isRead: true, read: true } : n))
       )
+      window.dispatchEvent(new Event('cuanflow_notifications_updated'))
     }
   }
 
@@ -58,10 +57,12 @@ export default function Notifications() {
     setMarkingAll(true)
     try {
       await api.put('/notifSvc/api/v1/notifications/read-all')
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true, read: true })))
+      window.dispatchEvent(new Event('cuanflow_notifications_updated'))
       showToast('Semua notifikasi ditandai sudah dibaca', 'success')
     } catch (err) {
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true, read: true })))
+      window.dispatchEvent(new Event('cuanflow_notifications_updated'))
       showToast('Semua notifikasi ditandai sudah dibaca', 'success')
     } finally {
       setMarkingAll(false)
@@ -72,20 +73,23 @@ export default function Notifications() {
     try {
       await api.delete(`/notifSvc/api/v1/notifications/${id}`)
       setNotifications((prev) => prev.filter((n) => n.id !== id))
+      window.dispatchEvent(new Event('cuanflow_notifications_updated'))
       showToast('Notifikasi dihapus', 'info')
     } catch (err) {
       setNotifications((prev) => prev.filter((n) => n.id !== id))
+      window.dispatchEvent(new Event('cuanflow_notifications_updated'))
     }
   }
 
   const filteredList = notifications.filter((n) => {
-    if (filter === 'unread') return !n.isRead
+    const isItemRead = n.isRead || n.read
+    if (filter === 'unread') return !isItemRead
     if (filter === 'BUDGET_ALERT') return n.type === 'BUDGET_ALERT'
     if (filter === 'SYSTEM') return n.type === 'SYSTEM' || n.type === 'INFO'
     return true
   })
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length
+  const unreadCount = notifications.filter((n) => !n.isRead && !n.read).length
 
   const getIcon = (type) => {
     switch (type) {
@@ -188,64 +192,67 @@ export default function Notifications() {
         </div>
       ) : (
         <div className="space-y-3">
-          {filteredList.map((item) => (
-            <div
-              key={item.id}
-              className={`flex items-start justify-between gap-4 p-4 sm:p-5 rounded-2xl border transition-all ${
-                item.isRead
-                  ? 'bg-white/80 border-slate-200/80 text-slate-500'
-                  : 'bg-white border-slate-200 text-slate-800 shadow-sm ring-1 ring-brand-500/10'
-              }`}
-            >
-              <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                <div
-                  className={`p-2.5 rounded-xl border mt-0.5 flex-shrink-0 ${
-                    item.type === 'BUDGET_ALERT'
-                      ? 'bg-amber-50 border-amber-200'
-                      : item.type === 'GOAL_REMINDER'
-                      ? 'bg-emerald-50 border-emerald-200'
-                      : 'bg-sky-50 border-sky-200'
-                  }`}
-                >
-                  {getIcon(item.type)}
-                </div>
-
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-slate-900 text-base truncate pr-2">{item.title}</h4>
-                    {!item.isRead && (
-                      <span className="w-2 h-2 rounded-full bg-brand-600 animate-pulse" />
-                    )}
-                  </div>
-                  <p className="text-sm text-slate-600 leading-relaxed">{item.message}</p>
-                  <div className="flex items-center gap-1.5 text-xs text-slate-400 pt-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{new Date(item.createdAt).toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-2">
-                {!item.isRead && (
-                  <button
-                    onClick={() => handleMarkAsRead(item.id)}
-                    title="Tandai sudah dibaca"
-                    className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-slate-100 transition-colors cursor-pointer"
+          {filteredList.map((item) => {
+            const isItemRead = item.isRead || item.read
+            return (
+              <div
+                key={item.id}
+                className={`flex items-start justify-between gap-4 p-4 sm:p-5 rounded-2xl border transition-all ${
+                  isItemRead
+                    ? 'bg-white/80 border-slate-200/80 text-slate-500'
+                    : 'bg-white border-slate-200 text-slate-800 shadow-sm ring-1 ring-blue-500/10'
+                }`}
+              >
+                <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                  <div
+                    className={`p-2.5 rounded-xl border mt-0.5 flex-shrink-0 ${
+                      item.type === 'BUDGET_ALERT'
+                        ? 'bg-amber-50 border-amber-200'
+                        : item.type === 'GOAL_REMINDER'
+                        ? 'bg-emerald-50 border-emerald-200'
+                        : 'bg-sky-50 border-sky-200'
+                    }`}
                   >
-                    <CheckCheck className="w-4 h-4" />
+                    {getIcon(item.type)}
+                  </div>
+
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-slate-900 text-base truncate pr-2">{item.title}</h4>
+                      {!isItemRead && (
+                        <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                      )}
+                    </div>
+                    <p className="text-sm text-slate-600 leading-relaxed">{item.message}</p>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400 pt-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>{new Date(item.createdAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-2">
+                  {!isItemRead && (
+                    <button
+                      onClick={() => handleMarkAsRead(item.id)}
+                      title="Tandai sudah dibaca"
+                      className="p-2 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                    >
+                      <CheckCheck className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    title="Hapus notifikasi"
+                    className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
-                )}
-                <button
-                  onClick={() => handleDelete(item.id)}
-                  title="Hapus notifikasi"
-                  className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

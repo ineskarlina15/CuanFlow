@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Tag as TagIcon, Plus, Trash2, Search, ArrowDownUp, Edit2, Loader2 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
+import { capitalizeWords } from '../utils/formatters'
 import api from '../services/api'
 
 export default function Tags() {
@@ -167,7 +168,7 @@ export default function Tags() {
               type="text"
               placeholder="Masukkan nama tag (cth. Liburan, Belanjaan)"
               value={newTagName}
-              onChange={(e) => setNewTagName(e.target.value)}
+              onChange={(e) => setNewTagName(capitalizeWords(e.target.value))}
               className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-2.5 pl-10 pr-4 text-slate-800 text-sm outline-none transition-all"
             />
           </div>
@@ -262,7 +263,7 @@ export default function Tags() {
             <input
               type="text"
               value={editTagName}
-              onChange={(e) => setEditTagName(e.target.value)}
+              onChange={(e) => setEditTagName(capitalizeWords(e.target.value))}
               placeholder="Masukkan nama tag baru..."
               className="bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl p-3 text-sm outline-none font-semibold transition-all"
             />

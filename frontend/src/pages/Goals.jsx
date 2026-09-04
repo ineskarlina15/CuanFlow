@@ -4,6 +4,13 @@ import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
 import { formatCurrency } from '../utils/currency'
 import { 
+  formatAmountInput, 
+  parseAmountInput, 
+  getCurrencyPrefix, 
+  capitalizeWords, 
+  capitalizeFirstLetter 
+} from '../utils/formatters'
+import { 
   Target, Plus, Edit2, Trash2, Loader2, ArrowUpCircle, Calendar, DollarSign
 } from 'lucide-react'
 
@@ -332,7 +339,7 @@ export default function Goals() {
                 type="text"
                 placeholder="Dana Darurat, Liburan..."
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, name: capitalizeWords(e.target.value) })}
                 className={`w-full bg-slate-50 border ${
                   formErrors.name ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
                 } rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
@@ -342,17 +349,25 @@ export default function Goals() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Target Nominal (IDR)</label>
+            <label className="text-xs font-bold text-slate-700">
+              Target Nominal ({getCurrencyPrefix().trim()})
+            </label>
             <div className="relative">
-              <DollarSign className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <span className="absolute left-3.5 top-3.5 text-xs font-bold text-slate-400 select-none">
+                {getCurrencyPrefix()}
+              </span>
               <input
-                type="number"
-                placeholder="10000000"
-                value={formData.targetAmount}
-                onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
+                type="text"
+                inputMode="numeric"
+                placeholder="10.000.000"
+                value={formatAmountInput(formData.targetAmount)}
+                onChange={(e) => {
+                  const raw = parseAmountInput(e.target.value)
+                  setFormData({ ...formData, targetAmount: raw || '' })
+                }}
                 className={`w-full bg-slate-50 border ${
                   formErrors.targetAmount ? 'border-rose-500' : 'border-slate-200 focus:border-blue-600'
-                } rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
+                } rounded-xl py-3 pl-12 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
               />
             </div>
             {formErrors.targetAmount && <span className="text-xs text-rose-500 font-semibold">{formErrors.targetAmount}</span>}
@@ -379,7 +394,7 @@ export default function Goals() {
             <textarea
               placeholder="Tambahkan catatan untuk tujuan ini..."
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, description: capitalizeFirstLetter(e.target.value) })}
               className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium transition-all resize-none h-20"
             />
           </div>
@@ -417,15 +432,23 @@ export default function Goals() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Nominal Tabungan (IDR)</label>
+            <label className="text-xs font-bold text-slate-700">
+              Nominal Tabungan ({getCurrencyPrefix().trim()})
+            </label>
             <div className="relative">
-              <DollarSign className="absolute left-3.5 top-3.5 w-4 h-4 text-slate-400" />
+              <span className="absolute left-3.5 top-3.5 text-xs font-bold text-slate-400 select-none">
+                {getCurrencyPrefix()}
+              </span>
               <input
-                type="number"
-                placeholder="500000"
-                value={topUpAmount}
-                onChange={(e) => setTopUpAmount(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 pl-10 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
+                type="text"
+                inputMode="numeric"
+                placeholder="500.000"
+                value={formatAmountInput(topUpAmount)}
+                onChange={(e) => {
+                  const raw = parseAmountInput(e.target.value)
+                  setTopUpAmount(raw || '')
+                }}
+                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 pl-12 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
                 autoFocus
               />
             </div>

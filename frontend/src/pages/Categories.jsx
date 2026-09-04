@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
+import { capitalizeWords } from '../utils/formatters'
 import { ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2, Search, ArrowDownUp } from 'lucide-react'
 
 export default function Categories() {
@@ -236,7 +237,7 @@ export default function Categories() {
               required
               placeholder="cth. Listrik, Gaji, Belanjaan"
               value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+              onChange={(e) => setFormData((prev) => ({ ...prev, name: capitalizeWords(e.target.value) }))}
               className="bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 px-4 text-slate-800 outline-none text-sm font-medium transition-all"
             />
           </div>
