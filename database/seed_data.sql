@@ -24,6 +24,25 @@ TRUNCATE TABLE
 RESTART IDENTITY CASCADE;
 
 -- =========================================================
+-- Pastikan kolom reset_password_token tersedia pada tabel users
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'reset_password_token'
+    ) THEN
+        ALTER TABLE users ADD COLUMN reset_password_token VARCHAR(100);
+    END IF;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'reset_password_token_expiry'
+    ) THEN
+        ALTER TABLE users ADD COLUMN reset_password_token_expiry TIMESTAMP;
+    END IF;
+END $$;
+
+-- =========================================================
 -- 1. SEED USERS (20 Pengguna)
 -- Password untuk semua user non-admin: 'password123'
 -- Hash BCrypt: $2a$10$wN3Mh9fAEvs5qFf9pZgHau2W4Y9H.g.p0DkqfB6I5uOqWpI0qJt6u

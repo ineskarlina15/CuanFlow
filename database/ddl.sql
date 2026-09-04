@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS users (
     role user_role NOT NULL DEFAULT 'USER',
     phone VARCHAR(20),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    reset_password_token VARCHAR(100),
+    reset_password_token_expiry TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL
