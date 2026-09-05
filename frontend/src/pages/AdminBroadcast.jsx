@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import api from '../services/api'
 import { 
   Megaphone, 
@@ -11,7 +11,9 @@ import {
   Trash2, 
   Clock, 
   ShieldAlert,
-  Sparkles
+  Sparkles,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 
@@ -23,6 +25,11 @@ export default function AdminBroadcast() {
   const [type, setType] = useState('INFO') // 'INFO', 'SYSTEM', 'MAINTENANCE', 'TIPS'
   const [targetAudience, setTargetAudience] = useState('ALL_USERS')
   const [isSending, setIsSending] = useState(false)
+
+  // Sortir & Pagination State
+  const [sortOrder, setSortOrder] = useState('TERBARU') // 'TERBARU', 'TERLAMA', 'A-Z', 'Z-A'
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 4
 
   // Riwayat Siaran Pengumuman yang pernah dikirimkan oleh Admin
   const [broadcastHistory, setBroadcastHistory] = useState([
@@ -71,7 +78,7 @@ export default function AdminBroadcast() {
             type: b.type || 'INFO',
             target: b.targetAudience === 'ALL_USERS' ? 'Semua Pengguna' : 'Pengguna Aktif',
             recipientsCount: b.recipientsCount || 20,
-            sentAt: b.sentAt ? new Date(b.sentAt).toLocaleString('id-ID') : '2024',
+            sentAt: b.sentAt ? new Date(b.sentAt).toISOString().replace('T', ' ').slice(0, 19) : '2024-08-18 08:00:00',
             status: 'TERKIRIM'
           }))
           setBroadcastHistory(mapped)
@@ -83,6 +90,26 @@ export default function AdminBroadcast() {
 
     fetchBroadcastHistory()
   }, [])
+
+  // Pengurutan Riwayat Siaran
+  const sortedBroadcasts = useMemo(() => {
+    const list = [...broadcastHistory]
+    list.sort((a, b) => {
+      if (sortOrder === 'TERBARU') return (b.id || 0) - (a.id || 0)
+      if (sortOrder === 'TERLAMA') return (a.id || 0) - (b.id || 0)
+      if (sortOrder === 'A-Z') return a.title.localeCompare(b.title, 'id', { sensitivity: 'base' })
+      if (sortOrder === 'Z-A') return b.title.localeCompare(a.title, 'id', { sensitivity: 'base' })
+      return 0
+    })
+    return list
+  }, [broadcastHistory, sortOrder])
+
+  // Pagination Riwayat Siaran
+  const totalPages = Math.max(1, Math.ceil(sortedBroadcasts.length / itemsPerPage))
+  const paginatedBroadcasts = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return sortedBroadcasts.slice(start, start + itemsPerPage)
+  }, [sortedBroadcasts, currentPage, itemsPerPage])
 
   const handleSendBroadcast = async (e) => {
     e.preventDefault()
@@ -289,16 +316,39 @@ export default function AdminBroadcast() {
 
         {/* Tabel Riwayat Siaran (Kolom Kanan) */}
         <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden flex flex-col">
-          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          {/* Header Riwayat & Filter Sortir */}
+          <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-black text-slate-900 font-heading">Riwayat Siaran Pengumuman</h3>
               <p className="text-xs text-slate-400">Daftar pengumuman yang telah dikirimkan oleh administrator</p>
             </div>
-            <span className="px-3 py-1 rounded-xl text-xs font-bold bg-slate-100 text-slate-600">
-              {broadcastHistory.length} Siaran
-            </span>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+              {/* Dropdown Sortir Riwayat */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-slate-400 hidden md:inline">Urutkan:</span>
+                <select
+                  value={sortOrder}
+                  onChange={(e) => {
+                    setSortOrder(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-1.5 px-2.5 text-slate-800 text-xs font-bold outline-none cursor-pointer transition-all shadow-2xs hover:bg-slate-100/70"
+                >
+                  <option value="TERBARU">🕒 Terbaru</option>
+                  <option value="TERLAMA">⏳ Terlama</option>
+                  <option value="A-Z">🔤 Judul (A - Z)</option>
+                  <option value="Z-A">🔡 Judul (Z - A)</option>
+                </select>
+              </div>
+
+              <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600">
+                {broadcastHistory.length} Siaran
+              </span>
+            </div>
           </div>
 
+          {/* Tabel Riwayat */}
           <div className="overflow-x-auto flex-grow">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -311,14 +361,14 @@ export default function AdminBroadcast() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-                {broadcastHistory.length === 0 ? (
+                {paginatedBroadcasts.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="py-12 text-center text-slate-400">
                       Belum ada riwayat siaran pengumuman.
                     </td>
                   </tr>
                 ) : (
-                  broadcastHistory.map((b) => (
+                  paginatedBroadcasts.map((b) => (
                     <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-3.5 px-4 max-w-sm">
                         <span className="font-extrabold text-slate-900 text-sm block">
@@ -355,6 +405,52 @@ export default function AdminBroadcast() {
               </tbody>
             </table>
           </div>
+
+          {/* Navigasi Pagination Riwayat Siaran */}
+          {sortedBroadcasts.length > 0 && (
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+              <span>
+                Menampilkan <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> - <strong>{Math.min(currentPage * itemsPerPage, sortedBroadcasts.length)}</strong> dari <strong>{sortedBroadcasts.length}</strong> siaran
+              </span>
+
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+                >
+                  <ChevronLeft className="w-3.5 h-3.5" />
+                  <span>Sebelumnya</span>
+                </button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-7 h-7 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        currentPage === page
+                          ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
+                          : 'text-slate-600 hover:bg-white'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+                >
+                  <span>Selanjutnya</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
         </div>
 
       </div>
