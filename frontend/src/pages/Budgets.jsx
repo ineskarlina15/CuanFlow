@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
@@ -25,8 +25,8 @@ export default function Budgets() {
   const [formData, setFormData] = useState({
     categoryId: '',
     amount: '',
-    month: month,
-    year: year,
+    month: currentDate.getMonth() + 1,
+    year: currentDate.getFullYear(),
     description: ''
   })
   const [formErrors, setFormErrors] = useState({})
@@ -41,8 +41,9 @@ export default function Budgets() {
       const res = await api.get('/financeSvc/api/v1/categories')
       if (res?.data) {
         setCategories(res.data)
-        if (res.data.length > 0 && !formData.categoryId) {
-          setFormData((prev) => ({ ...prev, categoryId: res.data[0].id }))
+        const firstExpense = res.data.find(c => String(c.type || '').toUpperCase() === 'EXPENSE')
+        if (firstExpense && !formData.categoryId) {
+          setFormData((prev) => ({ ...prev, categoryId: firstExpense.id }))
         }
       }
     } catch {
@@ -92,8 +93,9 @@ export default function Budgets() {
       })
     } else {
       setSelectedBudget(null)
+      const firstExpense = categories.find(c => String(c.type || '').toUpperCase() === 'EXPENSE') || categories[0]
       setFormData({
-        categoryId: categories[0]?.id || '',
+        categoryId: firstExpense?.id || '',
         amount: '',
         month: month,
         year: year,
@@ -102,6 +104,15 @@ export default function Budgets() {
     }
     setIsModalOpen(true)
   }
+
+  // Hanya tampilkan kategori jenis Pengeluaran (EXPENSE) untuk konfigurasi batas anggaran
+  const expenseCategories = useMemo(() => {
+    return categories.filter(c => {
+      const isExpense = String(c.type || '').toUpperCase() === 'EXPENSE'
+      const isCurrentSelected = modalType === 'edit' && String(c.id) === String(formData.categoryId)
+      return isExpense || isCurrentSelected
+    })
+  }, [categories, modalType, formData.categoryId])
 
   const validate = () => {
     const errors = {}
@@ -377,7 +388,12 @@ export default function Budgets() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">Kategori</label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700">Kategori Pengeluaran</label>
+              <span className="text-[11px] font-semibold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-md">
+                Batas Pengeluaran
+              </span>
+            </div>
             <select
               value={formData.categoryId}
               onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
@@ -386,8 +402,8 @@ export default function Budgets() {
               } rounded-xl py-3 px-3.5 text-slate-800 outline-none text-sm font-medium cursor-pointer transition-all`}
               disabled={modalType === 'edit'}
             >
-              <option value="">Pilih Kategori</option>
-              {categories.map((cat) => (
+              <option value="">Pilih Kategori Pengeluaran</option>
+              {expenseCategories.map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>

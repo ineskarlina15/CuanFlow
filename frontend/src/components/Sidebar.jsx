@@ -38,10 +38,10 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const userLinks = [
     { to: '/dashboard', label: 'Beranda', icon: LayoutDashboard },
-    { to: '/transactions', label: 'Transaksi', icon: Receipt },
-    { to: '/budgets', label: 'Anggaran', icon: Landmark },
     { to: '/categories', label: 'Kategori', icon: ShieldAlert },
     { to: '/tags', label: 'Tag', icon: Tag },
+    { to: '/budgets', label: 'Anggaran', icon: Landmark },
+    { to: '/transactions', label: 'Transaksi', icon: Receipt },
     { to: '/goals', label: 'Tujuan Keuangan', icon: Target },
     { to: '/reports', label: 'Laporan', icon: BarChart3 },
     { to: '/notifications', label: 'Notifikasi', icon: Bell },
