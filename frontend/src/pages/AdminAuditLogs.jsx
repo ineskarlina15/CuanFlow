@@ -3,7 +3,6 @@ import api from '../services/api'
 import { 
   FileText, 
   Search, 
-  Download, 
   ShieldCheck, 
   AlertTriangle, 
   Info, 
@@ -13,7 +12,12 @@ import {
   Clock, 
   User, 
   Server,
-  Calendar
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  FileSpreadsheet,
+  FileDown,
+  Loader2
 } from 'lucide-react'
 import Modal from '../components/Modal'
 import { useToast } from '../contexts/ToastContext'
@@ -23,9 +27,12 @@ export default function AdminAuditLogs() {
   const [searchTerm, setSearchTerm] = useState('')
   const [actionFilter, setActionFilter] = useState('ALL')
   const [severityFilter, setSeverityFilter] = useState('ALL')
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
   const [selectedLog, setSelectedLog] = useState(null)
   const [isDetailOpen, setIsDetailOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   // Sampel Data Audit Trail Komprehensif untuk Pengujian Sistem Informasi Akuntansi (COSO Framework)
   const [auditLogs, setAuditLogs] = useState([
@@ -140,53 +147,82 @@ export default function AdminAuditLogs() {
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0',
       status: 'SUCCESS',
       severity: 'HIGH'
+    },
+    {
+      id: 'LOG-2024-009',
+      timestamp: '2024-08-15 15:00:00',
+      actor: 'Dewi Lestari',
+      actorRole: 'USER',
+      action: 'CREATE_GOAL',
+      module: 'FINANCIAL_GOALS',
+      entity: 'Target Tabungan: Dana Darurat 2024',
+      description: 'Membuat target tabungan baru senilai Rp 25.000.000',
+      ipAddress: '192.168.1.125',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0',
+      status: 'SUCCESS',
+      severity: 'LOW'
+    },
+    {
+      id: 'LOG-2024-010',
+      timestamp: '2024-08-14 11:20:45',
+      actor: 'System Administrator',
+      actorRole: 'ADMIN',
+      action: 'UPDATE_CATEGORY',
+      module: 'SYSTEM_SETTINGS',
+      entity: 'Master Kategori ID #3 (Makanan & Minuman)',
+      description: 'Memperbarui keterangan dan kode warna kategori dasar sistem',
+      ipAddress: '192.168.1.105',
+      userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0',
+      status: 'SUCCESS',
+      severity: 'MEDIUM'
     }
   ])
 
-  useEffect(() => {
-    const fetchAuditLogs = async () => {
-      setLoading(true)
-      try {
-        const res = await api.get('/authSvc/api/v1/audit-logs')
-        const data = res?.data || res
-        if (Array.isArray(data) && data.length > 0) {
-          const mapped = data.map(l => ({
-            id: `LOG-${l.id}`,
-            timestamp: l.createdAt ? new Date(l.createdAt).toLocaleString('id-ID') : '2024-08-20 12:00:00',
-            actor: l.userId === 1 ? 'System Administrator' : (l.userId ? `User #${l.userId}` : 'System / Guest'),
-            actorRole: l.userId === 1 ? 'ADMIN' : 'USER',
-            action: l.action || 'ACTIVITY',
-            module: l.module || 'SYSTEM',
-            entity: l.entity || 'Sistem CuanFlow',
-            description: l.description || '-',
-            ipAddress: l.ipAddress || '127.0.0.1',
-            userAgent: l.userAgent || 'Web Browser',
-            status: l.status || 'SUCCESS',
-            severity: l.severity || 'LOW'
-          }))
-          setAuditLogs(mapped)
-        }
-      } catch {
-        // Gunakan sampel bawaan jika backend belum selesai di-rebuild
-      } finally {
-        setLoading(false)
+  // Ambil Data Nyata dari Backend Auth Service
+  const fetchAuditLogs = async () => {
+    setLoading(true)
+    try {
+      const res = await api.get('/authSvc/api/v1/audit-logs')
+      const data = res?.data || res
+      if (Array.isArray(data) && data.length > 0) {
+        const mapped = data.map((l, idx) => ({
+          id: `LOG-2024-${String(l.id || idx + 1).padStart(3, '0')}`,
+          timestamp: l.createdAt ? new Date(l.createdAt).toISOString().replace('T', ' ').slice(0, 19) : '2024-08-20 12:00:00',
+          actor: l.userId === 1 ? 'System Administrator' : (l.userId ? `User #${l.userId}` : 'Sistem'),
+          actorRole: l.userId === 1 ? 'ADMIN' : (l.userId ? 'USER' : 'SYSTEM'),
+          action: l.action || 'ACTIVITY',
+          module: l.module || 'SYSTEM',
+          entity: l.entity || '-',
+          description: l.description || 'Aktivitas sistem tercatat',
+          ipAddress: l.ipAddress || '127.0.0.1',
+          userAgent: l.userAgent || 'Web Browser',
+          status: l.status || 'SUCCESS',
+          severity: l.severity || 'LOW'
+        }))
+        setAuditLogs(mapped)
       }
+    } catch {
+      // Pertahankan data sampel komprehensif saat terjadi fallback
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchAuditLogs()
   }, [])
 
-  // Filter logs berdasarkan pencarian dan dropdown
+  // Filter Log Audit
   const filteredLogs = useMemo(() => {
     return auditLogs.filter(log => {
       const matchSearch = 
         log.actor.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        log.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         log.entity.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.id.toLowerCase().includes(searchTerm.toLowerCase())
+        log.ipAddress.includes(searchTerm)
 
-      const matchAction = 
-        actionFilter === 'ALL' || 
+      const matchAction = actionFilter === 'ALL' || 
         (actionFilter === 'AUTH' && (log.action === 'FAILED_LOGIN' || log.action === 'UPDATE_ROLE' || log.action === 'UPDATE_PROFILE')) ||
         (actionFilter === 'USER_MGT' && (log.action === 'UPDATE_ROLE' || log.action === 'SUSPEND_ACCOUNT' || log.action === 'DELETE_USER')) ||
         (actionFilter === 'FINANCE' && (log.action === 'CREATE_TRANSACTION' || log.action === 'EXPORT_REPORT')) ||
@@ -198,25 +234,60 @@ export default function AdminAuditLogs() {
     })
   }, [auditLogs, searchTerm, actionFilter, severityFilter])
 
-  // Unduh Berkas Audit CSV
-  const handleExportAuditLog = () => {
-    try {
-      const headers = 'Log ID,Timestamp,Aktor,Peran,Aksi,Modul,Entitas,Deskripsi,IP Address,Status,Tingkat Risiko\n'
-      const rows = filteredLogs.map(l => 
-        `"${l.id}","${l.timestamp}","${l.actor}","${l.actorRole}","${l.action}","${l.module}","${l.entity}","${l.description}","${l.ipAddress}","${l.status}","${l.severity}"`
-      ).join('\n')
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredLogs.length / itemsPerPage))
+  const paginatedLogs = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return filteredLogs.slice(start, start + itemsPerPage)
+  }, [filteredLogs, currentPage, itemsPerPage])
 
-      const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
+  // Unduh Berkas Audit PDF via Backend (OpenPDF Landscape A4)
+  const handleExportPdf = async () => {
+    setIsExporting(true)
+    try {
+      const res = await api.get('/authSvc/api/v1/audit-logs/export/pdf', {
+        responseType: 'blob'
+      })
+      const blob = new Blob([res], { type: 'application/pdf' })
+      const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.setAttribute('download', `CuanFlow_Audit_Trail_${new Date().toISOString().slice(0, 10)}.csv`)
+      link.setAttribute('download', `CuanFlow_Laporan_Audit_Trail_${new Date().toISOString().slice(0, 10)}.pdf`)
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      showToast('Berkas Jejak Audit (Audit Trail CSV) berhasil diunduh', 'success')
-    } catch {
-      showToast('Gagal mengunduh log audit', 'error')
+      window.URL.revokeObjectURL(url)
+      showToast('Laporan Rekam Jejak Audit (PDF Resmi Standar COSO) berhasil diunduh!', 'success')
+    } catch (err) {
+      showToast('Gagal mengunduh berkas PDF dari server: ' + (err.message || ''), 'error')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  // Unduh Berkas Audit Excel (.xlsx) via Backend (Apache POI)
+  const handleExportExcel = async () => {
+    setIsExporting(true)
+    try {
+      const res = await api.get('/authSvc/api/v1/audit-logs/export/excel', {
+        responseType: 'blob'
+      })
+      const blob = new Blob([res], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `CuanFlow_Laporan_Audit_Trail_${new Date().toISOString().slice(0, 10)}.xlsx`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      showToast('Lembar Kerja Jejak Audit (Excel .xlsx Resmi) berhasil diunduh!', 'success')
+    } catch (err) {
+      showToast('Gagal mengunduh berkas Excel dari server: ' + (err.message || ''), 'error')
+    } finally {
+      setIsExporting(false)
     }
   }
 
@@ -283,14 +354,30 @@ export default function AdminAuditLogs() {
           </p>
         </div>
 
-        {/* Tombol Ekspor Audit Trail */}
-        <button
-          onClick={handleExportAuditLog}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md transition-all self-start sm:self-auto cursor-pointer"
-        >
-          <Download className="w-4 h-4 text-slate-200" />
-          <span>Ekspor Berkas Audit (CSV)</span>
-        </button>
+        {/* Tombol Ekspor Berkas Audit (PDF & Excel Backend) */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+          {/* Tombol Ekspor PDF */}
+          <button
+            onClick={handleExportPdf}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md shadow-rose-600/20 transition-all cursor-pointer disabled:opacity-50"
+            title="Unduh Laporan Audit Trail Resmi Format Adobe PDF (Landscape A4)"
+          >
+            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            <span>Ekspor PDF</span>
+          </button>
+
+          {/* Tombol Ekspor Excel */}
+          <button
+            onClick={handleExportExcel}
+            disabled={isExporting}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-50"
+            title="Unduh Berkas Audit Trail Resmi Format Microsoft Excel (.xlsx)"
+          >
+            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet className="w-4 h-4" />}
+            <span>Ekspor Excel (.xlsx)</span>
+          </button>
+        </div>
       </div>
 
       {/* Filter & Bar Pencarian */}
@@ -302,7 +389,10 @@ export default function AdminAuditLogs() {
             type="text"
             placeholder="Cari aktor, ID log, deskripsi..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              setCurrentPage(1)
+            }}
             className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
           />
         </div>
@@ -313,23 +403,29 @@ export default function AdminAuditLogs() {
             <span className="text-xs font-bold text-slate-400">Modul:</span>
             <select
               value={actionFilter}
-              onChange={(e) => setActionFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              onChange={(e) => {
+                setActionFilter(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
             >
               <option value="ALL">Semua Modul</option>
               <option value="USER_MGT">Manajemen Pengguna</option>
-              <option value="AUTH">Autentikasi & Profil</option>
-              <option value="FINANCE">Transaksi & Laporan</option>
+              <option value="FINANCE">Keuangan & Laporan</option>
+              <option value="AUTH">Otentikasi & Keamanan</option>
               <option value="SYSTEM">Sistem & Siaran</option>
             </select>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-400">Risiko:</span>
+            <span className="text-xs font-bold text-slate-400">Tingkat Risiko:</span>
             <select
               value={severityFilter}
-              onChange={(e) => setSeverityFilter(e.target.value)}
-              className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+              onChange={(e) => {
+                setSeverityFilter(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
             >
               <option value="ALL">Semua Tingkat</option>
               <option value="HIGH">Tinggi (High)</option>
@@ -340,61 +436,62 @@ export default function AdminAuditLogs() {
         </div>
       </div>
 
-      {/* Tabel Log Audit */}
+      {/* Tabel Jejak Audit */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-slate-100 bg-slate-50/70 text-xs font-bold text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-slate-200 bg-slate-50/80 text-xs font-black text-slate-400 uppercase tracking-wider">
+                <th className="py-3.5 px-4">ID Log</th>
                 <th className="py-3.5 px-4">Waktu (WIB)</th>
-                <th className="py-3.5 px-4">Aktor / Pengguna</th>
-                <th className="py-3.5 px-4">Aktivitas / Aksi</th>
-                <th className="py-3.5 px-4">Deskripsi Peristiwa</th>
+                <th className="py-3.5 px-4">Aktor Pengguna</th>
+                <th className="py-3.5 px-4">Aksi / Tindakan</th>
+                <th className="py-3.5 px-4">Modul Sistem</th>
+                <th className="py-3.5 px-4">Tingkat Risiko</th>
                 <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4">Risiko</th>
-                <th className="py-3.5 px-4 text-center">Detail</th>
+                <th className="py-3.5 px-4 text-center">Rincian</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-700">
-              {filteredLogs.length === 0 ? (
+              {paginatedLogs.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-400">
-                    Tidak ditemukan rekam jejak log audit yang sesuai.
+                  <td colSpan="8" className="py-12 text-center text-slate-400">
+                    Tidak ditemukan data rekam jejak audit yang sesuai filter.
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log) => (
+                paginatedLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-4 text-slate-500 font-mono text-[11px] whitespace-nowrap">
+                    <td className="py-3.5 px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
+                      {log.id}
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">
                       {log.timestamp}
                     </td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <div className="flex flex-col">
-                        <span className="font-extrabold text-slate-900">{log.actor}</span>
-                        <span className="text-[10px] text-slate-400 font-bold">{log.actorRole} • {log.ipAddress}</span>
+                        <span className="font-bold text-slate-900">{log.actor}</span>
+                        <span className="text-[10px] text-slate-400">{log.actorRole}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      <span className="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded text-[11px]">
                         {log.action}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 max-w-xs">
-                      <p className="font-semibold text-slate-800 truncate" title={log.description}>
-                        {log.description}
-                      </p>
-                      <span className="text-[10px] text-slate-400 truncate block">{log.entity}</span>
-                    </td>
-                    <td className="py-3.5 px-4 whitespace-nowrap">
-                      {getStatusBadge(log.status)}
+                    <td className="py-3.5 px-4 whitespace-nowrap text-slate-600 font-medium">
+                      {log.module}
                     </td>
                     <td className="py-3.5 px-4 whitespace-nowrap">
                       {getSeverityBadge(log.severity)}
                     </td>
-                    <td className="py-3.5 px-4 text-center">
+                    <td className="py-3.5 px-4 whitespace-nowrap">
+                      {getStatusBadge(log.status)}
+                    </td>
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap">
                       <button
                         onClick={() => openDetail(log)}
-                        className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
                         title="Lihat Detail Log"
                       >
                         <Eye className="w-4 h-4" />
@@ -407,13 +504,52 @@ export default function AdminAuditLogs() {
           </table>
         </div>
 
-        {/* Footer info total log */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500">
-          <span>Menampilkan <strong>{filteredLogs.length}</strong> dari <strong>{auditLogs.length}</strong> catatan aktivitas sistem</span>
-          <div className="flex items-center gap-1.5 text-indigo-600 font-bold">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Integritas Audit Terjamin</span>
+        {/* Footer info total log & Pagination Kontrol */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <span>
+              Menampilkan <strong>{filteredLogs.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0}</strong> - <strong>{Math.min(currentPage * itemsPerPage, filteredLogs.length)}</strong> dari <strong>{filteredLogs.length}</strong> catatan aktivitas
+            </span>
           </div>
+
+          {/* Tombol Pagination Prev, Angka Halaman, Next */}
+          {filteredLogs.length > 0 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Sebelumnya</span>
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-8 h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white shadow-xs shadow-indigo-600/20'
+                        : 'text-slate-600 hover:bg-white border border-transparent hover:border-slate-200'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+              >
+                <span>Selanjutnya</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
