@@ -20,6 +20,7 @@ export default function AdminCategories() {
   const { showToast } = useToast()
   const [activeTab, setActiveTab] = useState('ALL') // 'ALL', 'EXPENSE', 'INCOME'
   const [searchTerm, setSearchTerm] = useState('')
+  const [sortOrder, setSortOrder] = useState('TERBARU') // 'TERBARU', 'TERLAMA', 'A-Z', 'Z-A'
 
   // State Modal Tambah / Edit Kategori Master
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -133,16 +134,26 @@ export default function AdminCategories() {
     }
   ])
 
-  // Filter Kategori
+  // Filter & Pengurutan Kategori
   const filteredCategories = useMemo(() => {
-    return categories.filter(c => {
+    const list = categories.filter(c => {
       const matchTab = activeTab === 'ALL' || c.type === activeTab
       const matchSearch = 
         c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         c.description.toLowerCase().includes(searchTerm.toLowerCase())
       return matchTab && matchSearch
     })
-  }, [categories, activeTab, searchTerm])
+
+    list.sort((a, b) => {
+      if (sortOrder === 'TERBARU') return (b.id || 0) - (a.id || 0)
+      if (sortOrder === 'TERLAMA') return (a.id || 0) - (b.id || 0)
+      if (sortOrder === 'A-Z') return a.name.localeCompare(b.name, 'id', { sensitivity: 'base' })
+      if (sortOrder === 'Z-A') return b.name.localeCompare(a.name, 'id', { sensitivity: 'base' })
+      return 0
+    })
+
+    return list
+  }, [categories, activeTab, searchTerm, sortOrder])
 
   const openAddModal = () => {
     setModalMode('add')
@@ -296,16 +307,33 @@ export default function AdminCategories() {
           </button>
         </div>
 
-        {/* Input Pencarian */}
-        <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Cari nama atau keterangan..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
+        {/* Filter Sortir & Input Pencarian */}
+        <div className="flex flex-col sm:flex-row items-center gap-2.5 w-full md:w-auto">
+          {/* Dropdown Sortir */}
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="w-full sm:w-auto bg-white border border-slate-200 focus:border-blue-600 rounded-xl py-2 px-3 text-slate-800 text-xs font-bold outline-none cursor-pointer transition-all shadow-2xs hover:bg-slate-50"
+            >
+              <option value="TERBARU">🕒 Terbaru</option>
+              <option value="TERLAMA">⏳ Terlama</option>
+              <option value="A-Z">🔤 Nama (A - Z)</option>
+              <option value="Z-A">🔡 Nama (Z - A)</option>
+            </select>
+          </div>
+
+          {/* Input Pencarian */}
+          <div className="relative w-full sm:w-64">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Cari nama atau keterangan..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
         </div>
       </div>
 
