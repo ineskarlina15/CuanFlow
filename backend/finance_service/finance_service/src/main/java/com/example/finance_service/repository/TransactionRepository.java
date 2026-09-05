@@ -68,8 +68,8 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.userId = :userId AND t.category.id = :categoryId AND t.deletedAt IS NULL " +
-           "AND MONTH(t.transactionDate) = :month " +
-           "AND YEAR(t.transactionDate) = :year")
+           "AND EXTRACT(MONTH FROM t.transactionDate) = :month " +
+           "AND EXTRACT(YEAR FROM t.transactionDate) = :year")
     BigDecimal calculateTotalSpentByCategoryAndMonth(
             @Param("userId") Integer userId,
             @Param("categoryId") Integer categoryId,

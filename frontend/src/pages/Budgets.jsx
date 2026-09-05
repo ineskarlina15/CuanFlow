@@ -51,12 +51,15 @@ export default function Budgets() {
     }
   }
 
-  const fetchBudgets = async () => {
+  const fetchBudgets = async (targetMonth = month, targetYear = year) => {
     setLoading(true)
     try {
-      const res = await api.get(`/financeSvc/api/v1/budgets?month=${month}&year=${year}`)
-      if (res?.data) {
-        setBudgets(res.data)
+      const res = await api.get(`/financeSvc/api/v1/budgets?month=${targetMonth}&year=${targetYear}`)
+      const rawData = res?.data !== undefined ? res.data : res
+      if (Array.isArray(rawData)) {
+        setBudgets(rawData)
+      } else {
+        setBudgets([])
       }
     } catch (err) {
       showToast(err.message || 'Gagal memuat anggaran', 'error')
@@ -159,8 +162,12 @@ export default function Budgets() {
         await api.put(`/financeSvc/api/v1/budgets/${selectedBudget.budget.id}`, payload)
         showToast('Anggaran berhasil diperbarui!', 'success')
       }
+      const targetMonth = Number(formData.month)
+      const targetYear = Number(formData.year)
       setIsModalOpen(false)
-      fetchBudgets()
+      setMonth(targetMonth)
+      setYear(targetYear)
+      fetchBudgets(targetMonth, targetYear)
     } catch (err) {
       showToast(err.message || 'Gagal menyimpan anggaran', 'error')
     } finally {

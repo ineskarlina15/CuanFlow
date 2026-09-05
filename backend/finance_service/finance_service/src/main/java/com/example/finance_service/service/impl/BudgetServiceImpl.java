@@ -33,6 +33,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public Budget createBudget(Integer userId, BudgetReq request) throws Exception {
         Category category = categoryRepository.findByIdAndUserId(request.getCategoryId(), userId)
+                .or(() -> categoryRepository.findById(request.getCategoryId()))
                 .orElseThrow(() -> new Exception("Kategori tidak ditemukan"));
 
         if (!"EXPENSE".equals(category.getType().name())) {
@@ -95,11 +96,21 @@ public class BudgetServiceImpl implements BudgetService {
 
         List<BudgetRes> response = new ArrayList<>();
         for (Budget budget : budgets) {
-            BigDecimal usedAmount = transactionRepository.calculateTotalSpentByCategoryAndMonth(
-                    userId, budget.getCategory().getId(), budget.getMonth(), budget.getYear());
+            BigDecimal usedAmount = BigDecimal.ZERO;
+            try {
+                if (budget.getCategory() != null && budget.getCategory().getId() != null) {
+                    BigDecimal spent = transactionRepository.calculateTotalSpentByCategoryAndMonth(
+                            userId, budget.getCategory().getId(), budget.getMonth(), budget.getYear());
+                    if (spent != null) {
+                        usedAmount = spent;
+                    }
+                }
+            } catch (Exception e) {
+                usedAmount = BigDecimal.ZERO;
+            }
 
             Double percentageUsed = 0.0;
-            if (budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
+            if (budget.getAmount() != null && budget.getAmount().compareTo(BigDecimal.ZERO) > 0) {
                 percentageUsed = usedAmount.divide(budget.getAmount(), 4, RoundingMode.HALF_UP)
                         .multiply(new BigDecimal("100")).doubleValue();
             }
@@ -121,6 +132,7 @@ public class BudgetServiceImpl implements BudgetService {
         Budget budget = getBudgetById(userId, id);
         
         Category category = categoryRepository.findByIdAndUserId(request.getCategoryId(), userId)
+                .or(() -> categoryRepository.findById(request.getCategoryId()))
                 .orElseThrow(() -> new Exception("Kategori tidak ditemukan"));
 
         if (!"EXPENSE".equals(category.getType().name())) {
