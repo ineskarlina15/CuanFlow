@@ -12,26 +12,44 @@ import {
   Settings, 
   LogOut, 
   X,
-  Home,
-  Target
+  Target,
+  Users,
+  FileText,
+  Megaphone,
+  ShieldCheck
 } from 'lucide-react'
 
 export default function Sidebar({ isOpen, onClose }) {
   const { logout, user } = useAuth()
 
-  const links = [
-    { to: user?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard', label: 'Beranda', icon: LayoutDashboard },
-    ...(user?.role === 'ADMIN' ? [{ to: '/admin/users', label: 'Pengguna', icon: User }] : []),
+  const isAdmin = user?.role === 'ADMIN'
+
+  const adminLinks = [
+    { section: 'TATA KELOLA SISTEM' },
+    { to: '/admin/dashboard', label: 'Dasbor Sistem', icon: LayoutDashboard },
+    { to: '/admin/users', label: 'Kelola Pengguna', icon: Users },
+    { to: '/admin/categories', label: 'Master Kategori', icon: ShieldCheck },
+    { to: '/admin/audit-logs', label: 'Log Audit Sistem', icon: FileText },
+    { to: '/admin/broadcast', label: 'Siaran Notifikasi', icon: Megaphone },
+    { section: 'AKUN & KEAMANAN' },
+    { to: '/profile', label: 'Profil Admin', icon: User },
+    { to: '/settings', label: 'Pengaturan', icon: Settings },
+  ]
+
+  const userLinks = [
+    { to: '/dashboard', label: 'Beranda', icon: LayoutDashboard },
+    { to: '/transactions', label: 'Transaksi', icon: Receipt },
+    { to: '/budgets', label: 'Anggaran', icon: Landmark },
     { to: '/categories', label: 'Kategori', icon: ShieldAlert },
     { to: '/tags', label: 'Tag', icon: Tag },
-    { to: '/budgets', label: 'Anggaran', icon: Landmark },
-    { to: '/transactions', label: 'Transaksi', icon: Receipt },
     { to: '/goals', label: 'Tujuan Keuangan', icon: Target },
     { to: '/reports', label: 'Laporan', icon: BarChart3 },
     { to: '/notifications', label: 'Notifikasi', icon: Bell },
     { to: '/profile', label: 'Profil', icon: User },
     { to: '/settings', label: 'Pengaturan', icon: Settings },
   ]
+
+  const links = isAdmin ? adminLinks : userLinks
 
   const activeClass = 'flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600 text-white font-bold shadow-md shadow-blue-600/30 transition-all duration-200'
   const inactiveClass = 'flex items-center gap-3 px-4 py-3 rounded-xl text-blue-100/80 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium'
@@ -66,7 +84,16 @@ export default function Sidebar({ isOpen, onClose }) {
 
           {/* Navigation Links */}
           <nav className="flex flex-col gap-1">
-            {links.map((link) => {
+            {links.map((link, idx) => {
+              if (link.section) {
+                return (
+                  <div key={idx} className="pt-3 pb-1 px-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-blue-300/70">
+                      {link.section}
+                    </span>
+                  </div>
+                )
+              }
               const Icon = link.icon
               return (
                 <NavLink

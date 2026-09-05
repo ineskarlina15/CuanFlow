@@ -21,6 +21,9 @@ import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminUsers from './pages/AdminUsers'
+import AdminCategories from './pages/AdminCategories'
+import AdminAuditLogs from './pages/AdminAuditLogs'
+import AdminBroadcast from './pages/AdminBroadcast'
 import Unauthorized from './pages/Unauthorized'
 import Forbidden from './pages/Forbidden'
 import NotFound from './pages/NotFound'
@@ -129,6 +132,9 @@ function AppRoutes() {
         <Route element={<AdminRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/categories" element={<AdminCategories />} />
+          <Route path="/admin/audit-logs" element={<AdminAuditLogs />} />
+          <Route path="/admin/broadcast" element={<AdminBroadcast />} />
         </Route>
         <Route path="/transactions" element={<Transactions />} />
         <Route path="/budgets" element={<Budgets />} />
