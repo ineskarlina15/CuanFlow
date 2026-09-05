@@ -10,18 +10,29 @@
 -- 0. BERSIHKAN DATA LAMA & RESET SEQUENCE IDENTITY
 -- Mencegah error duplicate key / bentrok email dan ID
 -- =========================================================
-TRUNCATE TABLE 
-    transaction_tags, 
-    attachments, 
-    transactions, 
-    budgets, 
-    financial_goals, 
-    notifications, 
-    tags, 
-    categories, 
-    profiles, 
-    users 
-RESTART IDENTITY CASCADE;
+DO $$
+BEGIN
+    TRUNCATE TABLE 
+        transaction_tags, 
+        attachments, 
+        transactions, 
+        budgets, 
+        financial_goals, 
+        notifications, 
+        tags, 
+        categories, 
+        profiles, 
+        users 
+    RESTART IDENTITY CASCADE;
+
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'audit_logs') THEN
+        EXECUTE 'TRUNCATE TABLE audit_logs RESTART IDENTITY CASCADE';
+    END IF;
+
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'system_broadcasts') THEN
+        EXECUTE 'TRUNCATE TABLE system_broadcasts RESTART IDENTITY CASCADE';
+    END IF;
+END $$;
 
 -- =========================================================
 -- Pastikan kolom reset_password_token tersedia pada tabel users
@@ -355,7 +366,45 @@ INSERT INTO attachments (id, transaction_id, file_name, file_url, file_type, fil
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================================================
--- 12. SINKRONISASI IDENTITY SEQUENCES
+-- 12. SEED AUDIT_LOGS (20 Log Jejak Audit Pengendalian Internal SIA)
+-- Memenuhi Syarat Minimal 20 Data Awal & Standar Audit COSO
+-- =========================================================
+INSERT INTO audit_logs (id, user_id, action, module, entity, description, ip_address, user_agent, status, severity, created_at) VALUES
+(1, 1, 'UPDATE_ROLE', 'USER_MANAGEMENT', 'User ID #2 (Galang Pratama)', 'Mengubah peran pengguna dari USER menjadi ADMIN', '192.168.1.105', 'Chrome/128.0 Windows 10', 'SUCCESS', 'HIGH', '2024-08-20 14:32:15'),
+(2, 5, 'EXPORT_REPORT', 'FINANCIAL_REPORT', 'Report PDF (Periode Agustus 2024)', 'Melakukan ekspor Laporan Keuangan Pribadi format PDF', '192.168.1.112', 'Edge/127.0 Windows 11', 'SUCCESS', 'LOW', '2024-08-20 11:15:40'),
+(3, 1, 'SUSPEND_ACCOUNT', 'SECURITY_CONTROL', 'User ID #14 (Rian Hidayat)', 'Menonaktifkan status akun pengguna karena aktivitas mencurigakan', '192.168.1.105', 'Chrome/128.0 Windows 10', 'WARNING', 'HIGH', '2024-08-19 16:45:02'),
+(4, 4, 'CREATE_TRANSACTION', 'TRANSACTION_SERVICE', 'Transaksi ID #142 (Nominal: Rp 4.500.000)', 'Membuat transaksi pengeluaran kategori Sewa Kamar Kost', '192.168.1.140', 'Safari/604.1 iOS 17.5', 'SUCCESS', 'LOW', '2024-08-19 09:20:11'),
+(5, NULL, 'FAILED_LOGIN', 'AUTHENTICATION', 'Akun Target: admin@cuanflow.id', 'Percobaan login gagal sebanyak 3 kali (Salah Password)', '182.253.14.92', 'PostmanRuntime/7.39.0', 'FAILED', 'HIGH', '2024-08-18 22:10:05'),
+(6, 1, 'BROADCAST_NOTIFICATION', 'NOTIFICATION_SERVICE', 'Pengumuman Sistem #08', 'Mengirimkan siaran pengumuman pemeliharaan rutin server ke seluruh pengguna', '192.168.1.105', 'Chrome/128.0 Windows 10', 'SUCCESS', 'MEDIUM', '2024-08-18 08:00:00'),
+(7, 6, 'UPDATE_PROFILE', 'AUTH_SERVICE', 'Profil User ID #6', 'Memperbarui informasi profil (Nomor HP, Tanggal Lahir, dan Pekerjaan)', '192.168.1.118', 'Chrome/128.0 Android 14', 'SUCCESS', 'LOW', '2024-08-17 13:40:22'),
+(8, 1, 'DELETE_USER', 'USER_MANAGEMENT', 'User ID #99 (Akun Uji Coba)', 'Menghapus data akun uji coba pengguna secara permanen atas permintaan user', '192.168.1.105', 'Chrome/128.0 Windows 10', 'SUCCESS', 'HIGH', '2024-08-16 10:15:30'),
+(9, 2, 'LOGIN', 'AUTHENTICATION', 'User ID #2 (Galang Pratama)', 'Login berhasil ke dalam sistem CuanFlow', '192.168.1.102', 'Chrome/128.0 Windows 10', 'SUCCESS', 'LOW', '2024-08-16 08:30:10'),
+(10, 3, 'LOGIN', 'AUTHENTICATION', 'User ID #3 (Ines Karlina)', 'Login berhasil ke dalam sistem CuanFlow', '192.168.1.103', 'Chrome/128.0 Windows 10', 'SUCCESS', 'LOW', '2024-08-16 08:45:00'),
+(11, 2, 'CREATE_BUDGET', 'BUDGET_SERVICE', 'Anggaran ID #1 (Makan & Minum: Rp 2.500.000)', 'Membuat plafon anggaran pengeluaran bulanan baru', '192.168.1.102', 'Chrome/128.0 Windows 10', 'SUCCESS', 'LOW', '2024-08-15 09:12:00'),
+(12, 3, 'CREATE_GOAL', 'FINANCIAL_GOAL', 'Target Tabungan ID #2 (Dana Darurat: Rp 15.000.000)', 'Membuat sasaran tujuan finansial tabungan baru', '192.168.1.103', 'Chrome/128.0 Windows 10', 'SUCCESS', 'LOW', '2024-08-15 10:00:45'),
+(13, 1, 'CREATE_CATEGORY', 'CATEGORY_SERVICE', 'Master Kategori ID #10 (Pendidikan & Kursus)', 'Menambahkan template master kategori sistem baru', '192.168.1.105', 'Chrome/128.0 Windows 10', 'SUCCESS', 'MEDIUM', '2024-08-14 14:20:10'),
+(14, 7, 'EXPORT_REPORT', 'FINANCIAL_REPORT', 'Report Excel (Periode Juli 2024)', 'Melakukan ekspor Laporan Keuangan Pribadi format XLSX', '192.168.1.115', 'Chrome/128.0 Windows 10', 'SUCCESS', 'LOW', '2024-08-14 16:50:33'),
+(15, 8, 'UPDATE_PASSWORD', 'AUTH_SERVICE', 'User ID #8 (Dewi Lestari)', 'Memperbarui kata sandi akun pengguna (Password Change)', '192.168.1.120', 'Safari/604.1 macOS', 'SUCCESS', 'MEDIUM', '2024-08-13 11:05:19'),
+(16, 9, 'LOGIN', 'AUTHENTICATION', 'User ID #9 (Eko Prasetyo)', 'Login berhasil ke dalam sistem CuanFlow', '192.168.1.122', 'Firefox/129.0 Linux', 'SUCCESS', 'LOW', '2024-08-13 13:40:00'),
+(17, 10, 'CREATE_TRANSACTION', 'TRANSACTION_SERVICE', 'Transaksi ID #143 (Pemasukan Gaji: Rp 8.000.000)', 'Mencatat arus kas masuk dari penerimaan gaji bulanan', '192.168.1.125', 'Chrome/128.0 Windows 11', 'SUCCESS', 'LOW', '2024-08-12 08:15:22'),
+(18, 1, 'ACTIVATE_ACCOUNT', 'SECURITY_CONTROL', 'User ID #7 (Rian Hidayat)', 'Mengaktifkan kembali status akun pengguna setelah verifikasi identitas', '192.168.1.105', 'Chrome/128.0 Windows 10', 'SUCCESS', 'HIGH', '2024-08-12 15:30:00'),
+(19, 11, 'FAILED_LOGIN', 'AUTHENTICATION', 'Akun Target: anita@gmail.com', 'Percobaan login gagal (Kredensial tidak valid)', '182.253.18.11', 'Chrome/128.0 Android 13', 'FAILED', 'MEDIUM', '2024-08-11 20:45:10'),
+(20, 1, 'SYSTEM_BACKUP', 'SYSTEM_MAINTENANCE', 'Database Snapshot db_cuanflow', 'Melakukan pencadangan (*backup*) data berkala sistem', '192.168.1.105', 'pg_dump Automated Script', 'SUCCESS', 'MEDIUM', '2024-08-11 23:59:59')
+ON CONFLICT (id) DO NOTHING;
+
+-- =========================================================
+-- 13. SEED SYSTEM_BROADCASTS (Contoh Siaran Pengumuman Massal)
+-- =========================================================
+INSERT INTO system_broadcasts (id, sender_id, title, message, type, target_audience, recipients_count, is_sent, sent_at, created_at) VALUES
+(1, 1, 'Pemeliharaan Server Terjadwal (Maintenance)', 'Sistem CuanFlow akan melakukan pemeliharaan rutin pada hari Minggu pukul 00.00 - 02.00 WIB. Mohon simpan transaksi Anda.', 'MAINTENANCE', 'ALL_USERS', 20, true, '2024-08-18 08:00:00', NOW()),
+(2, 1, 'Fitur Baru: Format Laporan Keuangan Pribadi (Excel & PDF)', 'Kini Anda dapat mengunduh laporan keuangan pribadi dengan struktur tabel bulanan terintegrasi dan ringkasan kas lengkap.', 'INFO', 'ACTIVE_ONLY', 19, true, '2024-08-15 14:30:22', NOW()),
+(3, 1, 'Tips CuanFlow: Evaluasi Batas Anggaran Bulanan', 'Jangan lupa untuk memeriksa progres anggaran bulanan Anda agar terhindar dari pengeluaran di atas batas target 80%.', 'TIPS', 'ALL_USERS', 20, true, '2024-08-10 10:00:00', NOW()),
+(4, 1, 'Pemberitahuan Keamanan: Pembaruan Kata Sandi Berkala', 'Demi menjaga keamanan catatan keuangan pribadi Anda, disarankan untuk memperbarui kata sandi akun secara berkala.', 'INFO', 'ALL_USERS', 20, true, '2024-08-05 09:00:00', NOW()),
+(5, 1, 'Edukasi Finansial: Manfaat Pembentukan Pos Dana Darurat', 'Alokasikan minimal 10-20% dari pemasukan bulanan Anda ke dalam fitur Tujuan Keuangan (Dana Darurat).', 'TIPS', 'ALL_USERS', 20, true, '2024-08-01 10:00:00', NOW())
+ON CONFLICT (id) DO NOTHING;
+
+-- =========================================================
+-- 14. SINKRONISASI IDENTITY SEQUENCES
 -- Mencegah error "duplicate key value violates unique constraint"
 -- saat user menambah data baru di aplikasi setelah seeding
 -- =========================================================
@@ -369,6 +418,16 @@ SELECT setval(pg_get_serial_sequence('notifications', 'id'), COALESCE((SELECT MA
 SELECT setval(pg_get_serial_sequence('attachments', 'id'), COALESCE((SELECT MAX(id) FROM attachments), 1));
 SELECT setval(pg_get_serial_sequence('tags', 'id'), COALESCE((SELECT MAX(id) FROM tags), 1));
 
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'audit_logs') THEN
+        PERFORM setval(pg_get_serial_sequence('audit_logs', 'id'), COALESCE((SELECT MAX(id) FROM audit_logs), 1));
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'system_broadcasts') THEN
+        PERFORM setval(pg_get_serial_sequence('system_broadcasts', 'id'), COALESCE((SELECT MAX(id) FROM system_broadcasts), 1));
+    END IF;
+END $$;
+
 -- =========================================================
 -- SEED DATA BERHASIL DI-LOAD SECARA LENGKAP!
 -- Total:
@@ -380,4 +439,7 @@ SELECT setval(pg_get_serial_sequence('tags', 'id'), COALESCE((SELECT MAX(id) FRO
 -- - 20 Financial Goals
 -- - 20 Notifications
 -- - 5 Sample Attachments
+-- - 20 Audit Logs (Sistem Pengendalian Internal COSO)
+-- - 5 System Broadcasts (Siaran Pengumuman Massal)
 -- =========================================================
+
