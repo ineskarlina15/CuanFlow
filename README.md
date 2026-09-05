@@ -171,7 +171,7 @@ CuanFlow/
 │   ├── ddl.sql                               # Data Definition Language (12 Tabel, Enum, PK/FK)
 │   └── seed_data.sql                         # Data Awal Pengujian (20+ Data Riil per Tabel Utama)
 ├── flowchart/                                # Dokumentasi Diagram Alir Sistem
-│   └── FLOWCHART_SISTEM.md                   # Spesifikasi Alur Bisnis, Autentikasi & Akuntansi
+│   └── FLOWCHART_CUANFLOW.io                   # Spesifikasi Alur Bisnis, Autentikasi & Akuntansi
 ├── frontend/                                 # Klien Web SPA (React 19 + Vite)
 │   ├── public/                               # Aset Statis & Favicon
 │   ├── src/
