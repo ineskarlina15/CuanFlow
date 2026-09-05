@@ -1,7 +1,7 @@
 {
     "info": {
-        "name": "CuanFlow API",
-        "description": "Dokumentasi API lengkap untuk proyek S1 CuanFlow (Microservices). Membutuhkan profil dev untuk akun Admin (admin cuanflow).",
+        "name": "CuanFlow API — Personal Finance & Accounting Management System",
+        "description": "Dokumentasi Postman Collection resmi dan lengkap untuk pengujian seluruh endpoint sistem CuanFlow (Microservices Fullstack S1 Akuntansi). Pengembang: Ines Karlina (Kota Banjar / Kota Bandung). Mencakup Auth Service (8021), Finance Service (8022), Notification Service (8023) melalui API Gateway (8024).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "variable": [
@@ -18,10 +18,10 @@
     ],
     "item": [
         {
-            "name": "1. Auth Service",
+            "name": "1. Auth Service (Port 8021 via Gateway)",
             "item": [
                 {
-                    "name": "Register",
+                    "name": "1.1 Registrasi User Baru",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -32,25 +32,17 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Budi Santoso\",\n    \"username\": \"budisantoso\",\n    \"email\": \"budi@example.com\",\n    \"password\": \"Password1!\",\n    \"phone\": \"08123456789\"\n}"
+                            "raw": "{\n    \"name\": \"Ines Karlina\",\n    \"username\": \"ines_karlina\",\n    \"email\": \"ines.karlina@example.com\",\n    \"password\": \"password123\",\n    \"phone\": \"081234567892\"\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/auth/register",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "auth",
-                                "register"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "auth", "register"]
                         }
                     }
                 },
                 {
-                    "name": "Login",
+                    "name": "1.2 Login (User)",
                     "event": [
                         {
                             "listen": "test",
@@ -75,25 +67,31 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"username\": \"budisantoso\",\n    \"password\": \"Password1!\"\n}"
+                            "raw": "{\n    \"username\": \"galang\",\n    \"password\": \"password123\"\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/auth/login",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "auth",
-                                "login"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "auth", "login"]
                         }
                     }
                 },
                 {
-                    "name": "Forgot Password",
+                    "name": "1.3 Login (Admin)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "var jsonData = pm.response.json();",
+                                    "if (jsonData.data && jsonData.data.token) {",
+                                    "    pm.collectionVariables.set(\"token\", jsonData.data.token);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -104,25 +102,38 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"email\": \"budi@example.com\"\n}"
+                            "raw": "{\n    \"username\": \"admin\",\n    \"password\": \"admin123\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/auth/login",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "auth", "login"]
+                        }
+                    }
+                },
+                {
+                    "name": "1.4 Lupa Password (Request Token)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"galang@gmail.com\"\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/auth/forgot-password",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "auth",
-                                "forgot-password"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "auth", "forgot-password"]
                         }
                     }
                 },
                 {
-                    "name": "Reset Password",
+                    "name": "1.5 Reset Password (Ganti Password Baru)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -133,25 +144,17 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"token\": \"<UUID_DARI_RESPONSE_FORGOT_PASSWORD>\",\n    \"newPassword\": \"PasswordBaru2!\"\n}"
+                            "raw": "{\n    \"token\": \"<TOKEN_RESET_DARI_RESPONSE_FORGOT_PASSWORD>\",\n    \"newPassword\": \"PasswordBaru123!\"\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/auth/reset-password",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "auth",
-                                "reset-password"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "auth", "reset-password"]
                         }
                     }
                 },
                 {
-                    "name": "Logout",
+                    "name": "1.6 Logout",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -162,21 +165,13 @@
                         ],
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/auth/logout",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "auth",
-                                "logout"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "auth", "logout"]
                         }
                     }
                 },
                 {
-                    "name": "Get Profile",
+                    "name": "1.7 Ambil Profil Pengguna Login",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -187,21 +182,13 @@
                         ],
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/users/profile",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "users",
-                                "profile"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "users", "profile"]
                         }
                     }
                 },
                 {
-                    "name": "Update Profile",
+                    "name": "1.8 Perbarui Profil Pengguna",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -216,25 +203,17 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Budi Santoso Updated\",\n    \"phone\": \"08111111111\",\n    \"avatarUrl\": \"https://example.com/avatar.png\",\n    \"dateOfBirth\": \"2000-01-01\",\n    \"gender\": \"MALE\",\n    \"address\": \"Jakarta\",\n    \"occupation\": \"Developer\"\n}"
+                            "raw": "{\n    \"name\": \"Galang Pratama Updated\",\n    \"phone\": \"081234567891\",\n    \"avatarUrl\": \"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d\",\n    \"dateOfBirth\": \"1998-05-15\",\n    \"gender\": \"Laki-laki\",\n    \"address\": \"Surabaya, Jawa Timur\",\n    \"occupation\": \"Software Engineer\"\n}"
                         },
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/users/profile",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "users",
-                                "profile"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "users", "profile"]
                         }
                     }
                 },
                 {
-                    "name": "Get All Users (Admin Only)",
+                    "name": "1.9 Ambil Semua Pengguna (Admin Only)",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -245,28 +224,122 @@
                         ],
                         "url": {
                             "raw": "{{baseUrl}}/authSvc/api/v1/users",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "authSvc",
-                                "api",
-                                "v1",
-                                "users"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "users"]
+                        }
+                    }
+                },
+                {
+                    "name": "1.10 Ubah Role Pengguna (Admin Only)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"role\": \"ADMIN\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/users/2/role",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "users", "2", "role"]
+                        }
+                    }
+                },
+                {
+                    "name": "1.11 Ubah Status Aktif Pengguna (Admin Only)",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"isActive\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/users/2/status",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "users", "2", "status"]
+                        }
+                    }
+                },
+                {
+                    "name": "1.12 Hapus Pengguna (Admin Only)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/users/20",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "users", "20"]
+                        }
+                    }
+                },
+                {
+                    "name": "1.13 Ambil Rekam Jejak Audit Sistem (COSO Audit Trail - Admin)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/authSvc/api/v1/audit-logs",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["authSvc", "api", "v1", "audit-logs"]
                         }
                     }
                 }
             ]
         },
         {
-            "name": "2. Finance Service",
+            "name": "2. Finance Service (Port 8022 via Gateway)",
             "item": [
                 {
-                    "name": "Categories",
+                    "name": "2.1 Kategori Transaksi (Categories)",
                     "item": [
                         {
-                            "name": "Create Category",
+                            "name": "Ambil Semua Kategori",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "categories"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Buat Kategori Baru",
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -281,48 +354,17 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"name\": \"Makanan\",\n    \"type\": \"EXPENSE\",\n    \"description\": \"Makan sehari-hari\",\n    \"icon\": \"food\"\n}"
+                                    "raw": "{\n    \"name\": \"Tabungan Saham\",\n    \"type\": \"EXPENSE\",\n    \"description\": \"Alokasi pembelian saham berkala\",\n    \"icon\": \"trending-up\"\n}"
                                 },
                                 "url": {
                                     "raw": "{{baseUrl}}/financeSvc/api/v1/categories",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "categories"
-                                    ]
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "categories"]
                                 }
                             }
                         },
                         {
-                            "name": "Get All Categories",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "categories"
-                                    ]
-                                }
-                            }
-                        },
-                        {
-                            "name": "Get Category By ID",
+                            "name": "Ambil Detail Kategori By ID",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -333,21 +375,13 @@
                                 ],
                                 "url": {
                                     "raw": "{{baseUrl}}/financeSvc/api/v1/categories/1",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "categories",
-                                        "1"
-                                    ]
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "categories", "1"]
                                 }
                             }
                         },
                         {
-                            "name": "Update Category",
+                            "name": "Ubah Kategori",
                             "request": {
                                 "method": "PUT",
                                 "header": [
@@ -362,25 +396,17 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"name\": \"Makanan Updated\",\n    \"type\": \"EXPENSE\",\n    \"description\": \"Makan sehari-hari\",\n    \"icon\": \"food\"\n}"
+                                    "raw": "{\n    \"name\": \"Gaji Pokok & Insentif\",\n    \"type\": \"INCOME\",\n    \"description\": \"Pendapatan bulanan utama dan lembur\",\n    \"icon\": \"wallet\"\n}"
                                 },
                                 "url": {
                                     "raw": "{{baseUrl}}/financeSvc/api/v1/categories/1",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "categories",
-                                        "1"
-                                    ]
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "categories", "1"]
                                 }
                             }
                         },
                         {
-                            "name": "Delete Category",
+                            "name": "Hapus Kategori (Soft Delete)",
                             "request": {
                                 "method": "DELETE",
                                 "header": [
@@ -390,27 +416,46 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories/1",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "categories",
-                                        "1"
-                                    ]
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/categories/20",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "categories", "20"]
                                 }
                             }
                         }
                     ]
                 },
                 {
-                    "name": "Transactions",
+                    "name": "2.2 Transaksi Kas (Transactions)",
                     "item": [
                         {
-                            "name": "Create Transaction (No File)",
+                            "name": "Ambil Transaksi (Multi-Filter & Pagination)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions?page=0&size=10&sortBy=transactionDate&type=EXPENSE",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions"],
+                                    "query": [
+                                        {"key": "page", "value": "0"},
+                                        {"key": "size", "value": "10"},
+                                        {"key": "sortBy", "value": "transactionDate"},
+                                        {"key": "type", "value": "EXPENSE"},
+                                        {"key": "keyword", "value": "Makan", "disabled": true},
+                                        {"key": "categoryId", "value": "6", "disabled": true},
+                                        {"key": "startDate", "value": "2024-08-01", "disabled": true},
+                                        {"key": "endDate", "value": "2024-08-31", "disabled": true}
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Catat Transaksi Baru (JSON Tanpa File)",
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -424,61 +469,52 @@
                                     "formdata": [
                                         {
                                             "key": "data",
-                                            "value": "{\n  \"categoryId\": 1,\n  \"type\": \"EXPENSE\",\n  \"amount\": 25000,\n  \"title\": \"Makan siang\",\n  \"description\": \"Makan siang\",\n  \"transactionDate\": \"2026-08-26\",\n  \"paymentMethod\": \"CASH\"\n}",
+                                            "value": "{\n  \"categoryId\": 6,\n  \"type\": \"EXPENSE\",\n  \"amount\": 35000,\n  \"title\": \"Makan Siang Soto Ayam\",\n  \"description\": \"Makan siang di warung soto dekat kantor\",\n  \"transactionDate\": \"2024-08-25\",\n  \"paymentMethod\": \"CASH\",\n  \"tagIds\": [1, 4]\n}",
                                             "type": "text"
                                         }
                                     ]
                                 },
                                 "url": {
                                     "raw": "{{baseUrl}}/financeSvc/api/v1/transactions",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "transactions"
-                                    ]
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions"]
                                 }
                             }
                         },
                         {
-                            "name": "Get All Transactions",
+                            "name": "Catat Transaksi Baru (Dengan File Struk/PDF)",
                             "request": {
-                                "method": "GET",
+                                "method": "POST",
                                 "header": [
                                     {
                                         "key": "Authorization",
                                         "value": "Bearer {{token}}"
                                     }
                                 ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions?page=0&size=10",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "transactions"
-                                    ],
-                                    "query": [
+                                "body": {
+                                    "mode": "formdata",
+                                    "formdata": [
                                         {
-                                            "key": "page",
-                                            "value": "0"
+                                            "key": "data",
+                                            "value": "{\n  \"categoryId\": 10,\n  \"type\": \"EXPENSE\",\n  \"amount\": 350000,\n  \"title\": \"Bayar Tagihan WiFi Indihome\",\n  \"description\": \"Pembayaran internet bulanan\",\n  \"transactionDate\": \"2024-08-25\",\n  \"paymentMethod\": \"BANK_TRANSFER\"\n}",
+                                            "type": "text"
                                         },
                                         {
-                                            "key": "size",
-                                            "value": "10"
+                                            "key": "file",
+                                            "type": "file",
+                                            "src": ""
                                         }
                                     ]
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions"]
                                 }
                             }
                         },
                         {
-                            "name": "Get Transaction By ID",
+                            "name": "Ambil Detail Transaksi By ID",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -489,21 +525,38 @@
                                 ],
                                 "url": {
                                     "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/1",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "transactions",
-                                        "1"
-                                    ]
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions", "1"]
                                 }
                             }
                         },
                         {
-                            "name": "Delete Transaction",
+                            "name": "Ubah Transaksi",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n  \"categoryId\": 6,\n  \"type\": \"EXPENSE\",\n  \"amount\": 50000,\n  \"title\": \"Makan Siang Soto Komplit\",\n  \"description\": \"Ditambah lauk perkedel dan es teh\",\n  \"transactionDate\": \"2024-08-25\",\n  \"paymentMethod\": \"E_WALLET\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/2",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions", "2"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Hapus Transaksi (Soft Delete)",
                             "request": {
                                 "method": "DELETE",
                                 "header": [
@@ -513,27 +566,19 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/1",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "transactions",
-                                        "1"
-                                    ]
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/25",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions", "25"]
                                 }
                             }
                         }
                     ]
                 },
                 {
-                    "name": "Dashboard & Reports",
+                    "name": "2.3 Pagu Anggaran (Budgets & Warning 80%)",
                     "item": [
                         {
-                            "name": "Get Dashboard",
+                            "name": "Ambil Semua Anggaran (Bisa Filter Bulan/Tahun)",
                             "request": {
                                 "method": "GET",
                                 "header": [
@@ -543,62 +588,18 @@
                                     }
                                 ],
                                 "url": {
-                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/dashboard",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "transactions",
-                                        "dashboard"
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/budgets?month=8&year=2024",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "budgets"],
+                                    "query": [
+                                        {"key": "month", "value": "8"},
+                                        {"key": "year", "value": "2024"}
                                     ]
                                 }
                             }
                         },
                         {
-                            "name": "Get Analytics",
-                            "request": {
-                                "method": "GET",
-                                "header": [
-                                    {
-                                        "key": "Authorization",
-                                        "value": "Bearer {{token}}"
-                                    }
-                                ],
-                                "url": {
-                                    "raw": "{{baseUrl}}/financeSvc/api/v1/reports/analytics?startDate=2026-08-01&endDate=2026-08-31",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "reports",
-                                        "analytics"
-                                    ],
-                                    "query": [
-                                        {
-                                            "key": "startDate",
-                                            "value": "2026-08-01"
-                                        },
-                                        {
-                                            "key": "endDate",
-                                            "value": "2026-08-31"
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    ]
-                },
-                {
-                    "name": "Budgets",
-                    "item": [
-                        {
-                            "name": "Create Budget",
+                            "name": "Buat Pagu Anggaran Baru",
                             "request": {
                                 "method": "POST",
                                 "header": [
@@ -613,18 +614,375 @@
                                 ],
                                 "body": {
                                     "mode": "raw",
-                                    "raw": "{\n    \"categoryId\": 1,\n    \"amount\": 1500000,\n    \"month\": 8,\n    \"year\": 2026\n}"
+                                    "raw": "{\n    \"categoryId\": 6,\n    \"name\": \"Anggaran Makan September 2026\",\n    \"amount\": 1500000,\n    \"month\": 9,\n    \"year\": 2026,\n    \"alertThreshold\": 80\n}"
                                 },
                                 "url": {
                                     "raw": "{{baseUrl}}/financeSvc/api/v1/budgets",
-                                    "host": [
-                                        "{{baseUrl}}"
-                                    ],
-                                    "path": [
-                                        "financeSvc",
-                                        "api",
-                                        "v1",
-                                        "budgets"
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "budgets"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ambil Detail Anggaran By ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/budgets/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "budgets", "1"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ubah Pagu Anggaran",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"categoryId\": 6,\n    \"name\": \"Anggaran Makan Diperbarui\",\n    \"amount\": 1800000,\n    \"alertThreshold\": 85\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/budgets/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "budgets", "1"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Hapus Pagu Anggaran",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/budgets/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "budgets", "1"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.4 Target Tabungan (Financial Goals)",
+                    "item": [
+                        {
+                            "name": "Ambil Semua Target Tabungan",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/goals",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "goals"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Buat Target Tabungan Baru",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Tabungan Liburan ke Bali\",\n    \"targetAmount\": 10000000,\n    \"currentAmount\": 2500000,\n    \"targetDate\": \"2025-12-31\",\n    \"description\": \"Tiket pesawat dan akomodasi di Seminyak\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/goals",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "goals"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ambil Detail Target By ID",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/goals/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "goals", "1"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ubah Target Tabungan",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"Dana Darurat 6 Bulan (Diperbarui)\",\n    \"targetAmount\": 35000000,\n    \"targetDate\": \"2026-06-30\",\n    \"description\": \"Target dinaikkan sesuai kenaikan biaya bulanan\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/goals/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "goals", "1"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Tambah Saldo Tabungan (Add Funds)",
+                            "request": {
+                                "method": "PATCH",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"amount\": 500000\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/goals/1/add-funds",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "goals", "1", "add-funds"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Hapus Target Tabungan",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/goals/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "goals", "1"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.5 Label Kustom Transaksi (Tags)",
+                    "item": [
+                        {
+                            "name": "Ambil Semua Tag",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/tags",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "tags"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Buat Tag Baru",
+                            "request": {
+                                "method": "POST",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"uang-saku\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/tags",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "tags"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ubah Tag",
+                            "request": {
+                                "method": "PUT",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    },
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\n    \"name\": \"rutin-bulanan-updated\"\n}"
+                                },
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/tags/1",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "tags", "1"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Hapus Tag",
+                            "request": {
+                                "method": "DELETE",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/tags/20",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "tags", "20"]
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "2.6 Laporan Keuangan & Ekspor (Reports & Exports)",
+                    "item": [
+                        {
+                            "name": "Get Dashboard Summary Stats",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/transactions/dashboard",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "transactions", "dashboard"]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Get Analytics Data (Income vs Expense)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/reports/analytics?startDate=2024-08-01&endDate=2024-08-31",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "reports", "analytics"],
+                                    "query": [
+                                        {"key": "startDate", "value": "2024-08-01"},
+                                        {"key": "endDate", "value": "2024-08-31"}
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ekspor Laporan Keuangan ke Excel (.xlsx)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/reports/export/excel?startDate=2024-08-01&endDate=2024-08-31",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "reports", "export", "excel"],
+                                    "query": [
+                                        {"key": "startDate", "value": "2024-08-01"},
+                                        {"key": "endDate", "value": "2024-08-31"}
+                                    ]
+                                }
+                            }
+                        },
+                        {
+                            "name": "Ekspor Laporan Keuangan ke PDF (.pdf)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{token}}"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "{{baseUrl}}/financeSvc/api/v1/reports/export/pdf?startDate=2024-08-01&endDate=2024-08-31",
+                                    "host": ["{{baseUrl}}"],
+                                    "path": ["financeSvc", "api", "v1", "reports", "export", "pdf"],
+                                    "query": [
+                                        {"key": "startDate", "value": "2024-08-01"},
+                                        {"key": "endDate", "value": "2024-08-31"}
                                     ]
                                 }
                             }
@@ -634,10 +992,10 @@
             ]
         },
         {
-            "name": "3. Notification Service",
+            "name": "3. Notification Service (Port 8023 via Gateway)",
             "item": [
                 {
-                    "name": "Get All Notifications",
+                    "name": "3.1 Ambil Semua Notifikasi Pengguna",
                     "request": {
                         "method": "GET",
                         "header": [
@@ -648,20 +1006,13 @@
                         ],
                         "url": {
                             "raw": "{{baseUrl}}/notifSvc/api/v1/notifications",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "notifSvc",
-                                "api",
-                                "v1",
-                                "notifications"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["notifSvc", "api", "v1", "notifications"]
                         }
                     }
                 },
                 {
-                    "name": "Mark as Read",
+                    "name": "3.2 Tandai Notifikasi Sudah Dibaca (Mark as Read)",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -672,17 +1023,50 @@
                         ],
                         "url": {
                             "raw": "{{baseUrl}}/notifSvc/api/v1/notifications/1/read",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "notifSvc",
-                                "api",
-                                "v1",
-                                "notifications",
-                                "1",
-                                "read"
-                            ]
+                            "host": ["{{baseUrl}}"],
+                            "path": ["notifSvc", "api", "v1", "notifications", "1", "read"]
+                        }
+                    }
+                },
+                {
+                    "name": "3.3 Ambil Riwayat Siaran Pengumuman (Broadcast)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/notifSvc/api/v1/notifications/broadcast",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["notifSvc", "api", "v1", "notifications", "broadcast"]
+                        }
+                    }
+                },
+                {
+                    "name": "3.4 Kirim Siaran Pengumuman Massal (Admin Only)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"title\": \"Pemberitahuan Sistem Baru\",\n    \"message\": \"Fitur Ekspor Laporan PDF & Excel telah aktif digunakan.\",\n    \"type\": \"INFO\",\n    \"targetAudience\": \"ALL_USERS\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/notifSvc/api/v1/notifications/broadcast",
+                            "host": ["{{baseUrl}}"],
+                            "path": ["notifSvc", "api", "v1", "notifications", "broadcast"]
                         }
                     }
                 }
