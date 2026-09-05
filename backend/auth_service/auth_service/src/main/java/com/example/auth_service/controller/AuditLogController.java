@@ -63,4 +63,30 @@ public class AuditLogController {
             return message.badReq("Gagal mencatat log audit: " + e.getMessage(), 400);
         }
     }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<byte[]> exportExcel() {
+        try {
+            byte[] data = auditLogService.exportAuditLogsToExcel();
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=CuanFlow_Audit_Trail.xlsx")
+                    .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(data);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<byte[]> exportPdf() {
+        try {
+            byte[] data = auditLogService.exportAuditLogsToPdf();
+            return ResponseEntity.ok()
+                    .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=CuanFlow_Audit_Trail.pdf")
+                    .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                    .body(data);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

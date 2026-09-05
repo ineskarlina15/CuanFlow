@@ -98,6 +98,14 @@ public class UserServiceImpl implements UserService{
     public ProfileRes updateUserRole(Integer targetUserId, String roleStr) throws Exception {
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+        
+        // Proteksi Akun Master System Administrator (Super Admin)
+        if (targetUserId == 1 || (user.getEmail() != null && user.getEmail().equalsIgnoreCase("admin@cuanflow.com"))) {
+            if (!"ADMIN".equalsIgnoreCase(roleStr)) {
+                throw new Exception("Akun Master System Administrator (Super Admin) dilindungi dan tidak dapat diubah menjadi USER!");
+            }
+        }
+
         try {
             com.example.auth_service.entity.UserRole role = com.example.auth_service.entity.UserRole.valueOf(roleStr.toUpperCase());
             user.setRole(role);
@@ -118,6 +126,12 @@ public class UserServiceImpl implements UserService{
     public ProfileRes toggleUserStatus(Integer targetUserId) throws Exception {
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+
+        // Proteksi Akun Master System Administrator
+        if (targetUserId == 1 || (user.getEmail() != null && user.getEmail().equalsIgnoreCase("admin@cuanflow.com"))) {
+            throw new Exception("Akun Master System Administrator (Super Admin) dilindungi dan harus selalu berstatus Aktif!");
+        }
+
         boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : true;
         user.setIsActive(!currentStatus);
         userRepository.save(user);
@@ -135,6 +149,12 @@ public class UserServiceImpl implements UserService{
     public void deleteUser(Integer targetUserId) throws Exception {
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+
+        // Proteksi Akun Master System Administrator
+        if (targetUserId == 1 || (user.getEmail() != null && user.getEmail().equalsIgnoreCase("admin@cuanflow.com"))) {
+            throw new Exception("Akun Master System Administrator (Super Admin) dilindungi dan tidak dapat dihapus dari sistem!");
+        }
+
         user.setDeletedAt(java.time.LocalDateTime.now());
         user.setIsActive(false);
         userRepository.save(user);

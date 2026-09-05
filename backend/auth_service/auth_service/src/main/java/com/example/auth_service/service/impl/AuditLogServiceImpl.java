@@ -16,6 +16,9 @@ public class AuditLogServiceImpl implements AuditLogService {
     @Autowired
     private AuditLogRepository auditLogRepository;
 
+    @Autowired
+    private com.example.auth_service.utility.AuditExportUtility auditExportUtility;
+
     @Override
     public List<AuditLog> getAllAuditLogs() {
         return auditLogRepository.findAllByOrderByCreatedAtDesc();
@@ -37,5 +40,25 @@ public class AuditLogServiceImpl implements AuditLogService {
                 .createdAt(LocalDateTime.now())
                 .build();
         return auditLogRepository.save(log);
+    }
+
+    @Override
+    public byte[] exportAuditLogsToExcel() {
+        List<AuditLog> logs = auditLogRepository.findAllByOrderByCreatedAtDesc();
+        try {
+            return auditExportUtility.exportAuditLogsToExcel(logs).readAllBytes();
+        } catch (Exception e) {
+            throw new RuntimeException("Gagal menghasilkan berkas Excel Log Audit: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public byte[] exportAuditLogsToPdf() {
+        List<AuditLog> logs = auditLogRepository.findAllByOrderByCreatedAtDesc();
+        try {
+            return auditExportUtility.exportAuditLogsToPdf(logs).readAllBytes();
+        } catch (Exception e) {
+            throw new RuntimeException("Gagal menghasilkan berkas PDF Log Audit: " + e.getMessage(), e);
+        }
     }
 }
