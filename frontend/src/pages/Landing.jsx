@@ -766,6 +766,7 @@ export default function Landing() {
             <div className="flex flex-col gap-2 text-xs text-slate-400 font-medium">
               <p>Email: <span className="text-slate-200">support@cuanflow.id</span></p>
               <p>Pengembang: <span className="text-slate-200">Ines Karlina</span></p>
+              <p>Asal: <span className="text-slate-200">Kota Banjar, Jawa Barat, Indonesia</span></p>
               <p>Lokasi: <span className="text-slate-200">Kota Bandung, Jawa Barat, Indonesia</span></p>
               <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2 text-[11px] text-emerald-400 font-bold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
