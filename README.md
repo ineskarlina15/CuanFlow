@@ -15,7 +15,7 @@
 
 <br/>
 
-> 🎯 **Projekan Skripsi / Tugas Akhir Program Studi S1 Akuntansi & Sistem Informasi**  
+> 🎯 **Projekan Program Studi S1, dari Program Beasiswa PUB**  
 > 👩‍💻 **Pengembang Tunggal:** **Ines Karlina**  
 > 🏡 **Asal:** Kota Banjar, Jawa Barat, Indonesia  
 > 📍 **Domisili / Lokasi:** Kota Bandung, Jawa Barat, Indonesia  
