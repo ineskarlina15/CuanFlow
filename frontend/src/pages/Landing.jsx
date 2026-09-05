@@ -403,14 +403,14 @@ export default function Landing() {
             </p>
           </div>
 
-          {/* Feature 4: Financial Reports & CSV Export */}
+          {/* Feature 4: Financial Reports & PDF/Excel Export */}
           <div className="p-8 rounded-3xl border border-slate-200 bg-white shadow-xs hover:shadow-xl transition-all flex flex-col gap-4 group">
             <div className="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-all">
               <Download className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-black text-slate-900 font-heading">Laporan & Ekspor Excel/CSV</h3>
+            <h3 className="text-xl font-black text-slate-900 font-heading">Laporan & Ekspor PDF & Excel</h3>
             <p className="text-xs text-slate-500 leading-relaxed font-medium">
-              <strong>Gunanya:</strong> Menyediakan diagram breakdown persentase pengeluaran dan memungkinkan Anda mengunduh data laporan bulanan ke file Excel/CSV untuk pembukuan.
+              <strong>Gunanya:</strong> Menyediakan diagram breakdown persentase pengeluaran dan memungkinkan Anda mengunduh data laporan bulanan ke file PDF dan Excel untuk pembukuan.
             </p>
           </div>
 
@@ -610,7 +610,7 @@ export default function Landing() {
 
             <div className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 flex flex-col gap-4">
               <p className="text-xs text-slate-600 italic font-medium leading-relaxed">
-                "Fitur ekspor laporan keuangan ke Excel/CSV sangat berguna untuk tugas kuliah akuntansi dan pembukuan bulanan."
+                "Fitur ekspor laporan keuangan ke format PDF dan Excel sangat berguna untuk tugas kuliah akuntansi dan pembukuan bulanan."
               </p>
               <div className="flex items-center gap-3 pt-2 border-t border-slate-200">
                 <div className="w-9 h-9 rounded-full bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
@@ -652,8 +652,8 @@ export default function Landing() {
               a: 'Anda cukup masuk ke menu Account Settings di dalam dashboard, lalu pilih currency USD atau EUR dan tekan Save Settings. Seluruh total angka di dashboard akan otomatis terkonversi.'
             },
             {
-              q: 'Apakah data transaksi saya bisa diunduh ke Excel/CSV?',
-              a: 'Sangat bisa! Di menu Financial Reports dan Transactions, terdapat tombol Export Excel/CSV yang dapat mengunduh seluruh rekap transaksi Anda dalam 1x klik.'
+              q: 'Apakah data laporan keuangan dan transaksi saya bisa diunduh ke PDF dan Excel?',
+              a: 'Sangat bisa! Di menu Laporan Keuangan (Reports), terdapat tombol Ekspor PDF dan Ekspor Excel yang dapat mengunduh seluruh rekap transaksi Anda dalam 1x klik.'
             }
           ].map((faq, idx) => (
             <div key={idx} className="border border-slate-200 rounded-2xl bg-white overflow-hidden shadow-xs">
@@ -743,7 +743,7 @@ export default function Landing() {
               <li><a href="#features" className="hover:text-white transition-colors">Dashboard Analitik</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Buku Kas & Filter Transaksi</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Manajemen Anggaran 80%</a></li>
-              <li><a href="#features" className="hover:text-white transition-colors">Laporan & Ekspor Excel/CSV</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Laporan & Ekspor PDF & Excel</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">Multi Mata Uang (USD/EUR/IDR)</a></li>
             </ul>
           </div>
@@ -765,8 +765,8 @@ export default function Landing() {
             <h4 className="text-xs font-black uppercase tracking-widest text-slate-100 font-heading">Bantuan & Kontak</h4>
             <div className="flex flex-col gap-2 text-xs text-slate-400 font-medium">
               <p>Email: <span className="text-slate-200">support@cuanflow.id</span></p>
-              <p>Pengembang: <span className="text-slate-200">Ines Karlina & Galang Pratama</span></p>
-              <p>Lokasi: <span className="text-slate-200">Jakarta, Indonesia</span></p>
+              <p>Pengembang: <span className="text-slate-200">Ines Karlina</span></p>
+              <p>Lokasi: <span className="text-slate-200">Kota Bandung, Jawa Barat, Indonesia</span></p>
               <div className="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2 text-[11px] text-emerald-400 font-bold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>Sistem Beroperasi 24/7 Normal</span>

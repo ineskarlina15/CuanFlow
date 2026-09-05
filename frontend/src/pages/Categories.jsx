@@ -3,7 +3,10 @@ import api from '../services/api'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
 import { capitalizeWords } from '../utils/formatters'
-import { ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2, Search, ArrowDownUp } from 'lucide-react'
+import { 
+  ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2, Search, ArrowDownUp,
+  ChevronLeft, ChevronRight, Filter, RotateCcw, Layers, ArrowDownCircle, ArrowUpCircle
+} from 'lucide-react'
 
 export default function Categories() {
   const { showToast } = useToast()
@@ -12,7 +15,10 @@ export default function Categories() {
   const [loading, setLoading] = useState(true)
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState('ALL') // ALL, EXPENSE, INCOME
   const [sortBy, setSortBy] = useState('newest') // newest, oldest, az, za
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(8)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('add')
@@ -42,6 +48,11 @@ export default function Categories() {
   useEffect(() => {
     fetchCategories()
   }, [])
+
+  // Reset pagination ke halaman 1 saat pencarian, filter, atau jumlah per hal berganti
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, typeFilter, sortBy, itemsPerPage])
 
   const openModal = (type, cat = null) => {
     setModalType(type)
@@ -100,13 +111,31 @@ export default function Categories() {
     }
   }
 
+  // Ringkasan Kategori
+  const summaryStats = useMemo(() => {
+    const expenseCount = categories.filter(c => String(c.type || '').toUpperCase() === 'EXPENSE').length
+    const incomeCount = categories.filter(c => String(c.type || '').toUpperCase() === 'INCOME').length
+    return {
+      total: categories.length,
+      expense: expenseCount,
+      income: incomeCount
+    }
+  }, [categories])
+
   const filteredAndSortedCategories = useMemo(() => {
     let result = [...categories]
 
+    // Filter Tipe Kategori
+    if (typeFilter !== 'ALL') {
+      result = result.filter(c => String(c.type || '').toUpperCase() === typeFilter)
+    }
+
+    // Pencarian Nama
     if (searchQuery.trim()) {
       result = result.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
     }
 
+    // Pengurutan
     switch (sortBy) {
       case 'az':
         result.sort((a, b) => a.name.localeCompare(b.name))
@@ -115,7 +144,7 @@ export default function Categories() {
         result.sort((a, b) => b.name.localeCompare(a.name))
         break
       case 'newest':
-        result.sort((a, b) => b.id - a.id) // Assuming higher ID means newer
+        result.sort((a, b) => b.id - a.id)
         break
       case 'oldest':
         result.sort((a, b) => a.id - b.id)
@@ -125,7 +154,22 @@ export default function Categories() {
     }
 
     return result
-  }, [categories, searchQuery, sortBy])
+  }, [categories, searchQuery, typeFilter, sortBy])
+
+  // Kalkulasi Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredAndSortedCategories.length / itemsPerPage))
+  const paginatedCategories = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage
+    return filteredAndSortedCategories.slice(start, start + itemsPerPage)
+  }, [filteredAndSortedCategories, currentPage, itemsPerPage])
+
+  const handleResetFilters = () => {
+    setSearchQuery('')
+    setTypeFilter('ALL')
+    setSortBy('newest')
+  }
+
+  const hasActiveFilters = searchQuery.trim() !== '' || typeFilter !== 'ALL' || sortBy !== 'newest'
 
   return (
     <div className="flex-grow p-4 sm:p-6 lg:p-8 flex flex-col gap-6 w-full max-w-7xl mx-auto animate-fade-in text-slate-800 font-sans">
@@ -148,32 +192,125 @@ export default function Categories() {
         </button>
       </div>
 
-      {/* Kontrol Pencarian dan Pengurutan */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Cari kategori..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full border border-slate-200 rounded-xl py-2 pl-9 pr-4 text-sm focus:border-blue-500 outline-none bg-white"
-          />
+      {/* Ringkasan Metrik Kategori */}
+      {categories.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4.5 shadow-xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-slate-400">Total Kategori</span>
+              <span className="text-xl font-black text-slate-900 mt-1">
+                {summaryStats.total}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 font-medium">Kategori terdaftar</span>
+            </div>
+            <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <Layers className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4.5 shadow-xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-slate-400">Kategori Pengeluaran</span>
+              <span className="text-xl font-black text-rose-600 mt-1">
+                {summaryStats.expense}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 font-medium">Batas belanja & biaya</span>
+            </div>
+            <div className="w-11 h-11 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+              <ArrowDownCircle className="w-5 h-5" />
+            </div>
+          </div>
+
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-4.5 shadow-xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-xs font-bold text-slate-400">Kategori Pemasukan</span>
+              <span className="text-xl font-black text-emerald-600 mt-1">
+                {summaryStats.income}
+              </span>
+              <span className="text-[11px] text-slate-500 mt-0.5 font-medium">Sumber dana & penerimaan</span>
+            </div>
+            <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <ArrowUpCircle className="w-5 h-5" />
+            </div>
+          </div>
         </div>
-        <div className="relative">
-          <ArrowDownUp className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="appearance-none border border-slate-200 rounded-xl py-2 pl-9 pr-8 text-sm focus:border-blue-500 outline-none bg-white cursor-pointer min-w-[160px]"
-          >
-            <option value="newest">Terbaru</option>
-            <option value="oldest">Terlama</option>
-            <option value="az">A - Z</option>
-            <option value="za">Z - A</option>
-          </select>
+      )}
+
+      {/* Kontrol Pencarian, Filter Tipe, dan Pengurutan */}
+      {categories.length > 0 && (
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3.5 rounded-2xl border border-slate-200/90 shadow-xs">
+          {/* Pencarian */}
+          <div className="relative flex-1 min-w-[220px]">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Cari nama kategori..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full border border-slate-200 rounded-xl py-2 pl-9.5 pr-4 text-xs text-slate-800 font-medium focus:border-blue-600 outline-none bg-slate-50 transition-all"
+            />
+          </div>
+
+          {/* Filter Controls */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Filter Tipe */}
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
+              <Filter className="w-3.5 h-3.5 text-slate-400" />
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+              >
+                <option value="ALL">Semua Tipe</option>
+                <option value="EXPENSE">🔴 Pengeluaran</option>
+                <option value="INCOME">🟢 Pemasukan</option>
+              </select>
+            </div>
+
+            {/* Pengurutan */}
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
+              <ArrowDownUp className="w-3.5 h-3.5 text-slate-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer"
+              >
+                <option value="newest">Terbaru</option>
+                <option value="oldest">Terlama</option>
+                <option value="az">Nama: A - Z</option>
+                <option value="za">Nama: Z - A</option>
+              </select>
+            </div>
+
+            {/* Pilihan Data per Halaman */}
+            <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-600 font-medium">
+              <span>Per Hal:</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer"
+              >
+                <option value={8}>8</option>
+                <option value={12}>12</option>
+                <option value={16}>16</option>
+                <option value={20}>20</option>
+              </select>
+            </div>
+
+            {/* Reset Button */}
+            {hasActiveFilters && (
+              <button
+                onClick={handleResetFilters}
+                className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-all cursor-pointer"
+                title="Reset filter"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Categories Grid */}
       {loading ? (
@@ -182,23 +319,31 @@ export default function Categories() {
           <span>Memuat kategori...</span>
         </div>
       ) : filteredAndSortedCategories.length === 0 ? (
-        <div className="py-16 text-center text-slate-400 text-sm border border-slate-200 rounded-2xl bg-white">
-          Belum ada kategori yang dibuat atau ditemukan.
+        <div className="py-16 text-center text-slate-400 text-sm border border-slate-200 rounded-2xl bg-white shadow-xs">
+          {hasActiveFilters ? 'Tidak ada kategori yang cocok dengan kriteria pencarian.' : 'Belum ada kategori yang dibuat.'}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredAndSortedCategories.map((cat) => (
+          {paginatedCategories.map((cat) => (
             <div
               key={cat.id}
               className="p-5 rounded-2xl border border-slate-200 bg-white flex items-center justify-between shadow-xs hover:shadow-md transition-all"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-600">
+                <div className={`p-2.5 rounded-xl border ${
+                  cat.type === 'INCOME' 
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-600' 
+                    : 'bg-rose-50 border-rose-200 text-rose-600'
+                }`}>
                   <Tag className="w-4 h-4" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-bold text-slate-900 text-base">{cat.name}</span>
-                  <span className="text-xs text-slate-400 font-semibold capitalize">{cat.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}</span>
+                  <span className="font-bold text-slate-900 text-base line-clamp-1">{cat.name}</span>
+                  <span className={`text-xs font-semibold capitalize ${
+                    cat.type === 'INCOME' ? 'text-emerald-600' : 'text-slate-400'
+                  }`}>
+                    {cat.type === 'INCOME' ? 'Pemasukan' : 'Pengeluaran'}
+                  </span>
                 </div>
               </div>
 
@@ -206,20 +351,71 @@ export default function Categories() {
                 <button
                   onClick={() => openModal('edit', cat)}
                   className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer"
-                  title="Edit"
+                  title="Edit Kategori"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => { setCatToDelete(cat); setIsDeleteOpen(true); }}
                   className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                  title="Hapus"
+                  title="Hapus Kategori"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Controls (Sebelumnya / Prev & Selanjutnya / Next) */}
+      {!loading && filteredAndSortedCategories.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-xs">
+          <div className="text-xs text-slate-500 font-medium">
+            Menampilkan <span className="font-bold text-slate-900">{Math.min((currentPage - 1) * itemsPerPage + 1, filteredAndSortedCategories.length)}</span> - <span className="font-bold text-slate-900">{Math.min(currentPage * itemsPerPage, filteredAndSortedCategories.length)}</span> dari <span className="font-bold text-slate-900">{filteredAndSortedCategories.length}</span> kategori
+            {totalPages > 1 && (
+              <span className="text-slate-400 ml-2">(Halaman {currentPage} dari {totalPages})</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            {/* Tombol Sebelumnya (Prev) */}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs active:scale-95"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Sebelumnya</span>
+            </button>
+
+            {/* Angka Halaman */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            {/* Tombol Selanjutnya (Next) */}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs active:scale-95"
+            >
+              <span>Selanjutnya</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       )}
 

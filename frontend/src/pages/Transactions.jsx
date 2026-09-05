@@ -176,10 +176,6 @@ export default function Transactions() {
     }
   }
 
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value)
-  }
-
   // Buka Modal Tambah/Edit
   const openModal = (type, tx = null) => {
     if (categories.length === 0 && type === 'add') {
