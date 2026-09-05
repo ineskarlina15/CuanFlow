@@ -9,4 +9,7 @@ public interface NotificationService {
     void markAsRead(Integer userId, Integer notificationId) throws Exception;
     void markAllAsRead(Integer userId);
     void deleteNotification(Integer userId, Integer notificationId) throws Exception;
+
+    com.example.notification_service.entity.SystemBroadcast createBroadcast(Integer senderId, String title, String message, String type, String targetAudience);
+    List<com.example.notification_service.entity.SystemBroadcast> getAllBroadcasts();
 }

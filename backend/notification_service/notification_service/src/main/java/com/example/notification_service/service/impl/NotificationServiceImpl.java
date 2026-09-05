@@ -14,11 +14,12 @@ import com.example.notification_service.entity.Budget;
 import com.example.notification_service.entity.FinancialGoal;
 import com.example.notification_service.entity.Notification;
 import com.example.notification_service.entity.NotificationType;
+import com.example.notification_service.entity.SystemBroadcast;
 import com.example.notification_service.repository.BudgetRepository;
 import com.example.notification_service.repository.FinancialGoalRepository;
 import com.example.notification_service.repository.NotificationRepository;
+import com.example.notification_service.repository.SystemBroadcastRepository;
 import com.example.notification_service.service.NotificationService;
-
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -31,6 +32,9 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Autowired
     private FinancialGoalRepository financialGoalRepository;
+
+    @Autowired
+    private SystemBroadcastRepository systemBroadcastRepository;
 
     @Override
     public List<Notification> getMyNotifications(Integer userId, Boolean unreadOnly) {
@@ -74,56 +78,43 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.delete(notif);
     }
 
-    // ==========================================
-    // SCHEDULER (PENGECEKAN OTOMATIS)
-    // ==========================================
-    
-    /**
-     * Berjalan setiap hari pada jam 08:00 Pagi (Waktu logis untuk pengingat keuangan)
-     */
+    // Cron job berjalan setiap hari jam 08:00 pagi
     @Scheduled(cron = "0 0 8 * * *")
-    public void runDailyChecks() {
-        System.out.println("Memulai pengecekan otomatis untuk notifikasi...");
-        checkBudgets();
-        checkFinancialGoals();
-        System.out.println("Pengecekan selesai.");
-    }
+    public void checkBudgetAndGoalAlerts() {
+        System.out.println("Memulai pengecekan otomatis peringatan anggaran dan tujuan finansial...");
 
-    private void checkBudgets() {
-        List<Budget> activeBudgets = budgetRepository.findByStatus("ACTIVE");
-        LocalDate today = LocalDate.now();
+        // 1. Cek Peringatan Anggaran (Budget Alert)
+        List<Budget> activeBudgets = budgetRepository.findAll();
+        for (Budget b : activeBudgets) {
+            BigDecimal spent = budgetRepository.calculateTotalSpent(b.getId(), b.getStartDate(), b.getEndDate());
+            if (spent == null) spent = BigDecimal.ZERO;
 
-        for (Budget budget : activeBudgets) {
-            if (!today.isBefore(budget.getStartDate()) && !today.isAfter(budget.getEndDate())) {
-                BigDecimal totalSpent = budgetRepository.calculateTotalSpent(budget.getId(), budget.getStartDate(), budget.getEndDate());
-                BigDecimal alertThreshold = budget.getAmount()
-                        .multiply(new BigDecimal(budget.getAlertPercentage()))
-                        .divide(new BigDecimal(100));
+            BigDecimal limit = b.getAmount();
+            if (limit != null && limit.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal ratio = spent.divide(limit, 4, java.math.RoundingMode.HALF_UP).multiply(new BigDecimal(100));
+                BigDecimal threshold = new BigDecimal(b.getAlertPercentage() != null ? b.getAlertPercentage() : 80);
 
-                if (totalSpent.compareTo(alertThreshold) >= 0) {
-                    String title = "Peringatan Anggaran: " + budget.getName();
-                    String message = String.format("Awas! Pengeluaran Anda (Rp%,.2f) sudah mencapai atau melebihi %d%% dari batas anggaran (Rp%,.2f).", 
-                            totalSpent, budget.getAlertPercentage(), budget.getAmount());
-
-                    createNotificationIfNotExists(budget.getUserId(), NotificationType.BUDGET_ALERT, title, message);
+                if (ratio.compareTo(threshold) >= 0) {
+                    String title = "Peringatan Anggaran: " + b.getName();
+                    String message = String.format("Pengeluaran Anda untuk anggaran '%s' telah mencapai %.1f%% dari batas maksimum!", 
+                            b.getName(), ratio.doubleValue());
+                    
+                    createNotificationIfNotExists(b.getUserId(), NotificationType.BUDGET_ALERT, title, message);
                 }
             }
         }
-    }
 
-    private void checkFinancialGoals() {
-        List<FinancialGoal> activeGoals = financialGoalRepository.findByStatus("ACTIVE");
-        LocalDate today = LocalDate.now();
+        // 2. Cek Pengingat Target Finansial (Goal Reminder)
+        List<FinancialGoal> activeGoals = financialGoalRepository.findAll();
+        for (FinancialGoal g : activeGoals) {
+            if (g.getTargetDate() != null) {
+                long daysRemaining = ChronoUnit.DAYS.between(LocalDate.now(), g.getTargetDate());
+                if (daysRemaining <= 7 && daysRemaining >= 0) {
+                    String title = "Pengingat Target: " + g.getName();
+                    String message = String.format("Target finansial '%s' tinggal %d hari lagi menuju tenggat waktu. Segera penuhi target tabungan Anda!", 
+                            g.getName(), daysRemaining);
 
-        for (FinancialGoal goal : activeGoals) {
-            if (goal.getTargetDate() != null) {
-                long daysRemaining = ChronoUnit.DAYS.between(today, goal.getTargetDate());
-                if (daysRemaining <= 7 && daysRemaining >= 0 && goal.getCurrentAmount().compareTo(goal.getTargetAmount()) < 0) {
-                    String title = "Pengingat Target Tabungan: " + goal.getName();
-                    String message = String.format("Target Anda tersisa %d hari lagi. Terkumpul Rp%,.2f dari Rp%,.2f. Ayo semangat nabung!", 
-                            daysRemaining, goal.getCurrentAmount(), goal.getTargetAmount());
-
-                    createNotificationIfNotExists(goal.getUserId(), NotificationType.GOAL_REMINDER, title, message);
+                    createNotificationIfNotExists(g.getUserId(), NotificationType.GOAL_REMINDER, title, message);
                 }
             }
         }
@@ -143,5 +134,50 @@ public class NotificationServiceImpl implements NotificationService {
             notificationRepository.save(notif);
             System.out.println("Notifikasi terkirim ke User ID " + userId + ": " + title);
         }
+    }
+
+    @Override
+    public SystemBroadcast createBroadcast(Integer senderId, String title, String message, String type, String targetAudience) {
+        SystemBroadcast broadcast = SystemBroadcast.builder()
+                .senderId(senderId != null ? senderId : 1)
+                .title(title)
+                .message(message)
+                .type(type != null ? type : "INFO")
+                .targetAudience(targetAudience != null ? targetAudience : "ALL_USERS")
+                .recipientsCount(20)
+                .isSent(true)
+                .sentAt(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
+                .build();
+        
+        SystemBroadcast saved = systemBroadcastRepository.save(broadcast);
+
+        // Sebarkan juga ke tabel notifikasi pengguna (user 1 sampai 20)
+        NotificationType notifType = NotificationType.SYSTEM;
+        if ("TIPS".equalsIgnoreCase(type)) {
+            notifType = NotificationType.INFO;
+        }
+
+        for (int uId = 1; uId <= 20; uId++) {
+            try {
+                Notification notif = Notification.builder()
+                        .userId(uId)
+                        .title("[PENGUMUMAN] " + title)
+                        .message(message)
+                        .type(notifType)
+                        .isRead(false)
+                        .sentAt(LocalDateTime.now())
+                        .createdAt(LocalDateTime.now())
+                        .build();
+                notificationRepository.save(notif);
+            } catch (Exception ignored) {}
+        }
+
+        return saved;
+    }
+
+    @Override
+    public List<SystemBroadcast> getAllBroadcasts() {
+        return systemBroadcastRepository.findAllByOrderBySentAtDesc();
     }
 }
