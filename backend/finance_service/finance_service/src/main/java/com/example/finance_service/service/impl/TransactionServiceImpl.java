@@ -51,19 +51,16 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional(rollbackFor = Exception.class) // Memastikan jika upload gagal, data DB dibatalkan
     public Transaction createTransaction(Integer userId, TransactionReq request, MultipartFile file) throws Exception {
 
-        // 1. Validasi Kategori
         Category category = categoryRepository.findByIdAndUserId(request.getCategoryId(), userId)
                 .orElseThrow(() -> new Exception("Kategori tidak ditemukan"));
         validateCategoryType(category, request);
 
-        // 2. Simpan Data Transaksi Utama
         Transaction transaction = new Transaction();
         transaction.setUserId(userId);
         applyTransactionData(transaction, category, request, userId);
 
         Transaction savedTransaction = transactionRepository.save(transaction);
 
-        // 3. Proses File Upload jika ada lampiran yang dikirim
         if (file != null && !file.isEmpty()) {
             String fileUrl = fileUtility.saveFile(file); // Panggil alat pengunggah
 
@@ -119,7 +116,6 @@ public class TransactionServiceImpl implements TransactionService {
     @Transactional(rollbackFor = Exception.class)
     public void deleteTransaction(Integer userId, Integer transactionId) throws Exception {
         Transaction transaction = getTransactionById(userId, transactionId);
-        // Hapus lunak (soft delete) alih-alih hapus permanen (hard delete)
         transactionRepository.softDeleteByIdAndUserId(transaction.getId(), userId);
     }
 
@@ -195,7 +191,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public Map<String, BigDecimal> getDashboardSummary(Integer userId) {
-        // Kalkulasi real-time yang cepat untuk Dashboard React
         BigDecimal totalIncome = transactionRepository.calculateTotalAmountByType(userId, "INCOME");
         BigDecimal totalExpense = transactionRepository.calculateTotalAmountByType(userId, "EXPENSE");
         BigDecimal balance = totalIncome.subtract(totalExpense);

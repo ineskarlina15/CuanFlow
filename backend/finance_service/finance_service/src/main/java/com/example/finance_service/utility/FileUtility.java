@@ -18,7 +18,6 @@ public class FileUtility {
             throw new Exception("File tidak boleh kosong");
         }
 
-        // Validasi tipe file (Sesuai syarat S1: JPG, PNG, PDF)
         String contentType = file.getContentType();
         if (contentType == null || !(contentType.equals("image/jpeg") || 
                                      contentType.equals("image/png") || 
@@ -26,23 +25,19 @@ public class FileUtility {
             throw new Exception("Format file tidak didukung. Harap unggah JPG, PNG, atau PDF.");
         }
 
-        // Validasi ukuran file (misal maksimal 5MB)
         if (file.getSize() > 5 * 1024 * 1024) {
             throw new Exception("Ukuran file maksimal 5MB.");
         }
 
-        // Membuat folder jika belum ada
         File directory = new File(UPLOAD_DIR);
         if (!directory.exists()) {
             directory.mkdirs();
         }
 
-        // Membuat nama file unik agar tidak bentrok
         String originalFileName = file.getOriginalFilename();
         String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
         String newFileName = UUID.randomUUID().toString() + fileExtension;
 
-        // Proses simpan file fisik
         Path filePath = Paths.get(UPLOAD_DIR + newFileName);
         Files.copy(file.getInputStream(), filePath);
 

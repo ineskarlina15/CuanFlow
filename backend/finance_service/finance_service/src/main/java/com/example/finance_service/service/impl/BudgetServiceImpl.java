@@ -67,7 +67,6 @@ public class BudgetServiceImpl implements BudgetService {
         budget.setMonth(request.getMonth());
         budget.setYear(request.getYear());
 
-        // Atur start_date dan end_date
         if (request.getStartDate() != null) {
             budget.setStartDate(request.getStartDate());
         } else if (request.getMonth() != null && request.getYear() != null) {

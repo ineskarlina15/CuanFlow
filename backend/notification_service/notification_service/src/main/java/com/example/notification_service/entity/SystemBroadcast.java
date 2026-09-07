@@ -35,10 +35,10 @@ public class SystemBroadcast {
     private String message;
 
     @Column(nullable = false, length = 30)
-    private String type; // INFO, MAINTENANCE, TIPS
+    private String type; 
 
     @Column(name = "target_audience", nullable = false, length = 50)
-    private String targetAudience; // ALL_USERS, ACTIVE_ONLY
+    private String targetAudience;
 
     @Column(name = "recipients_count", nullable = false)
     private Integer recipientsCount;

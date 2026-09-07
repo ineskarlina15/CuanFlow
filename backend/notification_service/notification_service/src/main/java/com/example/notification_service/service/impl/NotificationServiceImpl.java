@@ -83,7 +83,6 @@ public class NotificationServiceImpl implements NotificationService {
     public void checkBudgetAndGoalAlerts() {
         System.out.println("Memulai pengecekan otomatis peringatan anggaran dan tujuan finansial...");
 
-        // 1. Cek Peringatan Anggaran (Budget Alert)
         List<Budget> activeBudgets = budgetRepository.findAll();
         for (Budget b : activeBudgets) {
             BigDecimal spent = budgetRepository.calculateTotalSpent(b.getId(), b.getStartDate(), b.getEndDate());
@@ -104,7 +103,6 @@ public class NotificationServiceImpl implements NotificationService {
             }
         }
 
-        // 2. Cek Pengingat Target Finansial (Goal Reminder)
         List<FinancialGoal> activeGoals = financialGoalRepository.findAll();
         for (FinancialGoal g : activeGoals) {
             if (g.getTargetDate() != null) {

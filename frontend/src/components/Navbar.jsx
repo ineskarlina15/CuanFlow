@@ -12,13 +12,11 @@ export default function Navbar({ onToggleSidebar }) {
   
   const [profileOpen, setProfileOpen] = useState(false)
   
-  // Notification Dropdown State
   const [notifOpen, setNotifOpen] = useState(false)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [loadingNotifs, setLoadingNotifs] = useState(false)
   
-  // Logout Modal State
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
 
   const fetchNotifs = async () => {
@@ -29,7 +27,6 @@ export default function Navbar({ onToggleSidebar }) {
       setUnreadCount(count)
       setNotifications(list.slice(0, 5))
     } catch {
-      // Fallback
     }
   }
 
@@ -74,9 +71,9 @@ export default function Navbar({ onToggleSidebar }) {
           </Link>
         </div>
 
-        {/* Far Right Top Header Controls */}
+        {}
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Back to Public Homepage Button */}
+          {}
           <Link
             to="/"
             className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer shadow-xs"
@@ -86,7 +83,7 @@ export default function Navbar({ onToggleSidebar }) {
             <span className="hidden sm:inline">Homepage</span>
           </Link>
 
-          {/* Notifications Dropdown */}
+          {}
           <div className="relative">
             <button
               onClick={() => { setNotifOpen(!notifOpen); setProfileOpen(false); }}

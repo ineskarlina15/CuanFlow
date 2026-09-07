@@ -56,7 +56,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <>
-      {/* Mobile Sidebar Overlay */}
+      {}
       {isOpen && (
         <div 
           className="fixed inset-0 bg-blue-950/70 backdrop-blur-sm z-20 lg:hidden"
@@ -64,7 +64,7 @@ export default function Sidebar({ isOpen, onClose }) {
         />
       )}
 
-      {/* Sidebar Navigation sitting below top header Navbar */}
+      {}
       <aside
         className={`fixed top-16 bottom-0 left-0 z-30 w-64 border-r border-blue-800/40 bg-[#1E3A8A] p-5 flex flex-col justify-between transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-2xl ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
@@ -82,7 +82,7 @@ export default function Sidebar({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* Navigation Links */}
+          {}
           <nav className="flex flex-col gap-1">
             {links.map((link, idx) => {
               if (link.section) {
@@ -110,7 +110,7 @@ export default function Sidebar({ isOpen, onClose }) {
           </nav>
         </div>
 
-        {/* Footer Logout Button */}
+        {}
         <div className="pt-4 border-t border-blue-700/50 flex flex-col gap-1">
           <button
             onClick={() => {

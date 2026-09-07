@@ -25,7 +25,6 @@ import com.example.notification_service.utility.Message;
 @RequestMapping("/api/v1/notifications")
 @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
 public class NotificationController {
-
     @Autowired
     private NotificationService notificationService;
 

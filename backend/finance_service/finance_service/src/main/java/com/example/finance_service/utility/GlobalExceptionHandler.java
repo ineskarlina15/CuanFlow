@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @Autowired
     private Message message;
 

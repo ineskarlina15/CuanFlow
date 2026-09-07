@@ -34,7 +34,6 @@ export default function AdminAuditLogs() {
   const [loading, setLoading] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
-  // Sampel Data Audit Trail Komprehensif untuk Pengujian Sistem Informasi Akuntansi (COSO Framework)
   const [auditLogs, setAuditLogs] = useState([
     {
       id: 'LOG-2024-001',
@@ -178,7 +177,6 @@ export default function AdminAuditLogs() {
     }
   ])
 
-  // Ambil Data Nyata dari Backend Auth Service
   const fetchAuditLogs = async () => {
     setLoading(true)
     try {
@@ -202,7 +200,6 @@ export default function AdminAuditLogs() {
         setAuditLogs(mapped)
       }
     } catch {
-      // Pertahankan data sampel komprehensif saat terjadi fallback
     } finally {
       setLoading(false)
     }
@@ -212,7 +209,6 @@ export default function AdminAuditLogs() {
     fetchAuditLogs()
   }, [])
 
-  // Filter Log Audit
   const filteredLogs = useMemo(() => {
     return auditLogs.filter(log => {
       const matchSearch = 
@@ -241,7 +237,6 @@ export default function AdminAuditLogs() {
     return filteredLogs.slice(start, start + itemsPerPage)
   }, [filteredLogs, currentPage, itemsPerPage])
 
-  // Unduh Berkas Audit PDF via Backend (OpenPDF Landscape A4)
   const handleExportPdf = async () => {
     setIsExporting(true)
     try {
@@ -265,7 +260,6 @@ export default function AdminAuditLogs() {
     }
   }
 
-  // Unduh Berkas Audit Excel (.xlsx) via Backend (Apache POI)
   const handleExportExcel = async () => {
     setIsExporting(true)
     try {
@@ -338,7 +332,6 @@ export default function AdminAuditLogs() {
   return (
     <div className="flex-grow p-4 sm:p-6 lg:p-8 flex flex-col gap-6 w-full max-w-7xl mx-auto animate-fade-in text-slate-800 font-sans">
       
-      {/* Header Halaman */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -354,9 +347,9 @@ export default function AdminAuditLogs() {
           </p>
         </div>
 
-        {/* Tombol Ekspor Berkas Audit (PDF & Excel Backend) */}
+        {}
         <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
-          {/* Tombol Ekspor PDF */}
+          {}
           <button
             onClick={handleExportPdf}
             disabled={isExporting}
@@ -367,7 +360,7 @@ export default function AdminAuditLogs() {
             <span>Ekspor PDF</span>
           </button>
 
-          {/* Tombol Ekspor Excel */}
+          {}
           <button
             onClick={handleExportExcel}
             disabled={isExporting}
@@ -380,9 +373,9 @@ export default function AdminAuditLogs() {
         </div>
       </div>
 
-      {/* Filter & Bar Pencarian */}
+      {}
       <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
-        {/* Kolom Pencarian */}
+        {}
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -397,7 +390,7 @@ export default function AdminAuditLogs() {
           />
         </div>
 
-        {/* Filter Kategori & Risiko */}
+        
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-400">Modul:</span>
@@ -436,7 +429,6 @@ export default function AdminAuditLogs() {
         </div>
       </div>
 
-      {/* Tabel Jejak Audit */}
       <div className="rounded-2xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -504,7 +496,6 @@ export default function AdminAuditLogs() {
           </table>
         </div>
 
-        {/* Footer info total log & Pagination Kontrol */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <span>
@@ -512,7 +503,6 @@ export default function AdminAuditLogs() {
             </span>
           </div>
 
-          {/* Tombol Pagination Prev, Angka Halaman, Next */}
           {filteredLogs.length > 0 && (
             <div className="flex items-center gap-1.5">
               <button
@@ -553,7 +543,6 @@ export default function AdminAuditLogs() {
         </div>
       </div>
 
-      {/* Modal Detail Jejak Audit */}
       {isDetailOpen && selectedLog && (
         <Modal
           isOpen={isDetailOpen}

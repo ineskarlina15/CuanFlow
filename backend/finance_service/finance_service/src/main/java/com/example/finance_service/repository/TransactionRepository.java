@@ -30,8 +30,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    // FITUR SPEKTAKULER 1: Multi-Filter (Search + Kategori + Pagination)
-    // Syarat wajib proyek S1: "Search, Filter, Sorting, Pagination" dalam 1 API terpadu
     @Query("SELECT t FROM Transaction t WHERE t.userId = :userId " +
            "AND t.deletedAt IS NULL " +
            "AND (CAST(:keyword AS string) IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) " +
@@ -48,8 +46,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("endDate") LocalDate endDate,
             Pageable pageable);
 
-    // FITUR SPEKTAKULER 2: Kalkulator Saldo Super Cepat
-    // Dipakai untuk Dashboard agar tidak perlu menarik jutaan baris data ke Java
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.userId = :userId AND t.deletedAt IS NULL AND CAST(t.type AS string) = :type")
     BigDecimal calculateTotalAmountByType(

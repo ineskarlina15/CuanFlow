@@ -109,9 +109,6 @@ public class ExportUtility {
         return months;
     }
 
-    // =========================================================================
-    // EXPORT TO EXCEL
-    // =========================================================================
     public ByteArrayInputStream exportTransactionsToExcel(List<Transaction> transactions) {
         List<Transaction> sorted = getSortedTransactions(transactions);
         String yearLabel = determineYearLabel(sorted);
@@ -122,14 +119,12 @@ public class ExportUtility {
             Sheet sheet = workbook.createSheet("Laporan Keuangan Pribadi");
             DefaultIndexedColorMap colorMap = new DefaultIndexedColorMap();
 
-            // Colors
             XSSFColor softBlue = new XSSFColor(new Color(180, 198, 231), colorMap); // #B4C6E7
             XSSFColor softGreen = new XSSFColor(new Color(198, 239, 206), colorMap); // #C6EFCE
             XSSFColor accentGreen = new XSSFColor(new Color(146, 208, 80), colorMap); // #92D050
             XSSFColor softRed = new XSSFColor(new Color(252, 228, 214), colorMap); // #FCE4D6
             XSSFColor darkRedFont = new XSSFColor(new Color(192, 0, 0), colorMap); // #C00000
 
-            // Font definitions
             XSSFFont titleFont = ((XSSFWorkbook) workbook).createFont();
             titleFont.setFontName("Calibri");
             titleFont.setFontHeightInPoints((short) 13);
@@ -154,8 +149,6 @@ public class ExportUtility {
             italicFont.setFontHeightInPoints((short) 10);
             italicFont.setItalic(true);
 
-            // Cell Styles
-            // Header (Soft Blue)
             XSSFCellStyle headerStyle = ((XSSFWorkbook) workbook).createCellStyle();
             headerStyle.setFillForegroundColor(softBlue);
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -164,7 +157,6 @@ public class ExportUtility {
             headerStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             setThinBorders(headerStyle);
 
-            // Data General
             XSSFCellStyle centerDataStyle = ((XSSFWorkbook) workbook).createCellStyle();
             centerDataStyle.setFont(regularFont);
             centerDataStyle.setAlignment(HorizontalAlignment.CENTER);
@@ -183,7 +175,6 @@ public class ExportUtility {
             rightDataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             setThinBorders(rightDataStyle);
 
-            // Income (Soft Green Fill)
             XSSFCellStyle incomeDataStyle = ((XSSFWorkbook) workbook).createCellStyle();
             incomeDataStyle.setFillForegroundColor(softGreen);
             incomeDataStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -192,7 +183,6 @@ public class ExportUtility {
             incomeDataStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             setThinBorders(incomeDataStyle);
 
-            // Negative Balance (Soft Red Fill + Red Font)
             XSSFCellStyle negativeBalanceStyle = ((XSSFWorkbook) workbook).createCellStyle();
             negativeBalanceStyle.setFillForegroundColor(softRed);
             negativeBalanceStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -201,7 +191,6 @@ public class ExportUtility {
             negativeBalanceStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             setThinBorders(negativeBalanceStyle);
 
-            // Total Row Style (Accent Green Fill + Bold)
             XSSFCellStyle totalStyle = ((XSSFWorkbook) workbook).createCellStyle();
             totalStyle.setFillForegroundColor(accentGreen);
             totalStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -218,7 +207,6 @@ public class ExportUtility {
             totalLabelStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             setThinBorders(totalLabelStyle);
 
-            // Title Rows
             Row r0 = sheet.createRow(1);
             Cell cTitle = r0.createCell(1);
             cTitle.setCellValue("LAPORAN KEUANGAN PRIBADI");
@@ -252,13 +240,10 @@ public class ExportUtility {
                 c.setCellValue(headers[col]);
                 c.setCellStyle(headerStyle);
             }
-
-            // Side Table Header (Column 6 / G)
             Cell cSideH = hRow.createCell(6);
             cSideH.setCellValue("Bulan");
             cSideH.setCellStyle(headerStyle);
 
-            // Populate Main Table & Side Table
             BigDecimal runningBalance = BigDecimal.ZERO;
             BigDecimal totalIncome = BigDecimal.ZERO;
             BigDecimal totalExpense = BigDecimal.ZERO;
@@ -270,7 +255,6 @@ public class ExportUtility {
             for (int i = 0; i < maxRows; i++) {
                 Row row = sheet.createRow(startRow + i);
 
-                // Main Table Columns (0..4)
                 if (i < sorted.size()) {
                     Transaction t = sorted.get(i);
                     boolean isIncome = t.getType() == TransactionType.INCOME;
@@ -287,17 +271,14 @@ public class ExportUtility {
                         }
                     }
 
-                    // Col 0: Tanggal
                     Cell cDate = row.createCell(0);
                     cDate.setCellValue(t.getTransactionDate() != null ? t.getTransactionDate().format(DATE_FMT) : "");
                     cDate.setCellStyle(centerDataStyle);
 
-                    // Col 1: Deskripsi
                     Cell cDesc = row.createCell(1);
                     cDesc.setCellValue(t.getTitle() != null ? t.getTitle() : "");
                     cDesc.setCellStyle(leftDataStyle);
 
-                    // Col 2: Uang Masuk
                     Cell cIn = row.createCell(2);
                     if (isIncome) {
                         cIn.setCellValue(formatRupiah(amt));
@@ -307,7 +288,6 @@ public class ExportUtility {
                         cIn.setCellStyle(rightDataStyle);
                     }
 
-                    // Col 3: Uang Keluar
                     Cell cOut = row.createCell(3);
                     if (!isIncome) {
                         cOut.setCellValue(formatRupiah(amt));
@@ -317,7 +297,6 @@ public class ExportUtility {
                         cOut.setCellStyle(rightDataStyle);
                     }
 
-                    // Col 4: Saldo Akhir
                     Cell cBal = row.createCell(4);
                     cBal.setCellValue(formatRupiah(runningBalance));
                     if (runningBalance.compareTo(BigDecimal.ZERO) < 0) {
@@ -326,7 +305,6 @@ public class ExportUtility {
                         cBal.setCellStyle(rightDataStyle);
                     }
                 } else if (i >= sorted.size() && sorted.size() > 0) {
-                    // Empty cells with borders for alignment
                     for (int c = 0; c <= 4; c++) {
                         Cell emptyCell = row.createCell(c);
                         emptyCell.setCellValue("");
@@ -334,7 +312,6 @@ public class ExportUtility {
                     }
                 }
 
-                // Side Table (Col 6: Bulan)
                 if (i < sideMonths.size()) {
                     Cell cMonth = row.createCell(6);
                     cMonth.setCellValue(sideMonths.get(i));
@@ -342,7 +319,6 @@ public class ExportUtility {
                 }
             }
 
-            // TOTAL Row
             int totalRowIndex = startRow + sorted.size();
             Row totRow = sheet.getRow(totalRowIndex);
             if (totRow == null) {
@@ -369,7 +345,6 @@ public class ExportUtility {
             cTotBal.setCellValue(formatRupiah(runningBalance));
             cTotBal.setCellStyle(totalStyle);
 
-            // Note below table
             int noteRowIndex = Math.max(totalRowIndex + 2, startRow + sideMonths.size() + 1);
             Row noteRow = sheet.createRow(noteRowIndex);
             Cell cNote = noteRow.createCell(1);
@@ -379,14 +354,13 @@ public class ExportUtility {
             noteStyle.setFont(boldFont);
             cNote.setCellStyle(noteStyle);
 
-            // Column Widths
             sheet.setColumnWidth(0, 13 * 256);
             sheet.setColumnWidth(1, 30 * 256);
             sheet.setColumnWidth(2, 18 * 256);
             sheet.setColumnWidth(3, 18 * 256);
             sheet.setColumnWidth(4, 18 * 256);
-            sheet.setColumnWidth(5, 4 * 256);  // spacer
-            sheet.setColumnWidth(6, 14 * 256); // bulan side table
+            sheet.setColumnWidth(5, 4 * 256);  
+            sheet.setColumnWidth(6, 14 * 256); 
 
             workbook.write(out);
             return new ByteArrayInputStream(out.toByteArray());
@@ -403,9 +377,6 @@ public class ExportUtility {
         style.setBorderRight(BorderStyle.THIN);
     }
 
-    // =========================================================================
-    // EXPORT TO PDF
-    // =========================================================================
     public ByteArrayInputStream exportTransactionsToPdf(List<Transaction> transactions) {
         List<Transaction> sorted = getSortedTransactions(transactions);
         String yearLabel = determineYearLabel(sorted);
@@ -419,14 +390,12 @@ public class ExportUtility {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Colors matching the photo
             Color softBlueColor = new Color(180, 198, 231); // #B4C6E7
             Color softGreenColor = new Color(198, 239, 206); // #C6EFCE
             Color accentGreenColor = new Color(146, 208, 80); // #92D050
             Color softRedColor = new Color(252, 228, 214); // #FCE4D6
             Color darkRedTextColor = new Color(192, 0, 0); // #C00000
 
-            // Title
             com.lowagie.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 13, Color.BLACK);
             Paragraph title = new Paragraph("LAPORAN KEUANGAN PRIBADI", titleFont);
             title.setAlignment(Element.ALIGN_CENTER);
@@ -438,21 +407,16 @@ public class ExportUtility {
             yearPara.setSpacingAfter(15);
             document.add(yearPara);
 
-            // Periode
             com.lowagie.text.Font periodeFont = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9, Color.DARK_GRAY);
             Paragraph periodePara = new Paragraph("Periode: " + periodeLabel, periodeFont);
             periodePara.setAlignment(Element.ALIGN_LEFT);
             periodePara.setSpacingAfter(6);
             document.add(periodePara);
 
-            // Outer Master Table (Main Table on Left, Spacer, Bulan Table on Right)
             PdfPTable masterTable = new PdfPTable(3);
             masterTable.setWidthPercentage(100);
             masterTable.setWidths(new float[] { 83f, 2f, 15f });
 
-            // ----------------------------------------------------
-            // Main Table (5 columns)
-            // ----------------------------------------------------
             PdfPTable mainTable = new PdfPTable(5);
             mainTable.setWidthPercentage(100);
             mainTable.setWidths(new float[] { 14f, 32f, 18f, 18f, 18f });
@@ -492,21 +456,18 @@ public class ExportUtility {
                     }
                 }
 
-                // Tanggal
                 PdfPCell c0 = new PdfPCell(new Phrase(t.getTransactionDate() != null ? t.getTransactionDate().format(DATE_FMT) : "", dataFont));
                 c0.setHorizontalAlignment(Element.ALIGN_CENTER);
                 c0.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 c0.setPadding(4);
                 mainTable.addCell(c0);
 
-                // Deskripsi
                 PdfPCell c1 = new PdfPCell(new Phrase(t.getTitle() != null ? t.getTitle() : "", dataFont));
                 c1.setHorizontalAlignment(Element.ALIGN_LEFT);
                 c1.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 c1.setPadding(4);
                 mainTable.addCell(c1);
 
-                // Uang Masuk
                 PdfPCell c2 = new PdfPCell(new Phrase(isIncome ? formatRupiah(amt) : "", isIncome ? incomeFont : dataFont));
                 c2.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 c2.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -516,14 +477,12 @@ public class ExportUtility {
                 c2.setPadding(4);
                 mainTable.addCell(c2);
 
-                // Uang Keluar
                 PdfPCell c3 = new PdfPCell(new Phrase(!isIncome ? formatRupiah(amt) : "", dataFont));
                 c3.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 c3.setVerticalAlignment(Element.ALIGN_MIDDLE);
                 c3.setPadding(4);
                 mainTable.addCell(c3);
 
-                // Saldo Akhir
                 PdfPCell c4 = new PdfPCell(new Phrase(formatRupiah(runningBalance), runningBalance.compareTo(BigDecimal.ZERO) < 0 ? redFont : dataFont));
                 c4.setHorizontalAlignment(Element.ALIGN_RIGHT);
                 c4.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -534,7 +493,6 @@ public class ExportUtility {
                 mainTable.addCell(c4);
             }
 
-            // TOTAL Row
             com.lowagie.text.Font totFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8, Color.BLACK);
 
             PdfPCell totCell0 = new PdfPCell(new Phrase("TOTAL", totFont));
@@ -566,9 +524,6 @@ public class ExportUtility {
             totCellBal.setPadding(5);
             mainTable.addCell(totCellBal);
 
-            // ----------------------------------------------------
-            // Side Table (Bulan)
-            // ----------------------------------------------------
             PdfPTable sideTable = new PdfPTable(1);
             sideTable.setWidthPercentage(100);
 
@@ -588,7 +543,6 @@ public class ExportUtility {
                 sideTable.addCell(mCell);
             }
 
-            // Put Main Table, Spacer, and Side Table into Master Table
             PdfPCell leftContainer = new PdfPCell(mainTable);
             leftContainer.setBorder(PdfPCell.NO_BORDER);
             leftContainer.setPadding(0);
@@ -605,7 +559,6 @@ public class ExportUtility {
 
             document.add(masterTable);
 
-            // Note below table
             BigDecimal cashShow = cashExpense.compareTo(BigDecimal.ZERO) > 0 ? cashExpense : totalExpense;
             com.lowagie.text.Font noteFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 8.5f, Color.BLACK);
             Paragraph notePara = new Paragraph("Uang yang di ambil kes bulan " + periodeLabel + " " + formatRupiah(cashShow), noteFont);

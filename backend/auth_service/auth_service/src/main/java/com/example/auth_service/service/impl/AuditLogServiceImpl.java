@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.example.auth_service.entity.AuditLog;
 import com.example.auth_service.repository.AuditLogRepository;
 import com.example.auth_service.service.AuditLogService;
+import com.example.auth_service.utility.AuditExportUtility;
 
 @Service
 public class AuditLogServiceImpl implements AuditLogService {
@@ -17,7 +18,7 @@ public class AuditLogServiceImpl implements AuditLogService {
     private AuditLogRepository auditLogRepository;
 
     @Autowired
-    private com.example.auth_service.utility.AuditExportUtility auditExportUtility;
+    private AuditExportUtility auditExportUtility;
 
     @Override
     public List<AuditLog> getAllAuditLogs() {

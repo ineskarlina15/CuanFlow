@@ -44,7 +44,6 @@ public class SecurityConfig {
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
-            // Tambahkan bagian ini untuk handle authentication yg stateless
             .addFilterBefore(
                 jwtFilter, 
                 UsernamePasswordAuthenticationFilter.class

@@ -16,7 +16,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
-
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -44,7 +43,6 @@ public class JwtFilter extends OncePerRequestFilter {
                         null,
                         user.getAuthorities());
 
-                // Menyimpan userId di attribute agar gampang diakses controller
                 request.setAttribute("userId", userId);
 
                 SecurityContextHolder.getContext().setAuthentication(auth);

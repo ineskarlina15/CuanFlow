@@ -39,7 +39,6 @@ public class TransactionController {
     @Autowired
     private Message message;
 
-    // 1. Endpoint Create dengan Upload File (Multipart)
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createTransaction(
             @RequestAttribute("userId") Integer userId,
@@ -53,7 +52,6 @@ public class TransactionController {
         }
     }
 
-    // 2. Endpoint List dengan Multi-Filter & Pagination Terintegrasi
     @GetMapping
     public ResponseEntity<?> getTransactions(
             @RequestAttribute("userId") Integer userId,
@@ -169,7 +167,6 @@ public class TransactionController {
         }
     }
 
-    // 4. Endpoint Attachment
     @GetMapping("/{id}/attachments")
     public ResponseEntity<?> getTransactionAttachments(
             @RequestAttribute("userId") Integer userId,

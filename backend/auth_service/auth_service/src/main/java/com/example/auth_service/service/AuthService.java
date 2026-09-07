@@ -10,10 +10,7 @@ import com.example.auth_service.payload.res.AuthRes;
 
 @Service
 public interface AuthService {
-    // Fungsi untuk mendaftarkan user baru
     public String register(RegisterReq request) throws Exception;
-    
-    // Fungsi untuk login dan mengembalikan token
     public AuthRes login(LoginReq request) throws Exception;
     String forgotPassword(ForgotPasswordReq request) throws Exception;
     String resetPassword(ResetPasswordReq request) throws Exception;

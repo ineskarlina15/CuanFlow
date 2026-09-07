@@ -21,7 +21,6 @@ public class JwtUtil {
     @org.springframework.beans.factory.annotation.Value("${jwt.secret}")
     private String SECRET;
     
-    // Set waktu token expire (Diubah ke 24 jam biar lega saat proses testing)
     private final long EXPIRATION = 1000 * 60 * 60 * 24; 
 
     private Key getKey() {

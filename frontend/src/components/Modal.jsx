@@ -4,14 +4,13 @@ import { X } from 'lucide-react'
 export default function Modal({ isOpen, onClose, title, children }) {
   const modalRef = useRef(null)
 
-  // Escape key close handler
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') onClose()
     }
     if (isOpen) {
       window.addEventListener('keydown', handleKeyDown)
-      document.body.style.overflow = 'hidden' // Lock scroll when open
+      document.body.style.overflow = 'hidden'
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
@@ -23,13 +22,13 @@ export default function Modal({ isOpen, onClose, title, children }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-4 pt-20 sm:pt-20 overflow-y-auto">
-      {/* Backdrop with higher z-index */}
+      {}
       <div 
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-md animate-fade-in"
         onClick={onClose}
       />
 
-      {/* Pure White Modal Dialog Body matching Screen 4 of PDF Wireframe */}
+      {}
       <div 
         ref={modalRef}
         className="relative w-full max-w-lg rounded-3xl border border-slate-200 bg-white shadow-2xl p-6 sm:p-7 z-10 animate-modal-scale text-slate-800 my-auto"

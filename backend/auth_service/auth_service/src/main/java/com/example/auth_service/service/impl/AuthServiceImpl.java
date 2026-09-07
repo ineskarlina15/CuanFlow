@@ -27,39 +27,32 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
-    // Inject PasswordEncoder (Bcrypt) dari SecurityConfig
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
     public String register(RegisterReq request) throws Exception {
-        // 1. Validasi apakah username sudah terdaftar
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new IllegalArgumentException("Pendaftaran gagal: Username sudah terdaftar!");
         }
 
-        // Opsional: cek email jika email diisi
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             if (userRepository.existsByEmail(request.getEmail())) {
                 throw new IllegalArgumentException("Pendaftaran gagal: Email sudah terdaftar!");
             }
         }
 
-        // 2. Enkripsi password menggunakan Bcrypt
         String encryptedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 3. Masukkan data ke entitas User
         User newUser = new User();
         newUser.setName(request.getName());
         newUser.setUsername(request.getUsername());
         newUser.setEmail(request.getEmail());
-        newUser.setPassword(encryptedPassword); // Simpan password yang sudah di-hash
+        newUser.setPassword(encryptedPassword);
         newUser.setPhone(request.getPhone());
 
-        // 4. Simpan User ke database
         User savedUser = userRepository.save(newUser);
 
-        // 5. Otomatis buatkan baris Profile kosong untuk user ini (Relasi 1:1)
         Profile newProfile = new Profile();
         newProfile.setUser(savedUser);
         profileRepository.save(newProfile);
@@ -86,17 +79,12 @@ public class AuthServiceImpl implements AuthService {
             throw new Exception("Akun tidak aktif atau sudah dihapus!");
         }
 
-        // 2. Verifikasi password menggunakan fitur matches() dari Bcrypt
-        // (Parameter pertama: password asli dari user, Parameter kedua: password hash
-        // dari DB)
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new Exception("Password salah!");
         }
 
-        // 3. Jika lolos, cetak Token JWT
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole().name());
 
-        // 4. Susun data kembalian (Response)
         AuthRes response = new AuthRes();
         response.setUserId(user.getId());
         response.setToken(token);
@@ -105,7 +93,6 @@ public class AuthServiceImpl implements AuthService {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
 
-        // Ambil avatar dari Profile (jika ada)
         profileRepository.findByUserId(user.getId()).ifPresent(profile -> {
             response.setAvatarUrl(profile.getAvatarUrl());
         });
@@ -123,10 +110,6 @@ public class AuthServiceImpl implements AuthService {
         user.setResetPasswordTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
         userRepository.save(user);
 
-        // CATATAN: Di dunia nyata, token ini dikirim via Email (JavaMailSender).
-        // Karena kita belum setup SMTP Email untuk proyek ini, kita return saja
-        // tokennya
-        // sebagai response agar Frontend/Postman bisa langsung menggunakannya.
         return resetToken;
     }
 

@@ -48,13 +48,11 @@ public class UserServiceImpl implements UserService{
         Profile profile = profileRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new Exception("Profil tidak ditemukan"));
 
-        // Update data di tabel User jika ada perubahan
         if (request.getName() != null && !request.getName().trim().isEmpty()) {
             user.setName(request.getName().trim());
         }
         if (request.getPhone() != null) user.setPhone(request.getPhone());
 
-        // Update Password jika newPassword diisi
         if (request.getNewPassword() != null && !request.getNewPassword().trim().isEmpty()) {
             String newPw = request.getNewPassword().trim();
             if (request.getCurrentPassword() != null && !request.getCurrentPassword().isEmpty()) {
@@ -67,7 +65,6 @@ public class UserServiceImpl implements UserService{
 
         userRepository.save(user);
 
-        // Update data di tabel Profile jika ada perubahan
         if (request.getAvatarUrl() != null) profile.setAvatarUrl(request.getAvatarUrl());
         if (request.getDateOfBirth() != null) profile.setDateOfBirth(request.getDateOfBirth());
         if (request.getGender() != null) profile.setGender(request.getGender());
@@ -99,7 +96,6 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
         
-        // Proteksi Akun Master System Administrator (Super Admin)
         if (targetUserId == 1 || (user.getEmail() != null && user.getEmail().equalsIgnoreCase("admin@cuanflow.com"))) {
             if (!"ADMIN".equalsIgnoreCase(roleStr)) {
                 throw new Exception("Akun Master System Administrator (Super Admin) dilindungi dan tidak dapat diubah menjadi USER!");
@@ -127,7 +123,6 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findById(targetUserId)
                 .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
 
-        // Proteksi Akun Master System Administrator
         if (targetUserId == 1 || (user.getEmail() != null && user.getEmail().equalsIgnoreCase("admin@cuanflow.com"))) {
             throw new Exception("Akun Master System Administrator (Super Admin) dilindungi dan harus selalu berstatus Aktif!");
         }

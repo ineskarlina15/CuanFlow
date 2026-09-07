@@ -10,7 +10,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,9 +27,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
 
-        // Mengecek apakah header tidak null dan dimulai dengan "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            // Memotong kata "Bearer " untuk mengambil murni tokennya saja
             String token = authHeader.substring(7);
             if (token != null && jwtUtil.isValid(token) && jwtUtil.isAccessToken(token)) {
                 String username = jwtUtil.extractUsername(token);
@@ -41,8 +38,6 @@ public class JwtFilter extends OncePerRequestFilter {
                     authorities.add(new org.springframework.security.core.authority.SimpleGrantedAuthority(role));
                 }
 
-                // Membuat object User dari Spring Security
-                // (Password dikosongkan karena kita hanya butuh verifikasi username dari token)
                 User user = new User(
                         username,
                         "",
@@ -57,7 +52,6 @@ public class JwtFilter extends OncePerRequestFilter {
                         new WebAuthenticationDetailsSource()
                                 .buildDetails(request));
 
-                // Mendaftarkan user ke dalam konteks Spring Security bahwa dia sudah sah login
                 SecurityContextHolder.getContext().setAuthentication(auth);
             }
         }

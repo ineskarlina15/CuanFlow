@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class RateLimitFilter implements GlobalFilter {
-
     @Value("${max_requests}")
     private int MAX_REQUEST;
 
@@ -31,7 +30,6 @@ public class RateLimitFilter implements GlobalFilter {
 
         RequestInfo info = requests.getOrDefault(ip, new RequestInfo(0, now));
 
-        // reset window setelah berlalu X detik
         if (now - info.windowStart >= WINDOW_SECONDS) {
             info.count = 0;
             info.windowStart = now;

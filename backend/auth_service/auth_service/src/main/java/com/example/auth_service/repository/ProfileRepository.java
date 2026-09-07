@@ -9,6 +9,5 @@ import com.example.auth_service.entity.Profile;
 
 @Repository
 public interface ProfileRepository extends JpaRepository<Profile, Integer>{
-    // Fungsi ini akan otomatis menjadi query: SELECT * FROM profiles WHERE user_id = ?
     Optional<Profile> findByUserId(Integer userId);
 }

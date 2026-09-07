@@ -26,12 +26,10 @@ export default function AdminBroadcast() {
   const [targetAudience, setTargetAudience] = useState('ALL_USERS')
   const [isSending, setIsSending] = useState(false)
 
-  // Sortir & Pagination State
   const [sortOrder, setSortOrder] = useState('TERBARU') // 'TERBARU', 'TERLAMA', 'A-Z', 'Z-A'
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 4
 
-  // Riwayat Siaran Pengumuman yang pernah dikirimkan oleh Admin
   const [broadcastHistory, setBroadcastHistory] = useState([
     {
       id: 1,
@@ -91,7 +89,6 @@ export default function AdminBroadcast() {
     fetchBroadcastHistory()
   }, [])
 
-  // Pengurutan Riwayat Siaran
   const sortedBroadcasts = useMemo(() => {
     const list = [...broadcastHistory]
     list.sort((a, b) => {
@@ -104,7 +101,6 @@ export default function AdminBroadcast() {
     return list
   }, [broadcastHistory, sortOrder])
 
-  // Pagination Riwayat Siaran
   const totalPages = Math.max(1, Math.ceil(sortedBroadcasts.length / itemsPerPage))
   const paginatedBroadcasts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage
@@ -121,7 +117,6 @@ export default function AdminBroadcast() {
     setIsSending(true)
 
     try {
-      // Panggil backend notification service
       const res = await api.post('/notifSvc/api/v1/notifications/broadcast', {
         title,
         message,
@@ -147,7 +142,6 @@ export default function AdminBroadcast() {
       setMessage('')
       setType('INFO')
     } catch {
-      // Fallback lokal jika backend belum di-restart
       const newBroadcast = {
         id: Date.now(),
         title,
@@ -224,7 +218,6 @@ export default function AdminBroadcast() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Formulir Buat Siaran Baru (Kolom Kiri) */}
         <div className="lg:col-span-1 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-2xs flex flex-col gap-5">
           <div className="flex items-center gap-2.5 pb-4 border-b border-slate-100">
             <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
@@ -314,9 +307,7 @@ export default function AdminBroadcast() {
           </form>
         </div>
 
-        {/* Tabel Riwayat Siaran (Kolom Kanan) */}
         <div className="lg:col-span-2 rounded-2xl border border-slate-200/80 bg-white shadow-2xs overflow-hidden flex flex-col">
-          {/* Header Riwayat & Filter Sortir */}
           <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-base font-black text-slate-900 font-heading">Riwayat Siaran Pengumuman</h3>
@@ -324,7 +315,6 @@ export default function AdminBroadcast() {
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-              {/* Dropdown Sortir Riwayat */}
               <div className="flex items-center gap-1.5">
                 <span className="text-xs font-bold text-slate-400 hidden md:inline">Urutkan:</span>
                 <select
@@ -348,7 +338,6 @@ export default function AdminBroadcast() {
             </div>
           </div>
 
-          {/* Tabel Riwayat */}
           <div className="overflow-x-auto flex-grow">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -406,7 +395,6 @@ export default function AdminBroadcast() {
             </table>
           </div>
 
-          {/* Navigasi Pagination Riwayat Siaran */}
           {sortedBroadcasts.length > 0 && (
             <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
               <span>

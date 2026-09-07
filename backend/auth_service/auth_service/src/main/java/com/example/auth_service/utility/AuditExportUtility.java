@@ -40,16 +40,11 @@ public class AuditExportUtility {
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
-    /**
-     * Ekspor Laporan Log Audit ke format Microsoft Excel (.xlsx)
-     * Desain tabel akuntansi resmi dengan tata letak rapi, palet warna elegan, dan auto-size kolom.
-     */
     public ByteArrayInputStream exportAuditLogsToExcel(List<AuditLog> logs) {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Audit Trail Log");
             sheet.setDisplayGridlines(true);
 
-            // Setup Fonts
             XSSFFont titleFont = (XSSFFont) workbook.createFont();
             titleFont.setFontName("Segoe UI");
             titleFont.setFontHeightInPoints((short) 14);
@@ -76,7 +71,6 @@ public class AuditExportUtility {
             boldBodyFont.setFontHeightInPoints((short) 9);
             boldBodyFont.setBold(true);
 
-            // Setup Styles
             XSSFCellStyle headerStyle = (XSSFCellStyle) workbook.createCellStyle();
             headerStyle.setFillForegroundColor(new XSSFColor(new Color(30, 41, 59), new DefaultIndexedColorMap())); // Navy Dark Slate 800
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -110,7 +104,6 @@ public class AuditExportUtility {
             zebraCenterStyle.setFillForegroundColor(new XSSFColor(new Color(248, 250, 252), new DefaultIndexedColorMap()));
             zebraCenterStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
 
-            // Row 0 - Title
             Row titleRow = sheet.createRow(0);
             Cell titleCell = titleRow.createCell(0);
             titleCell.setCellValue("CUANFLOW — SISTEM INFORMASI AKUNTANSI & MANAJEMEN KEUANGAN");
@@ -118,7 +111,6 @@ public class AuditExportUtility {
             titleStyle.setFont(titleFont);
             titleCell.setCellStyle(titleStyle);
 
-            // Row 1 - Subtitle
             Row subRow = sheet.createRow(1);
             Cell subCell = subRow.createCell(0);
             subCell.setCellValue("LAPORAN RESMI REKAM JEJAK AUDIT SISTEM (AUDIT TRAIL LOG)");
@@ -126,14 +118,12 @@ public class AuditExportUtility {
             subStyle.setFont(subtitleFont);
             subCell.setCellStyle(subStyle);
 
-            // Row 2 - Metadata
             Row metaRow = sheet.createRow(2);
             Cell metaCell = metaRow.createCell(0);
             String printedAt = LocalDateTime.now().format(TIME_FMT);
             metaCell.setCellValue("Waktu Cetak: " + printedAt + " WIB | Auditor: Administrator Sistem | Kerangka Kerja: COSO Internal Control");
             metaCell.setCellStyle(subStyle);
 
-            // Row 4 - Table Headers
             String[] headers = {
                     "No", "ID Log", "Waktu (WIB)", "User ID", "Modul Sistem",
                     "Aksi / Tindakan", "Entitas Target", "Keterangan Aktivitas",
@@ -148,7 +138,6 @@ public class AuditExportUtility {
                 c.setCellStyle(headerStyle);
             }
 
-            // Data Rows
             int rowIdx = 5;
             int counter = 1;
             for (AuditLog l : logs) {
@@ -158,57 +147,46 @@ public class AuditExportUtility {
                 CellStyle curRegular = isZebra ? zebraStyle : regularStyle;
                 CellStyle curCenter = isZebra ? zebraCenterStyle : centerStyle;
 
-                // 0: No
                 Cell c0 = r.createCell(0);
                 c0.setCellValue(counter++);
                 c0.setCellStyle(curCenter);
 
-                // 1: ID Log
                 Cell c1 = r.createCell(1);
                 c1.setCellValue("LOG-" + String.format("%04d", l.getId() != null ? l.getId() : 0));
                 c1.setCellStyle(curCenter);
 
-                // 2: Waktu
                 Cell c2 = r.createCell(2);
                 c2.setCellValue(l.getCreatedAt() != null ? l.getCreatedAt().format(TIME_FMT) : "-");
                 c2.setCellStyle(curCenter);
 
-                // 3: User ID
                 Cell c3 = r.createCell(3);
                 c3.setCellValue(l.getUserId() != null ? "User #" + l.getUserId() : "Sistem");
                 c3.setCellStyle(curCenter);
 
-                // 4: Modul
                 Cell c4 = r.createCell(4);
                 c4.setCellValue(l.getModule() != null ? l.getModule() : "-");
                 c4.setCellStyle(curCenter);
 
-                // 5: Aksi
                 Cell c5 = r.createCell(5);
                 c5.setCellValue(l.getAction() != null ? l.getAction() : "-");
                 c5.setCellStyle(curCenter);
 
-                // 6: Entitas
                 Cell c6 = r.createCell(6);
                 c6.setCellValue(l.getEntity() != null ? l.getEntity() : "-");
                 c6.setCellStyle(curRegular);
 
-                // 7: Keterangan
                 Cell c7 = r.createCell(7);
                 c7.setCellValue(l.getDescription() != null ? l.getDescription() : "-");
                 c7.setCellStyle(curRegular);
 
-                // 8: IP Address
                 Cell c8 = r.createCell(8);
                 c8.setCellValue(l.getIpAddress() != null ? l.getIpAddress() : "-");
                 c8.setCellStyle(curCenter);
 
-                // 9: Status
                 Cell c9 = r.createCell(9);
                 c9.setCellValue(l.getStatus() != null ? l.getStatus() : "SUCCESS");
                 c9.setCellStyle(curCenter);
 
-                // 10: Severity
                 Cell c10 = r.createCell(10);
                 c10.setCellValue(l.getSeverity() != null ? l.getSeverity() : "LOW");
                 c10.setCellStyle(curCenter);
@@ -216,7 +194,6 @@ public class AuditExportUtility {
                 rowIdx++;
             }
 
-            // Auto-fit Column Widths with padding
             for (int i = 0; i < headers.length; i++) {
                 sheet.autoSizeColumn(i);
                 int curWidth = sheet.getColumnWidth(i);
@@ -232,10 +209,6 @@ public class AuditExportUtility {
         }
     }
 
-    /**
-     * Ekspor Laporan Log Audit ke format Adobe PDF (Landscape A4)
-     * Desain formal berstandar audit akuntansi COSO dengan header institusi, tabel rapi, dan footer.
-     */
     public ByteArrayInputStream exportAuditLogsToPdf(List<AuditLog> logs) {
         Document document = new Document(PageSize.A4.rotate(), 25, 25, 30, 30);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -244,7 +217,6 @@ public class AuditExportUtility {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Fonts
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15, new Color(15, 23, 42));
             Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, new Color(37, 99, 235));
             Font metaFont = FontFactory.getFont(FontFactory.HELVETICA, 8, new Color(100, 116, 139));
@@ -252,7 +224,6 @@ public class AuditExportUtility {
             Font bodyFont = FontFactory.getFont(FontFactory.HELVETICA, 7.5f, new Color(30, 41, 59));
             Font bodyBoldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, new Color(15, 23, 42));
 
-            // Header Section
             Paragraph title = new Paragraph("CUANFLOW — SISTEM INFORMASI AKUNTANSI KEUANGAN PRIBADI", titleFont);
             title.setAlignment(Element.ALIGN_LEFT);
             document.add(title);
@@ -267,12 +238,10 @@ public class AuditExportUtility {
             meta.setSpacingAfter(12);
             document.add(meta);
 
-            // Table Setup (11 Columns)
             float[] columnWidths = { 25f, 50f, 65f, 45f, 75f, 75f, 100f, 160f, 65f, 50f, 45f };
             PdfPTable table = new PdfPTable(columnWidths);
             table.setWidthPercentage(100);
 
-            // Header Cells
             String[] headers = {
                     "No", "ID Log", "Waktu", "User", "Modul",
                     "Aksi", "Entitas Target", "Keterangan Aktivitas", "Alamat IP", "Status", "Risiko"
@@ -288,42 +257,31 @@ public class AuditExportUtility {
                 table.addCell(cell);
             }
 
-            // Data Cells
             int counter = 1;
             for (AuditLog l : logs) {
                 boolean isZebra = (counter % 2 == 0);
                 Color rowBg = isZebra ? new Color(248, 250, 252) : Color.WHITE;
 
-                // 0: No
                 addCell(table, String.valueOf(counter++), bodyFont, Element.ALIGN_CENTER, rowBg);
 
-                // 1: ID Log
                 addCell(table, "LOG-" + String.format("%04d", l.getId() != null ? l.getId() : 0), bodyBoldFont, Element.ALIGN_CENTER, rowBg);
 
-                // 2: Waktu
                 String dt = l.getCreatedAt() != null ? l.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")) : "-";
                 addCell(table, dt, bodyFont, Element.ALIGN_CENTER, rowBg);
 
-                // 3: User ID
                 String userStr = l.getUserId() != null ? "#" + l.getUserId() : "Sistem";
                 addCell(table, userStr, bodyBoldFont, Element.ALIGN_CENTER, rowBg);
 
-                // 4: Modul
                 addCell(table, l.getModule() != null ? l.getModule() : "-", bodyFont, Element.ALIGN_CENTER, rowBg);
 
-                // 5: Aksi
                 addCell(table, l.getAction() != null ? l.getAction() : "-", bodyBoldFont, Element.ALIGN_CENTER, rowBg);
 
-                // 6: Entitas
                 addCell(table, l.getEntity() != null ? l.getEntity() : "-", bodyFont, Element.ALIGN_LEFT, rowBg);
 
-                // 7: Keterangan
                 addCell(table, l.getDescription() != null ? l.getDescription() : "-", bodyFont, Element.ALIGN_LEFT, rowBg);
 
-                // 8: IP Address
                 addCell(table, l.getIpAddress() != null ? l.getIpAddress() : "-", bodyFont, Element.ALIGN_CENTER, rowBg);
 
-                // 9: Status
                 String st = l.getStatus() != null ? l.getStatus() : "SUCCESS";
                 Font statusFont = "FAILED".equalsIgnoreCase(st) 
                         ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, new Color(220, 38, 38))
@@ -332,7 +290,6 @@ public class AuditExportUtility {
                         : FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, new Color(16, 185, 129)));
                 addCell(table, st, statusFont, Element.ALIGN_CENTER, rowBg);
 
-                // 10: Severity
                 String sev = l.getSeverity() != null ? l.getSeverity() : "LOW";
                 Font sevFont = "HIGH".equalsIgnoreCase(sev) 
                         ? FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, new Color(220, 38, 38))
@@ -344,7 +301,6 @@ public class AuditExportUtility {
 
             document.add(table);
 
-            // Footer note
             Paragraph footer = new Paragraph(
                     "Dokumen ini diterbitkan secara otomatis oleh modul Tata Kelola Sistem CuanFlow sebagai bukti otentik jejak audit (Audit Trail) untuk keperluan audit internal & eksternal.",
                     FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 7, new Color(148, 163, 184))

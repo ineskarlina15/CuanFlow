@@ -36,7 +36,7 @@ public class Category {
     private String name;
 
     @Enumerated(EnumType.STRING)
-    @JdbcTypeCode(SqlTypes.NAMED_ENUM) // Agar PostgreSQL membaca ini sebagai ENUM, bukan VARCHAR
+    @JdbcTypeCode(SqlTypes.NAMED_ENUM) 
     @Column(nullable = false)
     private CategoryType type;
 

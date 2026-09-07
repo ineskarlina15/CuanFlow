@@ -26,7 +26,7 @@ public class Tag {
 
     private String name;
 
-    private Integer userId; // Tag spesifik per user
+    private Integer userId;
 
     @JsonIgnore
     @ManyToMany(mappedBy = "tags")

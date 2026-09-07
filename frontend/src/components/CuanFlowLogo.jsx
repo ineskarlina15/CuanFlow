@@ -30,7 +30,7 @@ export default function CuanFlowLogo({ className = '', iconOnly = false, size = 
           </linearGradient>
         </defs>
 
-        {/* Circular Gradient Arc C shape */}
+        {}
         <path
           d="M 68 22 A 38 38 0 1 0 72 75"
           fill="none"
@@ -39,7 +39,7 @@ export default function CuanFlowLogo({ className = '', iconOnly = false, size = 
           strokeLinecap="round"
         />
 
-        {/* Top Gold Dot at tip */}
+        {}
         <circle cx="70" cy="24" r="8" fill="#F59E0B" />
       </svg>
 
