@@ -23,20 +23,16 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    // Inject class Message untuk standardisasi response JSON
     @Autowired
     private Message message;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterReq request) {
         try {
-            // Memanggil logika register di Service
             String result = authService.register(request);
               
-            // Menggunakan method success() dari Message.java
             return message.success(result, 200);
         } catch (Exception e) {
-            // Jika ada error (misal email sudah ada), gunakan badReq()
             return message.badReq(e.getMessage(), 400);
         }
     }
@@ -44,13 +40,10 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginReq request) {
         try {
-            // Memanggil logika login di Service
             AuthRes data = authService.login(request);
             
-            // Menggunakan method getData() dari Message.java karena kita mereturn object AuthRes
             return message.getData("Login Success", data, 200);
         } catch (Exception e) {
-            // Jika password salah atau user tidak ditemukan
             return message.badReq(e.getMessage(), 401);
         }
     }
@@ -59,7 +52,6 @@ public class AuthController {
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordReq request) {
         try {
             String token = authService.forgotPassword(request);
-            // Mengembalikan token reset (sementara) agar mudah di-copy di Postman
             return message.getData("Token reset password berhasil dibuat", token, 200);
         } catch (Exception e) {
             return message.badReq(e.getMessage(), 400);
@@ -79,7 +71,6 @@ public class AuthController {
     @PostMapping("/logout")
     public ResponseEntity<?> logout(Authentication auth) {
         try {
-            // Karena kita menggunakan JWT stateless, kita hanya perlu mengembalikan pesan sukses ke frontend. Frontend yang bertugas menghapus tokennya.
             return message.success("Logout berhasil! Token telah dihapus dari sisi klien.", 200);
         } catch (Exception e) {
             return message.error("Gagal melakukan logout", 500);

@@ -18,7 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity // Diaktifkan agar nanti bisa pakai @PreAuthorize di Controller
+@EnableMethodSecurity
 public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
@@ -31,9 +31,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf -> csrf.disable()) // Biar gampang testing di Postman
+            .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                // Izinkan API login dan register untuk di-hit tanpa authentication
                 .requestMatchers(
                     "/api/v1/auth/login", 
                     "/api/v1/auth/register",
@@ -43,21 +42,18 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
-                // == STATELESS START ==
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Agar stateless
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             // Tambahkan bagian ini untuk handle authentication yg stateless
             .addFilterBefore(
                 jwtFilter, 
                 UsernamePasswordAuthenticationFilter.class
             )
-            // == STATELESS END ==
             .exceptionHandling(ex -> ex
                 .authenticationEntryPoint((request, response, authException) -> {
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
 
-                    // Ini pesan gagal jika user belum melakukan authentication
                     response.getWriter().write(
                         "{" +
                         "\"message\": \"Silakan login terlebih dahulu untuk mengakses resource ini.\"," +

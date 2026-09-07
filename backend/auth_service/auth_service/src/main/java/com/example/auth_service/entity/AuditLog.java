@@ -47,10 +47,10 @@ public class AuditLog {
     private String userAgent;
 
     @Column(nullable = false, length = 20)
-    private String status; // SUCCESS, WARNING, FAILED
+    private String status; 
 
     @Column(nullable = false, length = 20)
-    private String severity; // LOW, MEDIUM, HIGH
+    private String severity;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

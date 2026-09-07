@@ -442,4 +442,3 @@ END $$;
 -- - 20 Audit Logs (Sistem Pengendalian Internal COSO)
 -- - 5 System Broadcasts (Siaran Pengumuman Massal)
 -- =========================================================
-
