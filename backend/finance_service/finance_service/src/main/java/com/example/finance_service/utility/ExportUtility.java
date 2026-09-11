@@ -23,7 +23,6 @@ import com.example.finance_service.entity.PaymentMethod;
 import com.example.finance_service.entity.Transaction;
 import com.example.finance_service.entity.TransactionType;
 import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.Element;
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.PageSize;
@@ -567,11 +566,9 @@ public class ExportUtility {
             document.add(notePara);
 
             document.close();
-
-        } catch (DocumentException ex) {
-            throw new RuntimeException("Gagal meng-export data ke PDF: " + ex.getMessage());
+            return new ByteArrayInputStream(out.toByteArray());
+        } catch (Exception e) {
+            throw new RuntimeException("Gagal meng-export data ke PDF: " + e.getMessage(), e);
         }
-
-        return new ByteArrayInputStream(out.toByteArray());
     }
 }

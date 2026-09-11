@@ -256,13 +256,4 @@ public class TransactionServiceImpl implements TransactionService {
             }
         }
     }
-
-    private String formatPeriod(LocalDate startDate, LocalDate endDate) {
-        if (startDate == null && endDate == null) {
-            return "Semua tanggal";
-        }
-        String start = startDate != null ? startDate.toString() : "Awal";
-        String end = endDate != null ? endDate.toString() : "Akhir";
-        return start + " sampai " + end;
-    }
 }

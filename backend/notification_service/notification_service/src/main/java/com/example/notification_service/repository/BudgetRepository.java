@@ -17,6 +17,4 @@ public interface BudgetRepository extends JpaRepository<Budget, Integer> {
                    "AND t.type = 'EXPENSE' " +
                    "AND t.transaction_date BETWEEN :startDate AND :endDate", nativeQuery = true)
     java.math.BigDecimal calculateTotalSpent(@Param("budgetId") Integer budgetId, @Param("startDate") java.time.LocalDate startDate, @Param("endDate") java.time.LocalDate endDate);
-    
-    List<Budget> findByStatus(String status);
 }

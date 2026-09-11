@@ -53,16 +53,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Intege
             @Param("type") String type);
 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
-           "WHERE t.userId = :userId AND t.deletedAt IS NULL AND CAST(t.type AS string) = :type " +
-           "AND (CAST(:startDate AS date) IS NULL OR t.transactionDate >= :startDate) " +
-           "AND (CAST(:endDate AS date) IS NULL OR t.transactionDate <= :endDate)")
-    BigDecimal calculateTotalAmountByTypeAndDate(
-            @Param("userId") Integer userId,
-            @Param("type") String type,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
-
-    @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t " +
            "WHERE t.userId = :userId AND t.category.id = :categoryId AND t.deletedAt IS NULL " +
            "AND EXTRACT(MONTH FROM t.transactionDate) = :month " +
            "AND EXTRACT(YEAR FROM t.transactionDate) = :year")
