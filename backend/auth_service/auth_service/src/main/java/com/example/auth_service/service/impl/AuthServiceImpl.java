@@ -33,12 +33,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String register(RegisterReq request) throws Exception {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new IllegalArgumentException("Pendaftaran gagal: Username sudah terdaftar!");
+            throw new Exception("Pendaftaran gagal: Username sudah terdaftar!");
         }
 
         if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
             if (userRepository.existsByEmail(request.getEmail())) {
-                throw new IllegalArgumentException("Pendaftaran gagal: Email sudah terdaftar!");
+                throw new Exception("Pendaftaran gagal: Email sudah terdaftar!");
             }
         }
 
@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
         newUser.setName(request.getName());
         newUser.setUsername(request.getUsername());
         newUser.setEmail(request.getEmail());
-        newUser.setPassword(encryptedPassword);
+        newUser.setPassword(encryptedPassword); // Simpan password yang sudah di-hash
         newUser.setPhone(request.getPhone());
 
         User savedUser = userRepository.save(newUser);
@@ -82,7 +82,6 @@ public class AuthServiceImpl implements AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new Exception("Password salah!");
         }
-
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole().name());
 
         AuthRes response = new AuthRes();
@@ -92,10 +91,6 @@ public class AuthServiceImpl implements AuthService {
         response.setUsername(user.getUsername());
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
-
-        profileRepository.findByUserId(user.getId()).ifPresent(profile -> {
-            response.setAvatarUrl(profile.getAvatarUrl());
-        });
 
         return response;
     }

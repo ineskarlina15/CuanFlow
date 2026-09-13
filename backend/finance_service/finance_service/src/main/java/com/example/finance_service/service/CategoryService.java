@@ -11,4 +11,6 @@ public interface CategoryService {
     Category getCategoryById(Integer userId, Integer id) throws Exception;
     Category updateCategory(Integer userId, Integer id, CategoryReq request) throws Exception;
     void deleteCategory(Integer userId, Integer id) throws Exception;
+    List<Category> getAllActiveCategories();
+    void deleteCategory(Integer id) throws Exception;
 }

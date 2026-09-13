@@ -16,6 +16,9 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Query("SELECT c FROM Category c WHERE c.userId = :userId AND c.deletedAt IS NULL")
     List<Category> findAllActiveCategoriesByUserId(@org.springframework.data.repository.query.Param("userId") Integer userId);
 
+    @Query("SELECT c FROM Category c WHERE c.deletedAt IS NULL ORDER BY c.createdAt DESC")
+    List<Category> findAllActiveCategories();
+
     java.util.Optional<Category> findByIdAndUserId(Integer id, Integer userId);
 
     boolean existsByName(String name);
@@ -26,4 +29,9 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Transactional
     @Query("UPDATE Category c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.id = :id AND c.userId = :userId")
     void softDeleteByIdAndUserId(@org.springframework.data.repository.query.Param("id") Integer id, @org.springframework.data.repository.query.Param("userId") Integer userId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Category c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.id = :id")
+    void softDeleteById(@org.springframework.data.repository.query.Param("id") Integer id);
 }

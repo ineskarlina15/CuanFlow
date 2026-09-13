@@ -64,4 +64,16 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = getCategoryById(userId, id); 
         categoryRepository.softDeleteByIdAndUserId(category.getId(), userId);
     }
+
+    @Override
+    public List<Category> getAllActiveCategories() {
+        return categoryRepository.findAll();
+    }
+
+    @Override
+    public void deleteCategory(Integer id) throws Exception {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new Exception("Kategori tidak ditemukan!"));
+        categoryRepository.delete(category);
+    }
 }

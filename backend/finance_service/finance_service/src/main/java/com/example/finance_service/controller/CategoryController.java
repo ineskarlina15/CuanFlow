@@ -78,4 +78,25 @@ public class CategoryController {
             return message.badReq(e.getMessage(), 400);
         }
     }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> getAllForAdmin() {
+        try {
+            return message.getData("Berhasil mengambil semua data kategori pengguna", categoryService.getAllActiveCategories(), 200);
+        } catch (Exception e) {
+            return message.badReq(e.getMessage(), 500);
+        }
+    }
+
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> deleteForAdmin(@PathVariable Integer id) {
+        try {
+            categoryService.deleteCategory(id);
+            return message.success("Kategori berhasil dihapus oleh admin", 200);
+        } catch (Exception e) {
+            return message.badReq(e.getMessage(), 400);
+        }
+    }
 }
