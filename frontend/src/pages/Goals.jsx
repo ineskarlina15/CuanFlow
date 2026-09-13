@@ -13,7 +13,7 @@ import {
 import { 
   Target, Plus, Edit2, Trash2, Loader2, ArrowUpCircle, Calendar,
   ChevronLeft, ChevronRight, Search, Filter, ArrowUpDown, RotateCcw,
-  CheckCircle2, TrendingUp, Wallet, Clock
+  CheckCircle2, TrendingUp, Wallet, Clock, AlertCircle
 } from 'lucide-react'
 
 export default function Goals() {
@@ -202,9 +202,11 @@ export default function Goals() {
     const errors = {}
     if (!formData.name) errors.name = 'Nama target wajib diisi'
     if (!formData.targetAmount) {
-      errors.targetAmount = 'Nominal wajib diisi'
+      errors.targetAmount = 'Nominal target wajib diisi'
     } else if (Number(formData.targetAmount) <= 0) {
       errors.targetAmount = 'Nominal harus lebih dari 0'
+    } else if (modalType === 'edit' && selectedGoal?.currentAmount && Number(formData.targetAmount) < Number(selectedGoal.currentAmount)) {
+      errors.targetAmount = `Target baru tidak boleh lebih kecil dari tabungan yang sudah terkumpul (${formatCurrency(selectedGoal.currentAmount)})`
     }
     if (!formData.targetDate) errors.targetDate = 'Tanggal target wajib diisi'
     setFormErrors(errors)
@@ -245,19 +247,30 @@ export default function Goals() {
 
   const handleTopUp = async (e) => {
     e.preventDefault()
-    if (!topUpAmount || Number(topUpAmount) <= 0) {
+    const inputAmount = Number(topUpAmount)
+    if (!topUpAmount || inputAmount <= 0) {
       showToast('Masukkan nominal tabungan yang valid', 'error')
+      return
+    }
+
+    const current = Number(selectedGoal?.currentAmount || 0)
+    const target = Number(selectedGoal?.targetAmount || 0)
+    const remaining = Math.max(0, target - current)
+
+    if (inputAmount > remaining) {
+      showToast(`Nominal tabungan melebihi sisa target yang dibutuhkan (Maksimal: ${formatCurrency(remaining)})`, 'error')
       return
     }
 
     setSaving(true)
     try {
-      const newTotal = Number(selectedGoal.currentAmount) + Number(topUpAmount)
+      const newTotal = current + inputAmount
       const payload = {
         name: selectedGoal.name,
         targetAmount: selectedGoal.targetAmount,
         targetDate: selectedGoal.targetDate,
-        currentAmount: newTotal > selectedGoal.targetAmount ? selectedGoal.targetAmount : newTotal
+        currentAmount: newTotal,
+        description: selectedGoal.description
       }
       
       await api.put(`/financeSvc/api/v1/goals/${selectedGoal.id}`, payload)
@@ -762,55 +775,84 @@ export default function Goals() {
       <Modal
         isOpen={isTopUpOpen}
         onClose={() => setIsTopUpOpen(false)}
-        title={`Nabung: ${selectedGoal?.name}`}
+        title={`Nabung: ${selectedGoal?.name || 'Tujuan Keuangan'}`}
       >
-        <form onSubmit={handleTopUp} className="flex flex-col gap-4 text-slate-800">
-          
-          <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl flex justify-between items-center text-sm font-bold text-blue-800 mb-2">
-            <span>Sisa Kekurangan:</span>
-            <span>{formatCurrency(Number(selectedGoal?.targetAmount || 0) - Number(selectedGoal?.currentAmount || 0))}</span>
-          </div>
+        {(() => {
+          const current = Number(selectedGoal?.currentAmount || 0)
+          const target = Number(selectedGoal?.targetAmount || 0)
+          const remainingAmount = Math.max(0, target - current)
+          const enteredAmount = Number(topUpAmount || 0)
+          const isOverTarget = enteredAmount > remainingAmount
+          const isInvalid = !topUpAmount || enteredAmount <= 0 || isOverTarget
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-slate-700">
-              Nominal Tabungan ({getCurrencyPrefix().trim()})
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-3.5 text-xs font-bold text-slate-400 select-none">
-                {getCurrencyPrefix()}
-              </span>
-              <input
-                type="text"
-                inputMode="numeric"
-                placeholder="500.000"
-                value={formatAmountInput(topUpAmount)}
-                onChange={(e) => {
-                  const raw = parseAmountInput(e.target.value)
-                  setTopUpAmount(raw || '')
-                }}
-                className="w-full bg-slate-50 border border-slate-200 focus:border-blue-600 rounded-xl py-3 pl-12 pr-4 text-slate-800 outline-none text-sm font-medium transition-all"
-                autoFocus
-              />
-            </div>
-          </div>
+          return (
+            <form onSubmit={handleTopUp} className="flex flex-col gap-4 text-slate-800">
+              <div className="p-3.5 bg-blue-50/80 border border-blue-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600 block">Sisa Target yang Dibutuhkan</span>
+                  <span className="text-base font-black text-blue-900">{formatCurrency(remainingAmount)}</span>
+                </div>
+                {remainingAmount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setTopUpAmount(String(remainingAmount))}
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-xs active:scale-95 flex items-center justify-center gap-1.5 self-start sm:self-auto"
+                  >
+                    <span>Isi Penuh Sisa Target</span>
+                  </button>
+                )}
+              </div>
 
-          <div className="flex justify-end gap-3 mt-4">
-            <button
-              type="button"
-              onClick={() => setIsTopUpOpen(false)}
-              className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all cursor-pointer"
-            >
-              Batal
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50"
-            >
-              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Tambah Tabungan</span>}
-            </button>
-          </div>
-        </form>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-bold text-slate-700">
+                  Nominal Tabungan ({getCurrencyPrefix().trim()})
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3.5 text-xs font-bold text-slate-400 select-none">
+                    {getCurrencyPrefix()}
+                  </span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    placeholder="500.000"
+                    value={formatAmountInput(topUpAmount)}
+                    onChange={(e) => {
+                      const raw = parseAmountInput(e.target.value)
+                      setTopUpAmount(raw || '')
+                    }}
+                    className={`w-full bg-slate-50 border ${
+                      isOverTarget ? 'border-rose-500 focus:border-rose-500 bg-rose-50/30' : 'border-slate-200 focus:border-blue-600'
+                    } rounded-xl py-3 pl-12 pr-4 text-slate-800 outline-none text-sm font-medium transition-all`}
+                    autoFocus
+                  />
+                </div>
+                {isOverTarget && (
+                  <span className="text-xs text-rose-500 font-semibold flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    Nominal tabungan melebihi sisa target yang dibutuhkan (Maksimal: {formatCurrency(remainingAmount)})
+                  </span>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 mt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsTopUpOpen(false)}
+                  className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-sm font-bold transition-all cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving || isInvalid}
+                  className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Tambah Tabungan</span>}
+                </button>
+              </div>
+            </form>
+          )
+        })()}
       </Modal>
 
       {/* Konfirmasi Hapus */}

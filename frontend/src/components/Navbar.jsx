@@ -33,8 +33,21 @@ export default function Navbar({ onToggleSidebar }) {
   useEffect(() => {
     fetchNotifs()
     const handleNotifUpdate = () => fetchNotifs()
+    const handleStorageChange = (e) => {
+      if (e.key === 'cuanflow_notifications_updated_ts') {
+        fetchNotifs()
+      }
+    }
+
+    window.addEventListener('focus', handleNotifUpdate)
     window.addEventListener('cuanflow_notifications_updated', handleNotifUpdate)
-    return () => window.removeEventListener('cuanflow_notifications_updated', handleNotifUpdate)
+    window.addEventListener('storage', handleStorageChange)
+
+    return () => {
+      window.removeEventListener('focus', handleNotifUpdate)
+      window.removeEventListener('cuanflow_notifications_updated', handleNotifUpdate)
+      window.removeEventListener('storage', handleStorageChange)
+    }
   }, [])
 
   const handleLogout = () => {

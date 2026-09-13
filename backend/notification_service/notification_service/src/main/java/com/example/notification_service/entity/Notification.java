@@ -31,7 +31,7 @@ public class Notification {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Integer userId;
 
     @Column(nullable = false, length = 150)
@@ -62,10 +62,14 @@ public class Notification {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = LocalDateTime.now();
+        }
         if (this.isRead == null) this.isRead = false;
-        if (this.sentAt == null) this.sentAt = LocalDateTime.now();
+        if (this.sentAt == null) this.sentAt = this.createdAt;
     }
 
     @PreUpdate

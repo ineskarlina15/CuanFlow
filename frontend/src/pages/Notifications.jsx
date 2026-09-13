@@ -19,22 +19,50 @@ export default function Notifications() {
   const [filter, setFilter] = useState('all')
   const [markingAll, setMarkingAll] = useState(false)
 
-  const fetchNotifications = async () => {
-    setLoading(true)
+  const fetchNotifications = async (silent = false) => {
+    if (!silent) setLoading(true)
     try {
       const res = await api.get('/notifSvc/api/v1/notifications')
       const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
       setNotifications(list)
     } catch (err) {
       console.warn('Failed to load notifications from server')
-      setNotifications([])
+      if (!silent) setNotifications([])
     } finally {
-      setLoading(false)
+      if (!silent) setLoading(false)
     }
   }
 
   useEffect(() => {
     fetchNotifications()
+
+    // 1. Sinkronisasi saat user kembali/fokus ke tab ini
+    const handleFocus = () => fetchNotifications(true)
+    window.addEventListener('focus', handleFocus)
+
+    // 2. Sinkronisasi event internal window
+    const handleCustomEvent = () => fetchNotifications(true)
+    window.addEventListener('cuanflow_notifications_updated', handleCustomEvent)
+
+    // 3. Sinkronisasi antar tab browser (Cross-tab broadcast event)
+    const handleStorageChange = (e) => {
+      if (e.key === 'cuanflow_notifications_updated_ts') {
+        fetchNotifications(true)
+      }
+    }
+    window.addEventListener('storage', handleStorageChange)
+
+    // 4. Polling background otomatis setiap 5 detik
+    const pollInterval = setInterval(() => {
+      fetchNotifications(true)
+    }, 5000)
+
+    return () => {
+      window.removeEventListener('focus', handleFocus)
+      window.removeEventListener('cuanflow_notifications_updated', handleCustomEvent)
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(pollInterval)
+    }
   }, [])
 
   const handleMarkAsRead = async (id) => {

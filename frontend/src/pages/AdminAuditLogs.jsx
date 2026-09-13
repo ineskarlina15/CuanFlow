@@ -183,9 +183,21 @@ export default function AdminAuditLogs() {
       const res = await api.get('/authSvc/api/v1/audit-logs')
       const data = res?.data || res
       if (Array.isArray(data) && data.length > 0) {
+        const formatLocalTime = (iso) => {
+          if (!iso) return 'Baru saja'
+          try {
+            const d = new Date(iso)
+            if (isNaN(d.getTime())) return String(iso).replace('T', ' ').slice(0, 19)
+            const pad = (n) => String(n).padStart(2, '0')
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+          } catch {
+            return String(iso).replace('T', ' ').slice(0, 19)
+          }
+        }
+
         const mapped = data.map((l, idx) => ({
-          id: `LOG-2024-${String(l.id || idx + 1).padStart(3, '0')}`,
-          timestamp: l.createdAt ? new Date(l.createdAt).toISOString().replace('T', ' ').slice(0, 19) : '2024-08-20 12:00:00',
+          id: `LOG-${String(l.id || idx + 1).padStart(4, '0')}`,
+          timestamp: formatLocalTime(l.createdAt),
           actor: l.userId === 1 ? 'System Administrator' : (l.userId ? `User #${l.userId}` : 'Sistem'),
           actorRole: l.userId === 1 ? 'ADMIN' : (l.userId ? 'USER' : 'SYSTEM'),
           action: l.action || 'ACTIVITY',

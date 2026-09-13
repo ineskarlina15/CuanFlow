@@ -75,7 +75,7 @@ export default function AdminBroadcast() {
             message: b.message,
             type: b.type || 'INFO',
             target: b.targetAudience === 'ALL_USERS' ? 'Semua Pengguna' : 'Pengguna Aktif',
-            recipientsCount: b.recipientsCount || 20,
+            recipientsCount: b.recipientsCount || 0,
             sentAt: b.sentAt ? new Date(b.sentAt).toISOString().replace('T', ' ').slice(0, 19) : '2024-08-18 08:00:00',
             status: 'TERKIRIM'
           }))
@@ -125,41 +125,32 @@ export default function AdminBroadcast() {
       })
 
       const saved = res?.data || res
+      const count = saved?.recipientsCount || 0
       const newBroadcast = {
         id: saved?.id || Date.now(),
         title: saved?.title || title,
         message: saved?.message || message,
         type: saved?.type || type,
         target: targetAudience === 'ALL_USERS' ? 'Semua Pengguna' : 'Pengguna Aktif Saja',
-        recipientsCount: saved?.recipientsCount || 20,
+        recipientsCount: count,
         sentAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
         status: 'TERKIRIM'
       }
 
       setBroadcastHistory(prev => [newBroadcast, ...prev])
-      showToast(`Siaran pengumuman berhasil disebarkan ke ${newBroadcast.recipientsCount} pengguna!`, 'success')
+      const audienceMsg = targetAudience === 'ALL_USERS' ? 'semua pengguna' : 'seluruh pengguna aktif'
+      showToast(`Siaran pengumuman berhasil disebarkan ke ${audienceMsg}!`, 'success')
       setTitle('')
       setMessage('')
       setType('INFO')
-    } catch {
-      const newBroadcast = {
-        id: Date.now(),
-        title,
-        message,
-        type,
-        target: targetAudience === 'ALL_USERS' ? 'Semua Pengguna' : 'Pengguna Aktif Saja',
-        recipientsCount: 20,
-        sentAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
-        status: 'TERKIRIM'
-      }
-      setBroadcastHistory(prev => [newBroadcast, ...prev])
-      showToast(`Siaran pengumuman berhasil dikirimkan ke 20 pengguna!`, 'success')
-      setTitle('')
-      setMessage('')
-      setType('INFO')
+    } catch (err) {
+      console.error('Gagal mengirim siaran broadcast:', err)
+      const errorMsg = err?.response?.data?.message || err?.message || 'Gagal menyebarkan siaran pengumuman ke server'
+      showToast(errorMsg, 'error')
     } finally {
       setIsSending(false)
       try {
+        localStorage.setItem('cuanflow_notifications_updated_ts', Date.now().toString())
         window.dispatchEvent(new Event('cuanflow_notifications_updated'))
       } catch {}
     }
@@ -269,8 +260,8 @@ export default function AdminBroadcast() {
                   onChange={(e) => setTargetAudience(e.target.value)}
                   className="px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 >
-                  <option value="ALL_USERS">Semua Pengguna (20)</option>
-                  <option value="ACTIVE_ONLY">Pengguna Aktif (19)</option>
+                  <option value="ALL_USERS">Semua Pengguna</option>
+                  <option value="ACTIVE_ONLY">Pengguna Aktif Saja</option>
                 </select>
               </div>
             </div>
@@ -292,7 +283,7 @@ export default function AdminBroadcast() {
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2.5 text-slate-600">
               <Users className="w-4 h-4 text-blue-600 shrink-0" />
               <span className="text-[11px] font-semibold">
-                Estimasi jangkauan: <strong>20 akun pengguna terdaftar</strong>
+                Estimasi jangkauan: <strong>{targetAudience === 'ALL_USERS' ? 'Semua Pengguna Terdaftar' : 'Seluruh Pengguna Aktif'}</strong>
               </span>
             </div>
 
@@ -371,10 +362,7 @@ export default function AdminBroadcast() {
                         {getTypeBadge(b.type)}
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="flex flex-col">
-                          <span className="font-bold text-slate-800">{b.target}</span>
-                          <span className="text-[10px] text-slate-400">{b.recipientsCount} akun</span>
-                        </div>
+                        <span className="font-bold text-slate-800">{b.target || 'Semua Pengguna'}</span>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">
                         {b.sentAt}

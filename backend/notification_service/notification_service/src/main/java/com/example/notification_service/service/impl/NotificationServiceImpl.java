@@ -36,8 +36,69 @@ public class NotificationServiceImpl implements NotificationService {
     @Autowired
     private SystemBroadcastRepository systemBroadcastRepository;
 
+    @Autowired(required = false)
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     @Override
     public List<Notification> getMyNotifications(Integer userId, Boolean unreadOnly) {
+        if (userId != null) {
+            try {
+                // 1. Sambut pengguna baru yang belum memiliki notifikasi sama sekali (pengguna yang daftar sendiri)
+                List<Notification> existingUserNotifs = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+                if (existingUserNotifs == null || existingUserNotifs.isEmpty()) {
+                    Notification welcomeNotif = Notification.builder()
+                            .userId(userId)
+                            .title("Selamat Datang di CuanFlow!")
+                            .message("Akun Anda telah aktif. Mulai catat transaksi pertama Anda, atur anggaran bulanan, dan pantau keuangan Anda sekarang!")
+                            .type(NotificationType.SYSTEM)
+                            .isRead(false)
+                            .sentAt(LocalDateTime.now())
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    try {
+                        notificationRepository.save(welcomeNotif);
+                    } catch (Exception ignored) {}
+                }
+
+                // 2. Sinkronisasikan pengumuman siaran sistem (broadcast) yang belum masuk ke inbox pengguna ini
+                List<SystemBroadcast> broadcasts = systemBroadcastRepository.findAllByOrderBySentAtDesc();
+                if (broadcasts != null && !broadcasts.isEmpty()) {
+                    List<Notification> existingNotifs = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+                    for (SystemBroadcast sb : broadcasts) {
+                        String cleanTitle = sb.getTitle() != null ? sb.getTitle().trim() : "";
+                        String taggedTitle = "[PENGUMUMAN] " + cleanTitle;
+
+                        boolean alreadyExists = existingNotifs != null && existingNotifs.stream().anyMatch(n -> {
+                            if (n.getTitle() == null) return false;
+                            String t = n.getTitle().trim();
+                            return t.equalsIgnoreCase(taggedTitle) || t.equalsIgnoreCase(cleanTitle) || t.contains(cleanTitle);
+                        });
+
+                        if (!alreadyExists) {
+                            NotificationType notifType = "TIPS".equalsIgnoreCase(sb.getType()) ? NotificationType.INFO : NotificationType.SYSTEM;
+                            LocalDateTime timeToUse = sb.getSentAt() != null ? sb.getSentAt() : (sb.getCreatedAt() != null ? sb.getCreatedAt() : LocalDateTime.now());
+                            Notification notif = Notification.builder()
+                                    .userId(userId)
+                                    .title(taggedTitle)
+                                    .message(sb.getMessage())
+                                    .type(notifType)
+                                    .isRead(false)
+                                    .sentAt(timeToUse)
+                                    .createdAt(timeToUse)
+                                    .build();
+                            try {
+                                notificationRepository.save(notif);
+                            } catch (Exception ex) {
+                                System.err.println("Gagal simpan auto-sync notifikasi: " + ex.getMessage());
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Info: Gagal auto-sync notifikasi untuk userId " + userId + ": " + e.getMessage());
+            }
+        }
+
         if (unreadOnly != null && unreadOnly) {
             return notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(userId, false);
         }
@@ -134,15 +195,67 @@ public class NotificationServiceImpl implements NotificationService {
         }
     }
 
+    private List<Integer> getAllTargetUserIds(String targetAudience) {
+        List<Integer> userIds = new java.util.ArrayList<>();
+        if (jdbcTemplate != null) {
+            try {
+                String sql = "SELECT id FROM users WHERE deleted_at IS NULL ORDER BY id ASC";
+                if ("ACTIVE_ONLY".equalsIgnoreCase(targetAudience) || "Pengguna Aktif Saja".equalsIgnoreCase(targetAudience)) {
+                    sql = "SELECT id FROM users WHERE is_active = true AND deleted_at IS NULL ORDER BY id ASC";
+                }
+                List<Integer> queryResult = jdbcTemplate.queryForList(sql, Integer.class);
+                if (queryResult != null && !queryResult.isEmpty()) {
+                    userIds.addAll(queryResult);
+                }
+            } catch (Exception e) {
+                try {
+                    List<Integer> fallbackResult = jdbcTemplate.queryForList("SELECT id FROM users ORDER BY id ASC", Integer.class);
+                    if (fallbackResult != null && !fallbackResult.isEmpty()) {
+                        userIds.addAll(fallbackResult);
+                    }
+                } catch (Exception ex) {
+                    System.err.println("Gagal query users via JdbcTemplate: " + ex.getMessage());
+                }
+            }
+        }
+
+        // Fallback jika query kosong
+        if (userIds.isEmpty()) {
+            try {
+                List<Object> rawIds = notificationRepository.findAllUserIds();
+                if (rawIds != null) {
+                    for (Object obj : rawIds) {
+                        if (obj instanceof Number) {
+                            userIds.add(((Number) obj).intValue());
+                        } else if (obj != null) {
+                            try {
+                                userIds.add(Integer.parseInt(obj.toString().trim()));
+                            } catch (Exception ignored) {}
+                        }
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        if (userIds.isEmpty()) {
+            for (int i = 1; i <= 25; i++) {
+                userIds.add(i);
+            }
+        }
+        return userIds;
+    }
+
     @Override
     public SystemBroadcast createBroadcast(Integer senderId, String title, String message, String type, String targetAudience) {
+        List<Integer> targetUserIds = getAllTargetUserIds(targetAudience);
+
         SystemBroadcast broadcast = SystemBroadcast.builder()
                 .senderId(senderId != null ? senderId : 1)
                 .title(title)
                 .message(message)
                 .type(type != null ? type : "INFO")
                 .targetAudience(targetAudience != null ? targetAudience : "ALL_USERS")
-                .recipientsCount(20)
+                .recipientsCount(targetUserIds.size())
                 .isSent(true)
                 .sentAt(LocalDateTime.now())
                 .createdAt(LocalDateTime.now())
@@ -150,13 +263,13 @@ public class NotificationServiceImpl implements NotificationService {
         
         SystemBroadcast saved = systemBroadcastRepository.save(broadcast);
 
-        // Sebarkan juga ke tabel notifikasi pengguna (user 1 sampai 20)
+        // Sebarkan notifikasi ke seluruh pengguna yang terdaftar secara dinamis
         NotificationType notifType = NotificationType.SYSTEM;
         if ("TIPS".equalsIgnoreCase(type)) {
             notifType = NotificationType.INFO;
         }
 
-        for (int uId = 1; uId <= 20; uId++) {
+        for (Integer uId : targetUserIds) {
             try {
                 Notification notif = Notification.builder()
                         .userId(uId)
@@ -168,7 +281,9 @@ public class NotificationServiceImpl implements NotificationService {
                         .createdAt(LocalDateTime.now())
                         .build();
                 notificationRepository.save(notif);
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                System.err.println("Gagal simpan broadcast untuk userId " + uId + ": " + e.getMessage());
+            }
         }
 
         return saved;

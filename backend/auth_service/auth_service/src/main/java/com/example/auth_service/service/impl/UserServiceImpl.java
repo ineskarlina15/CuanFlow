@@ -28,6 +28,12 @@ public class UserServiceImpl implements UserService{
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private com.example.auth_service.service.AuditLogService auditLogService;
+
+    @Autowired(required = false)
+    private jakarta.servlet.http.HttpServletRequest httpRequest;
+
     @Override
     public ProfileRes getMyProfile(String username) throws Exception {
         User user = userRepository.findByUsername(username)
@@ -109,6 +115,27 @@ public class UserServiceImpl implements UserService{
             throw new Exception("Role tidak valid. Gunakan ADMIN atau USER.");
         }
         userRepository.save(user);
+
+        // Catat otomatis ke Log Audit Sistem (Audit Trail)
+        try {
+            String userName = user.getName() != null ? user.getName() : user.getUsername();
+            String entityInfo = "User ID #" + user.getId() + " (" + userName + ")";
+            String desc = "Mengubah peran pengguna '" + userName + "' (" + user.getEmail() + ") menjadi " + user.getRole().name();
+            auditLogService.recordLog(
+                    getAdminActorId(),
+                    "UPDATE_ROLE",
+                    "USER_MANAGEMENT",
+                    entityInfo,
+                    desc,
+                    getClientIp(),
+                    getClientUserAgent(),
+                    "SUCCESS",
+                    "HIGH"
+            );
+        } catch (Exception e) {
+            System.err.println("Audit log error on updateUserRole: " + e.getMessage());
+        }
+
         Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
             Profile p = new Profile();
             p.setUser(user);
@@ -130,6 +157,29 @@ public class UserServiceImpl implements UserService{
         boolean currentStatus = user.getIsActive() != null ? user.getIsActive() : true;
         user.setIsActive(!currentStatus);
         userRepository.save(user);
+
+        // Catat otomatis ke Log Audit Sistem (Audit Trail)
+        try {
+            String userName = user.getName() != null ? user.getName() : user.getUsername();
+            String entityInfo = "User ID #" + user.getId() + " (" + userName + ")";
+            String actionName = !currentStatus ? "ACTIVATE_ACCOUNT" : "SUSPEND_ACCOUNT";
+            String statusText = !currentStatus ? "mengaktifkan kembali" : "menonaktifkan (suspend)";
+            String desc = "Administrator sistem " + statusText + " status akun pengguna '" + userName + "'";
+            String severity = !currentStatus ? "MEDIUM" : "HIGH";
+            auditLogService.recordLog(
+                    getAdminActorId(),
+                    actionName,
+                    "SECURITY_CONTROL",
+                    entityInfo,
+                    desc,
+                    getClientIp(),
+                    getClientUserAgent(),
+                    "SUCCESS",
+                    severity
+            );
+        } catch (Exception e) {
+            System.err.println("Audit log error on toggleUserStatus: " + e.getMessage());
+        }
 
         Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
             Profile p = new Profile();
@@ -153,6 +203,26 @@ public class UserServiceImpl implements UserService{
         user.setDeletedAt(java.time.LocalDateTime.now());
         user.setIsActive(false);
         userRepository.save(user);
+
+        // Catat otomatis ke Log Audit Sistem (Audit Trail)
+        try {
+            String userName = user.getName() != null ? user.getName() : user.getUsername();
+            String entityInfo = "User ID #" + user.getId() + " (" + userName + ")";
+            String desc = "Administrator sistem menghapus akun pengguna '" + userName + "' (" + user.getEmail() + ") secara aman (Soft Delete)";
+            auditLogService.recordLog(
+                    getAdminActorId(),
+                    "DELETE_USER",
+                    "USER_MANAGEMENT",
+                    entityInfo,
+                    desc,
+                    getClientIp(),
+                    getClientUserAgent(),
+                    "SUCCESS",
+                    "HIGH"
+            );
+        } catch (Exception e) {
+            System.err.println("Audit log error on deleteUser: " + e.getMessage());
+        }
     }
 
     // Fungsi bantuan untuk memetakan Entity ke DTO
@@ -172,5 +242,43 @@ public class UserServiceImpl implements UserService{
         response.setAddress(profile.getAddress());
         response.setOccupation(profile.getOccupation());
         return response;
+    }
+
+    private Integer getAdminActorId() {
+        try {
+            var auth = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getName() != null) {
+                var adminUser = userRepository.findByUsername(auth.getName()).orElse(null);
+                if (adminUser != null) {
+                    return adminUser.getId();
+                }
+            }
+        } catch (Exception ignored) {}
+        return 1;
+    }
+
+    private String getClientIp() {
+        try {
+            if (httpRequest != null) {
+                String ip = httpRequest.getHeader("X-Forwarded-For");
+                if (ip != null && !ip.isBlank()) {
+                    return ip.split(",")[0].trim();
+                }
+                return httpRequest.getRemoteAddr() != null ? httpRequest.getRemoteAddr() : "127.0.0.1";
+            }
+        } catch (Exception ignored) {}
+        return "127.0.0.1";
+    }
+
+    private String getClientUserAgent() {
+        try {
+            if (httpRequest != null) {
+                String ua = httpRequest.getHeader("User-Agent");
+                if (ua != null && !ua.isBlank()) {
+                    return ua;
+                }
+            }
+        } catch (Exception ignored) {}
+        return "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CuanFlow Web Admin";
     }
 }
