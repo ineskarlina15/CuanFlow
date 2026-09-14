@@ -122,7 +122,16 @@ BEGIN
     ) THEN
         ALTER TABLE categories ADD COLUMN user_id INT4 DEFAULT 2;
     END IF;
+
+    -- Hapus batasan unik global pada nama kategori agar multi-user bisa memiliki nama kategori yang sama (misal: "Gaji")
+    IF EXISTS (
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_name = 'categories' AND constraint_name = 'categories_name_key'
+    ) THEN
+        ALTER TABLE categories DROP CONSTRAINT categories_name_key;
+    END IF;
 END $$;
+
 
 INSERT INTO categories (id, user_id, name, type, description, icon, created_at, updated_at) VALUES
 (1, 2, 'Gaji Pokok', 'INCOME', 'Penghasilan rutin bulanan dari pekerjaan utama', 'wallet', NOW(), NOW()),
