@@ -13,7 +13,32 @@ export function AuthProvider({ children }) {
     const storedUser = localStorage.getItem('user')
     if (storedToken && storedUser) {
       setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+      try {
+        const parsed = JSON.parse(storedUser)
+        setUser(parsed)
+
+        // Sync latest profile data (like avatarUrl) in background
+        api.get('/authSvc/api/v1/users/profile', {
+          headers: { Authorization: `Bearer ${storedToken}` }
+        }).then(res => {
+          const data = res?.data || (res?.name ? res : null)
+          if (data) {
+            setUser(prev => {
+              if (!prev) return prev
+              const updated = {
+                ...prev,
+                name: data.name || prev.name,
+                avatarUrl: data.avatarUrl !== undefined ? data.avatarUrl : prev.avatarUrl,
+                role: data.role || prev.role
+              }
+              localStorage.setItem('user', JSON.stringify(updated))
+              return updated
+            })
+          }
+        }).catch(() => {})
+      } catch (e) {
+        // ignore parse error
+      }
     }
     setLoading(false)
   }, [])
@@ -27,25 +52,36 @@ export function AuthProvider({ children }) {
       })
       const authData = response.data
       
-      localStorage.setItem('token', authData.token)
-      localStorage.setItem('user', JSON.stringify({
+      const userPayload = {
         id: authData.userId,
         name: authData.name,
         username: authData.username,
         email: authData.email,
         role: authData.role,
-        avatarUrl: authData.avatarUrl
-      }))
+        avatarUrl: authData.avatarUrl || null
+      }
+
+      localStorage.setItem('token', authData.token)
+      localStorage.setItem('user', JSON.stringify(userPayload))
 
       setToken(authData.token)
-      setUser({
-        id: authData.userId,
-        name: authData.name,
-        username: authData.username,
-        email: authData.email,
-        role: authData.role,
-        avatarUrl: authData.avatarUrl
-      })
+      setUser(userPayload)
+
+      // If avatarUrl was not included in authData, fetch profile to retrieve it
+      if (!authData.avatarUrl) {
+        api.get('/authSvc/api/v1/users/profile', {
+          headers: { Authorization: `Bearer ${authData.token}` }
+        }).then(res => {
+          const data = res?.data || (res?.name ? res : null)
+          if (data?.avatarUrl) {
+            setUser(prev => {
+              const updated = { ...prev, avatarUrl: data.avatarUrl }
+              localStorage.setItem('user', JSON.stringify(updated))
+              return updated
+            })
+          }
+        }).catch(() => {})
+      }
       
       return authData
     } catch (error) {

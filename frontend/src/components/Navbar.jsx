@@ -18,6 +18,11 @@ export default function Navbar({ onToggleSidebar }) {
   const [loadingNotifs, setLoadingNotifs] = useState(false)
   
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false)
+  const [avatarError, setAvatarError] = useState(false)
+
+  useEffect(() => {
+    setAvatarError(false)
+  }, [user?.avatarUrl])
 
   const fetchNotifs = async () => {
     try {
@@ -183,8 +188,13 @@ export default function Navbar({ onToggleSidebar }) {
                 className="flex items-center gap-2.5 p-1.5 pr-2 rounded-xl hover:bg-slate-100 transition-all border border-transparent hover:border-slate-200 cursor-pointer"
               >
                 <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center shadow-md overflow-hidden shrink-0">
-                  {user?.avatarUrl ? (
-                    <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+                  {user?.avatarUrl && !avatarError ? (
+                    <img 
+                      src={user.avatarUrl} 
+                      alt={user.name} 
+                      className="w-full h-full object-cover" 
+                      onError={() => setAvatarError(true)}
+                    />
                   ) : (
                     (user?.name || user?.username || 'G').charAt(0).toUpperCase()
                   )}
