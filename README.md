@@ -144,8 +144,8 @@ CuanFlow dibangun menggunakan pola arsitektur **Microservices** terdesentralisas
 ```text
 CuanFlow/
 ├── backend/                                  # Layanan Backend Microservices (Spring Boot)
-│   ├── api_gateway/                          # API Gateway Routing & CORS (Port 8024)
-│   │   ├── src/main/java/com/example/api_gateway/
+│   ├── gateway_service/                      # API Gateway Routing & CORS (Port 8024)
+│   │   ├── src/main/java/com/example/gateway_service/
 │   │   └── pom.xml
 │   ├── auth_service/                         # Autentikasi, Profil & Audit Log (Port 8021)
 │   │   ├── src/main/java/com/example/auth_service/
@@ -170,8 +170,6 @@ CuanFlow/
 ├── database/                                 # Skrip Database Relasional PostgreSQL
 │   ├── ddl.sql                               # Data Definition Language (12 Tabel, Enum, PK/FK)
 │   └── seed_data.sql                         # Data Awal Pengujian (20+ Data Riil per Tabel Utama)
-├── flowchart/                                # Dokumentasi Diagram Alir Sistem
-│   └── FLOWCHART_CUANFLOW.io                 # Spesifikasi Alur Bisnis, Autentikasi & Akuntansi
 ├── frontend/                                 # Klien Web SPA (React 19 + Vite)
 │   ├── public/                               # Aset Statis & Favicon
 │   ├── src/
@@ -206,9 +204,9 @@ CuanFlow/
    CREATE DATABASE db_cuanflow;
    ```
 2. Jalankan skrip DDL untuk membangun skema tabel:
-   * Buka file [**`database/ddl.sql`**](file:///database/ddl.sql) ➡️ **Execute All Script** (`Alt + X` atau `F5`).
+   * Buka file [**`database/ddl.sql`**](./database/ddl.sql) ➡️ **Execute All Script** (`Alt + X` atau `F5`).
 3. Jalankan skrip Seed Data untuk memasukkan 20+ data uji coba awal:
-   * Buka file [**`database/seed_data.sql`**](file:///database/seed_data.sql) ➡️ **Execute All Script**.
+   * Buka file [**`database/seed_data.sql`**](./database/seed_data.sql) ➡️ **Execute All Script**.
 
 ---
 
@@ -263,8 +261,7 @@ Aplikasi telah terisi dengan data awal yang siap diuji menggunakan akun-akun dem
 
 | Peran (*Role*) | Username | Email | Password | Hak Akses Utama |
 | :--- | :--- | :--- | :--- | :--- |
-| **USER (Utama)** | `galang` | `galang@gmail.com` | `password123` | Akses penuh dashboard keuangan, mutasi kas, anggaran 80%, goals, dan ekspor laporan PDF/Excel. |
-| **USER (Alternatif)** | `ines` | `ines@gmail.com` | `password123` | Akun pembukuan bisnis pribadi dengan data terisolasi. |
+| **USER (Utama)** | `ines` | `ines@gmail.com` | `password123` | Akses penuh dashboard keuangan, mutasi kas, anggaran 80%, goals, dan ekspor laporan PDF/Excel. |
 | **ADMIN** | `admin` | `admin@cuanflow.id` | `admin123` | Akses panel kontrol admin, manajemen user, log audit COSO, dan pengiriman siaran massal. |
 
 ---
@@ -293,7 +290,7 @@ Basis data dirancang memenuhi kaidah normalisasi **Bentuk Normal Ketiga (3NF)** 
 ## 📡 Dokumentasi API (Postman Collection)
 
 Repositori ini menyertakan berkas dokumentasi pengujian endpoint API berstandar OpenAPI/Postman yang siap diimpor:
-📄 [**`CuanFlow_Postman_Collection.json`**](file:///CuanFlow_Postman_Collection.json)
+📄 [**`CuanFlow_Postman_Collection.json`**](./CuanFlow_Postman_Collection.json)
 
 **Cara Menggunakan:**
 1. Buka aplikasi **Postman**.
