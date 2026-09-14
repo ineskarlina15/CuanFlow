@@ -92,6 +92,10 @@ public class AuthServiceImpl implements AuthService {
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
 
+        profileRepository.findByUserId(user.getId()).ifPresent(profile -> {
+            response.setAvatarUrl(profile.getAvatarUrl());
+        });
+
         return response;
     }
 

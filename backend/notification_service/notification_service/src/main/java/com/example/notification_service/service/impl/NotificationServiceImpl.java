@@ -43,28 +43,57 @@ public class NotificationServiceImpl implements NotificationService {
     public List<Notification> getMyNotifications(Integer userId, Boolean unreadOnly) {
         if (userId != null) {
             try {
-                // 1. Sambut pengguna baru yang belum memiliki notifikasi sama sekali (pengguna yang daftar sendiri)
+                // Ambil tanggal pendaftaran user dari tabel users
+                LocalDateTime userCreatedAt = null;
+                if (jdbcTemplate != null) {
+                    try {
+                        java.sql.Timestamp ts = jdbcTemplate.queryForObject(
+                                "SELECT created_at FROM users WHERE id = ?", java.sql.Timestamp.class, userId);
+                        if (ts != null) {
+                            userCreatedAt = ts.toLocalDateTime();
+                        }
+                    } catch (Exception ignored) {}
+                }
+
+                // 1. Sambut pengguna baru yang belum memiliki notifikasi sama sekali
                 List<Notification> existingUserNotifs = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
                 if (existingUserNotifs == null || existingUserNotifs.isEmpty()) {
+                    LocalDateTime welcomeTime = userCreatedAt != null ? userCreatedAt : LocalDateTime.now();
                     Notification welcomeNotif = Notification.builder()
                             .userId(userId)
                             .title("Selamat Datang di CuanFlow!")
                             .message("Akun Anda telah aktif. Mulai catat transaksi pertama Anda, atur anggaran bulanan, dan pantau keuangan Anda sekarang!")
                             .type(NotificationType.SYSTEM)
                             .isRead(false)
-                            .sentAt(LocalDateTime.now())
-                            .createdAt(LocalDateTime.now())
+                            .sentAt(welcomeTime)
+                            .createdAt(welcomeTime)
                             .build();
                     try {
                         notificationRepository.save(welcomeNotif);
                     } catch (Exception ignored) {}
                 }
 
-                // 2. Sinkronisasikan pengumuman siaran sistem (broadcast) yang belum masuk ke inbox pengguna ini
+                // 2. Bersihkan notifikasi siaran masa lalu yang tidak sengaja tersalin sebelum tanggal daftar user
+                if (userCreatedAt != null && jdbcTemplate != null) {
+                    try {
+                        jdbcTemplate.update(
+                                "DELETE FROM notifications WHERE user_id = ? AND title LIKE '[PENGUMUMAN]%' AND created_at < ?",
+                                userId, java.sql.Timestamp.valueOf(userCreatedAt));
+                    } catch (Exception ignored) {}
+                }
+
+                // 3. Sinkronisasikan pengumuman siaran sistem (broadcast) yang dikirim setelah atau pada tanggal pendaftaran user
                 List<SystemBroadcast> broadcasts = systemBroadcastRepository.findAllByOrderBySentAtDesc();
                 if (broadcasts != null && !broadcasts.isEmpty()) {
                     List<Notification> existingNotifs = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
                     for (SystemBroadcast sb : broadcasts) {
+                        LocalDateTime timeToUse = sb.getSentAt() != null ? sb.getSentAt() : (sb.getCreatedAt() != null ? sb.getCreatedAt() : LocalDateTime.now());
+
+                        // Pengguna baru TIDAK menerima pengumuman masa lalu yang dikirim sebelum tanggal pendaftaran akunnya
+                        if (userCreatedAt != null && timeToUse.isBefore(userCreatedAt)) {
+                            continue;
+                        }
+
                         String cleanTitle = sb.getTitle() != null ? sb.getTitle().trim() : "";
                         String taggedTitle = "[PENGUMUMAN] " + cleanTitle;
 
@@ -76,7 +105,6 @@ public class NotificationServiceImpl implements NotificationService {
 
                         if (!alreadyExists) {
                             NotificationType notifType = "TIPS".equalsIgnoreCase(sb.getType()) ? NotificationType.INFO : NotificationType.SYSTEM;
-                            LocalDateTime timeToUse = sb.getSentAt() != null ? sb.getSentAt() : (sb.getCreatedAt() != null ? sb.getCreatedAt() : LocalDateTime.now());
                             Notification notif = Notification.builder()
                                     .userId(userId)
                                     .title(taggedTitle)
