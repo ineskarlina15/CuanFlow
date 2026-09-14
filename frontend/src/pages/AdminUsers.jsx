@@ -10,9 +10,12 @@ import {
   Edit2, 
   Plus, 
   Loader2, 
+  Pin, 
   ChevronLeft, 
   ChevronRight, 
-  CheckCircle2, 
+  Lock, 
+  SlidersHorizontal,
+  CheckCircle2,
   AlertCircle
 } from 'lucide-react'
 

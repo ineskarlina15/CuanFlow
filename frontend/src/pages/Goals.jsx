@@ -12,8 +12,8 @@ import {
 } from '../utils/formatters'
 import { 
   Target, Plus, Edit2, Trash2, Loader2, ArrowUpCircle, Calendar,
-  ChevronLeft, ChevronRight, Search, Filter,
-  CheckCircle2, TrendingUp, Wallet, AlertCircle
+  ChevronLeft, ChevronRight, Search, Filter, ArrowUpDown, RotateCcw,
+  CheckCircle2, TrendingUp, Wallet, Clock, AlertCircle
 } from 'lucide-react'
 
 export default function Goals() {
@@ -27,7 +27,7 @@ export default function Goals() {
   const [statusFilter, setStatusFilter] = useState('ALL') // 'ALL' | 'IN_PROGRESS' | 'COMPLETED' | 'OVERDUE'
   const [sortBy, setSortBy] = useState('DEFAULT') // 'DEFAULT' | 'TARGET_DESC' | 'TARGET_ASC' | 'PERCENT_DESC' | 'DATE_ASC'
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage] = useState(6)
+  const [itemsPerPage, setItemsPerPage] = useState(6)
 
   // State Modal
   const [isModalOpen, setIsModalOpen] = useState(false)

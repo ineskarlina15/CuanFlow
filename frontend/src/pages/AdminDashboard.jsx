@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 
 export default function AdminDashboard() {
+  const [, setLoading] = useState(false)
   const [currency, setCurrency] = useState(localStorage.getItem('cuanflow_currency') || 'IDR')
 
   const [stats, setStats] = useState({

@@ -7,7 +7,7 @@ import { downloadBlob } from '../utils/formatters'
 import { 
   Download, Calendar, Printer, FileText, PieChart, TrendingUp, 
   BarChart3, Wallet, ArrowUpRight, ArrowDownRight, ShieldCheck, 
-  Scale, Sparkles
+  Scale, CreditCard, Building2, Sparkles
 } from 'lucide-react'
 
 export default function Reports() {
@@ -17,6 +17,7 @@ export default function Reports() {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [period, setPeriod] = useState('all_time')
+  const [, setLoading] = useState(false)
 
   // Tab Menu Laporan: 'statement' (Laba Rugi), 'analytics' (Grafik Tren), 'all' (Semua)
   const [activeTab, setActiveTab] = useState('statement')

@@ -20,13 +20,16 @@ import {
   Filter,
   Globe,
   Download,
+  HelpCircle,
   ChevronDown,
   Sparkles,
+  Award,
   Zap,
   Clock,
   ChevronRight,
   Menu,
-  X
+  X,
+  Home
 } from 'lucide-react'
 
 export default function Landing() {

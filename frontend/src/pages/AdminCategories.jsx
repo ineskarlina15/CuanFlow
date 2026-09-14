@@ -6,8 +6,10 @@ import {
   Edit2,
   Trash2,
   CheckCircle2,
+  XCircle,
   TrendingUp,
   TrendingDown,
+  Sparkles,
   Layers,
   Info,
   ChevronLeft,
@@ -155,6 +157,7 @@ export default function AdminCategories() {
           setCategories(mapped)
         }
       } catch (err) {
+        // Fallback memakai data default sistem jika backend belum aktif
       }
     }
     fetchCategories()
@@ -484,8 +487,8 @@ export default function AdminCategories() {
                     key={page}
                     onClick={() => setCurrentPage(page)}
                     className={`w-8 h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${currentPage === page
-                      ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
-                      : 'text-slate-600 hover:bg-slate-100'
+                        ? 'bg-blue-600 text-white shadow-xs shadow-blue-600/20'
+                        : 'text-slate-600 hover:bg-slate-100'
                       }`}
                   >
                     {page}

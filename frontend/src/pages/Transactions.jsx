@@ -12,7 +12,7 @@ import {
 } from '../utils/formatters'
 import { 
   Search, Plus, Filter, ChevronLeft, ChevronRight, Edit2, Trash2, 
-  Paperclip, Calendar, Wallet, FileText, Loader2, Tag, Eye
+  Paperclip, Calendar, DollarSign, Wallet, FileText, Loader2, Tag, Eye, Info
 } from 'lucide-react'
 
 export default function Transactions() {

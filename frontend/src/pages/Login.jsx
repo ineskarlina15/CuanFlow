@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import CuanFlowLogo from '../components/CuanFlowLogo'
-import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-react'
+import { Mail, Lock, Loader2, ArrowRight, ArrowLeft, Eye, EyeOff } from 'lucide-react'
 
 export default function Login() {
   const { login } = useAuth()

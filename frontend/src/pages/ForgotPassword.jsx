@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Mail, ArrowLeft, Send, KeyRound } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import CuanFlowLogo from '../components/CuanFlowLogo'
@@ -10,6 +10,7 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false)
   const [sentToken, setSentToken] = useState(null)
   const { showSuccess, showError } = useToast()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
