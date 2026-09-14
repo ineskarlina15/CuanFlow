@@ -8,11 +8,8 @@ import {
   AlertTriangle, 
   Info, 
   CheckCircle2, 
-  Trash2, 
   Clock, 
-  ShieldAlert,
-  Sparkles,
-  ChevronLeft,
+  ChevronLeft, 
   ChevronRight
 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'

@@ -46,12 +46,12 @@ public class UserController {
             ProfileRes data = userService.updateMyProfile(auth.getName(), payload);
             return message.getData("Profil berhasil diperbarui", data, 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 
     @GetMapping
-    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> getAllUsers() {
         try {
             return message.getData("Berhasil mengambil daftar pengguna (Khusus Admin)", userService.getAllUsers(), 200);
@@ -68,11 +68,11 @@ public class UserController {
         try {
             String role = payload.get("role");
             if (role == null || role.isBlank()) {
-                return message.badReq("Role tidak boleh kosong", 400);
+                return message.error("Role tidak boleh kosong", 400);
             }
             return message.getData("Peran pengguna berhasil diperbarui", userService.updateUserRole(id, role), 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 
@@ -82,7 +82,7 @@ public class UserController {
         try {
             return message.getData("Status akun pengguna berhasil diperbarui (PATCH)", userService.toggleUserStatus(id), 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 
@@ -93,7 +93,7 @@ public class UserController {
             userService.deleteUser(id);
             return message.success("Pengguna berhasil dihapus", 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 }

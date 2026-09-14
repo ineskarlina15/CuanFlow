@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { Link, useNavigate } from 'react-router-dom'
 import CuanFlowLogo from './CuanFlowLogo'
-import { Bell, Menu, User, LogOut, ChevronDown, Home, Loader2, Info, AlertTriangle } from 'lucide-react'
+import { Bell, Menu, User, LogOut, ChevronDown, Loader2, Info, AlertTriangle } from 'lucide-react'
 import Modal from './Modal'
 import api from '../services/api'
 

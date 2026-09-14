@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { KeyRound, Lock, ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { KeyRound, Lock, ArrowLeft } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import CuanFlowLogo from '../components/CuanFlowLogo'
 import api from '../services/api'

@@ -10,6 +10,4 @@ import com.example.auth_service.entity.AuditLog;
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLog, Integer> {
     List<AuditLog> findAllByOrderByCreatedAtDesc();
-    List<AuditLog> findByUserIdOrderByCreatedAtDesc(Integer userId);
-    List<AuditLog> findByModuleOrderByCreatedAtDesc(String module);
 }

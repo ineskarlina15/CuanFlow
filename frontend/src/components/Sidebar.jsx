@@ -10,7 +10,6 @@ import {
   Bell, 
   User, 
   Settings, 
-  LogOut, 
   X,
   Target,
   Users,
@@ -20,7 +19,7 @@ import {
 } from 'lucide-react'
 
 export default function Sidebar({ isOpen, onClose }) {
-  const { logout, user } = useAuth()
+  const { user } = useAuth()
 
   const isAdmin = user?.role === 'ADMIN'
 

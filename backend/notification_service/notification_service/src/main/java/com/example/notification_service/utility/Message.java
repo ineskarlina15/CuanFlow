@@ -38,13 +38,6 @@ public class Message {
         return ResponseEntity.status(status).body(res);
     }
 
-    public ResponseEntity<?> conflict(String message, int status) {
-        Map<String, Object> res = new HashMap<>();
-        res.put("message", message);
-        res.put("status", status);
-        return ResponseEntity.status(status).body(res);
-    }
-
     public ResponseEntity<?> badReq(String message, int status) {
         Map<String, Object> res = new HashMap<>();
         res.put("message", message);

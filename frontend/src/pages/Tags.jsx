@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { 
   Tag as TagIcon, Plus, Trash2, Search, ArrowDownUp, Edit2, Loader2,
-  ChevronLeft, ChevronRight, RotateCcw, Hash, Layers
+  ChevronLeft, ChevronRight, Layers
 } from 'lucide-react'
 import { useToast } from '../contexts/ToastContext'
 import Modal from '../components/Modal'
@@ -16,7 +16,7 @@ export default function Tags() {
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('newest') // newest, oldest, az, za
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(12)
+  const [itemsPerPage] = useState(12)
 
   // State Modal Edit Tag
   const [isEditOpen, setIsEditOpen] = useState(false)

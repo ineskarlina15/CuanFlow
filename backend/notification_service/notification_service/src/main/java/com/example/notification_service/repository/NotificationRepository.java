@@ -19,14 +19,6 @@ public interface NotificationRepository extends JpaRepository<Notification, Inte
     List<Notification> findByUserIdAndIsReadOrderByCreatedAtDesc(@Param("userId") Integer userId, @Param("isRead") Boolean isRead);
     boolean existsByUserIdAndTypeAndTitleAndCreatedAtAfter(Integer userId, NotificationType type, String title, java.time.LocalDateTime date);
 
-    @Query(value = "SELECT CAST(id AS INTEGER) FROM users WHERE deleted_at IS NULL ORDER BY id ASC", nativeQuery = true)
-    List<Object> findAllActiveUserIds();
-
-    @Query(value = "SELECT CAST(id AS INTEGER) FROM users WHERE is_active = true AND deleted_at IS NULL ORDER BY id ASC", nativeQuery = true)
-    List<Object> findActiveOnlyUserIds();
-
     @Query(value = "SELECT CAST(id AS INTEGER) FROM users ORDER BY id ASC", nativeQuery = true)
     List<Object> findAllUserIds();
-
-    boolean existsByUserIdAndTitle(Integer userId, String title);
 }

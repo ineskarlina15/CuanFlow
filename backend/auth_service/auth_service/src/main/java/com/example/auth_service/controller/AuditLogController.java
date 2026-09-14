@@ -60,7 +60,7 @@ public class AuditLogController {
             );
             return message.getData("Log audit berhasil dicatat", saved, 201);
         } catch (Exception e) {
-            return message.badReq("Gagal mencatat log audit: " + e.getMessage(), 400);
+            return message.error("Gagal mencatat log audit: " + e.getMessage(), 400);
         }
     }
 

@@ -8,13 +8,11 @@ import {
   Landmark, 
   TrendingUp, 
   TrendingDown, 
-  ShieldAlert, 
   Loader2, 
-  RefreshCw,
-  ArrowRight,
-  Plus,
-  BarChart2,
-  PieChart as PieChartIcon
+  ArrowRight, 
+  Plus, 
+  BarChart2, 
+  PieChart as PieChartIcon 
 } from 'lucide-react'
 
 export default function Dashboard() {
@@ -31,7 +29,6 @@ export default function Dashboard() {
   const [recentTransactions, setRecentTransactions] = useState([])
   const [analytics, setAnalytics] = useState({ expenseByCategory: [], incomeByCategory: [] })
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('monthly')
   const [chartView, setChartView] = useState('line') // 'line' | 'bar'
   const [monthlyBarData, setMonthlyBarData] = useState([])
   const [availableYears, setAvailableYears] = useState([])

@@ -59,17 +59,6 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
-
-    public Integer extractUserId(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith((javax.crypto.SecretKey) getKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-
-        return claims.get("userId", Integer.class);
-    }
-
     public String extractRole(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith((javax.crypto.SecretKey) getKey())

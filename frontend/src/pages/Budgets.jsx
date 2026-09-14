@@ -6,7 +6,7 @@ import { formatCurrency, getAlertThreshold } from '../utils/currency'
 import { formatAmountInput, parseAmountInput, getCurrencyPrefix, capitalizeFirstLetter } from '../utils/formatters'
 import { 
   Landmark, Plus, Edit2, Trash2, ChevronLeft, ChevronRight, Loader2, Calendar, Info,
-  Search, Filter, ArrowUpDown, TrendingUp, AlertTriangle, CheckCircle2, Wallet, RotateCcw
+  Search, Filter, TrendingUp, AlertTriangle, CheckCircle2, Wallet
 } from 'lucide-react'
 
 const monthNames = [
@@ -35,7 +35,7 @@ export default function Budgets() {
   const [statusFilter, setStatusFilter] = useState('ALL') // 'ALL' | 'SAFE' | 'WARNING' | 'EXCEEDED'
   const [sortBy, setSortBy] = useState('DEFAULT') // 'DEFAULT' | 'AMOUNT_DESC' | 'AMOUNT_ASC' | 'PERCENT_DESC' | 'NAME_ASC'
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(6)
+  const [itemsPerPage] = useState(6)
 
   // Formulir Modal
   const [isModalOpen, setIsModalOpen] = useState(false)

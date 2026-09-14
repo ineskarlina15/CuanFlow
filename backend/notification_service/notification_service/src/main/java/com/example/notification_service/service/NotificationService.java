@@ -11,5 +11,5 @@ public interface NotificationService {
     void markAllAsRead(Integer userId);
     void deleteNotification(Integer userId, Integer notificationId) throws Exception;
     SystemBroadcast createBroadcast(Integer senderId, String title, String message, String type, String targetAudience);
-    List<com.example.notification_service.entity.SystemBroadcast> getAllBroadcasts();
+    List<SystemBroadcast> getAllBroadcasts();
 }

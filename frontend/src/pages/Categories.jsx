@@ -5,7 +5,7 @@ import Modal from '../components/Modal'
 import { capitalizeWords } from '../utils/formatters'
 import { 
   ShieldAlert, Plus, Edit2, Trash2, Tag, Loader2, Search, ArrowDownUp,
-  ChevronLeft, ChevronRight, Filter, RotateCcw, Layers, ArrowDownCircle, ArrowUpCircle
+  ChevronLeft, ChevronRight, Filter, Layers, ArrowDownCircle, ArrowUpCircle
 } from 'lucide-react'
 
 export default function Categories() {
@@ -18,7 +18,7 @@ export default function Categories() {
   const [typeFilter, setTypeFilter] = useState('ALL') // ALL, EXPENSE, INCOME
   const [sortBy, setSortBy] = useState('newest') // newest, oldest, az, za
   const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(8)
+  const [itemsPerPage] = useState(8)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalType, setModalType] = useState('add')

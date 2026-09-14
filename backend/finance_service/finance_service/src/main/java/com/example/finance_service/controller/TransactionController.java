@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -80,40 +79,6 @@ public class TransactionController {
                     transactionService.getTransactionById(userId, id), 200);
         } catch (Exception e) {
             return message.badReq(e.getMessage(), 404);
-        }
-    }
-
-    @GetMapping("/export")
-    public ResponseEntity<?> exportTransactions(
-            @RequestAttribute("userId") Integer userId,
-            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        try {
-            byte[] report = transactionService.exportTransactionsReport(userId, startDate, endDate);
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=laporan-cuanflow.xlsx")
-                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                    .body(report);
-        } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
-        }
-    }
-
-    @GetMapping("/export/pdf")
-    public ResponseEntity<?> exportTransactionsPdf(
-            @RequestAttribute("userId") Integer userId,
-            @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        try {
-            byte[] report = transactionService.exportTransactionsPdf(userId, startDate, endDate);
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=laporan-cuanflow.pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .body(report);
-        } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
         }
     }
 

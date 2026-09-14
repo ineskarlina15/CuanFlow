@@ -43,18 +43,6 @@ public class NotificationController {
         }
     }
 
-    @PutMapping("/{id}/read")
-    public ResponseEntity<?> markAsRead(
-            @RequestAttribute("userId") Integer userId,
-            @PathVariable Integer id) {
-        try {
-            notificationService.markAsRead(userId, id);
-            return message.success("Notifikasi ditandai sudah dibaca", 200);
-        } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
-        }
-    }
-
     @PatchMapping("/{id}/read")
     public ResponseEntity<?> patchMarkAsRead(
             @RequestAttribute("userId") Integer userId,

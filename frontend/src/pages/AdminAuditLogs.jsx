@@ -11,13 +11,11 @@ import {
   Eye, 
   Clock, 
   User, 
-  Server,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  FileSpreadsheet,
-  FileDown,
-  Loader2
+  ChevronLeft, 
+  ChevronRight, 
+  FileSpreadsheet, 
+  FileDown, 
+  Loader2 
 } from 'lucide-react'
 import Modal from '../components/Modal'
 import { useToast } from '../contexts/ToastContext'

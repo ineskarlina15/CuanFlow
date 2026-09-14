@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import api from '../services/api'
 import { capitalizeWords } from '../utils/formatters'
-import { User, Mail, Camera, Save, Loader2, Key, Check, ShieldCheck, Upload, Eye, EyeOff, Phone, Calendar, MapPin, Briefcase, Users } from 'lucide-react'
+import { User, Mail, Camera, Save, Loader2, Key, Check, Eye, EyeOff, Phone, Calendar, MapPin, Briefcase, Users } from 'lucide-react'
 // Predefined Avatars
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80',
@@ -15,7 +15,7 @@ const AVATAR_PRESETS = [
 ]
 
 export default function Profile() {
-  const { user, token, updateUser } = useAuth()
+  const { user, updateUser } = useAuth()
   const { showToast } = useToast()
 
   const [name, setName] = useState(user?.name || '')

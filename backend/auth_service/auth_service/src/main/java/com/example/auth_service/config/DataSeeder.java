@@ -25,7 +25,6 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         seedUser("admin", "System Administrator", "admin@cuanflow.id", "admin123", UserRole.ADMIN);
-        seedUser("galang", "Galang Pratama", "galang@gmail.com", "password123", UserRole.USER);
     }
 
     private void seedUser(String username, String name, String email, String rawPassword, UserRole role) {

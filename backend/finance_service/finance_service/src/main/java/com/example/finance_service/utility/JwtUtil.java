@@ -14,7 +14,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
-    private static final String PASSWORD_RESET_TOKEN = "PASSWORD_RESET";
     private static final String ACCESS_TOKEN = "ACCESS";
 
     @Value("${jwt.secret}")

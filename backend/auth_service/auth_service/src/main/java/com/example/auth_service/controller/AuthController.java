@@ -33,7 +33,7 @@ public class AuthController {
               
             return message.success(result, 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 
@@ -44,7 +44,7 @@ public class AuthController {
             
             return message.getData("Login Success", data, 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 401);
+            return message.error(e.getMessage(), 401);
         }
     }
 
@@ -54,7 +54,7 @@ public class AuthController {
             String token = authService.forgotPassword(request);
             return message.getData("Token reset password berhasil dibuat", token, 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 
@@ -64,7 +64,7 @@ public class AuthController {
             String result = authService.resetPassword(request);
             return message.success(result, 200);
         } catch (Exception e) {
-            return message.badReq(e.getMessage(), 400);
+            return message.error(e.getMessage(), 400);
         }
     }
 
