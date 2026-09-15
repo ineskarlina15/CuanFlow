@@ -84,7 +84,6 @@ public class UserServiceImpl implements UserService{
     @Override
     public List<ProfileRes> getAllUsers() {
         return userRepository.findAll().stream()
-                .filter(u -> u.getDeletedAt() == null)
                 .map(user -> {
                     Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
                         Profile p = new Profile();
@@ -225,6 +224,44 @@ public class UserServiceImpl implements UserService{
         }
     }
 
+    @Override
+    @Transactional
+    public ProfileRes restoreUser(Integer targetUserId) throws Exception {
+        User user = userRepository.findById(targetUserId)
+                .orElseThrow(() -> new Exception("Pengguna tidak ditemukan"));
+
+        user.setDeletedAt(null);
+        user.setIsActive(true);
+        userRepository.save(user);
+
+        // Catat otomatis ke Log Audit Sistem (Audit Trail)
+        try {
+            String userName = user.getName() != null ? user.getName() : user.getUsername();
+            String entityInfo = "User ID #" + user.getId() + " (" + userName + ")";
+            String desc = "Administrator sistem memulihkan kembali akun pengguna '" + userName + "' (" + user.getEmail() + ") dari status terhapus";
+            auditLogService.recordLog(
+                    getAdminActorId(),
+                    "RESTORE_USER",
+                    "USER_MANAGEMENT",
+                    entityInfo,
+                    desc,
+                    getClientIp(),
+                    getClientUserAgent(),
+                    "SUCCESS",
+                    "MEDIUM"
+            );
+        } catch (Exception e) {
+            System.err.println("Audit log error on restoreUser: " + e.getMessage());
+        }
+
+        Profile profile = profileRepository.findByUserId(user.getId()).orElseGet(() -> {
+            Profile p = new Profile();
+            p.setUser(user);
+            return p;
+        });
+        return mapToProfileRes(user, profile);
+    }
+
     // Fungsi bantuan untuk memetakan Entity ke DTO
     private ProfileRes mapToProfileRes(User user, Profile profile) {
         ProfileRes response = new ProfileRes();
@@ -235,6 +272,7 @@ public class UserServiceImpl implements UserService{
         response.setPhone(user.getPhone());
         response.setRole(user.getRole().name());
         response.setIsActive(user.getIsActive() != null ? user.getIsActive() : true);
+        response.setDeletedAt(user.getDeletedAt());
         response.setCreatedAt(user.getCreatedAt());
         response.setAvatarUrl(profile.getAvatarUrl());
         response.setDateOfBirth(profile.getDateOfBirth());

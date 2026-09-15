@@ -11,4 +11,5 @@ public interface UserService {
     ProfileRes updateUserRole(Integer targetUserId, String role) throws Exception;
     ProfileRes toggleUserStatus(Integer targetUserId) throws Exception;
     void deleteUser(Integer targetUserId) throws Exception;
+    ProfileRes restoreUser(Integer targetUserId) throws Exception;
 }

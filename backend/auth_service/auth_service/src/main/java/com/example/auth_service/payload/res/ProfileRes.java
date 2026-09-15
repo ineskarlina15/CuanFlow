@@ -23,5 +23,6 @@ public class ProfileRes {
     private String address;
     private String occupation;
     private Boolean isActive;
+    private java.time.LocalDateTime deletedAt;
     private java.time.LocalDateTime createdAt;
 }

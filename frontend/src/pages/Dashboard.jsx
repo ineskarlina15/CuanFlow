@@ -226,6 +226,9 @@ export default function Dashboard() {
             <span className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-blue-600 tracking-tight font-heading block whitespace-nowrap overflow-hidden text-ellipsis">
               {formatCurrency(summary.currentBalance)}
             </span>
+            <span className="text-[11px] text-slate-400 font-semibold mt-1 block">
+              {allTransactions.length} Transaksi Tercatat
+            </span>
           </div>
         </div>
 

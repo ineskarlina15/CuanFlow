@@ -16,7 +16,8 @@ import {
   Lock, 
   SlidersHorizontal,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  RotateCcw
 } from 'lucide-react'
 
 export default function AdminUsers() {
@@ -53,6 +54,8 @@ export default function AdminUsers() {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [userToDelete, setUserToDelete] = useState(null)
 
+  const [activeTab, setActiveTab] = useState('ACTIVE') // 'ACTIVE' | 'TRASH'
+
   const fetchUsers = async () => {
     setLoading(true)
     try {
@@ -64,7 +67,8 @@ export default function AdminUsers() {
           name: u.name || u.username || 'User',
           email: u.email || 'user@cuanflow.id',
           role: u.role || 'USER',
-          status: u.isActive !== false ? 'Aktif' : 'Nonaktif',
+          status: u.deletedAt ? 'Terhapus' : (u.isActive !== false ? 'Aktif' : 'Nonaktif'),
+          isDeleted: Boolean(u.deletedAt),
           registered: u.createdAt 
             ? new Date(u.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) 
             : '18 Agt 2024'
@@ -90,15 +94,19 @@ export default function AdminUsers() {
       (u.role === 'ADMIN' && u.name?.toLowerCase().includes('administrator'))
   }
 
-  // Filter pencarian
+  // Filter berdasarkan tab aktif vs sampah dan pencarian
   const searchFiltered = useMemo(() => {
-    return users.filter(
-      (u) =>
+    return users.filter((u) => {
+      const matchTab = activeTab === 'ACTIVE' ? !u.isDeleted : u.isDeleted
+      if (!matchTab) return false
+
+      return (
         u.name.toLowerCase().includes(keyword.toLowerCase()) ||
         u.email.toLowerCase().includes(keyword.toLowerCase()) ||
         u.role.toLowerCase().includes(keyword.toLowerCase())
-    )
-  }, [users, keyword])
+      )
+    })
+  }, [users, activeTab, keyword])
 
   // Logika Penyematan System Administrator di Paling Atas + Sortir Pengguna Lainnya
   const finalSortedUsers = useMemo(() => {
@@ -202,13 +210,29 @@ export default function AdminUsers() {
     if (!userToDelete) return
     try {
       await api.delete(`/authSvc/api/v1/users/${userToDelete.id}`)
-      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id))
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userToDelete.id ? { ...u, isDeleted: true, status: 'Terhapus' } : u))
+      )
       setIsDeleteOpen(false)
-      showToast(`Akun ${userToDelete.name} berhasil dihapus dari database`, 'success')
+      showToast(`Akun ${userToDelete.name} berhasil dihapus (Soft Delete)`, 'success')
     } catch {
-      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id))
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userToDelete.id ? { ...u, isDeleted: true, status: 'Terhapus' } : u))
+      )
       setIsDeleteOpen(false)
       showToast(`Akun ${userToDelete.name} berhasil dihapus`, 'success')
+    }
+  }
+
+  const handleRestoreUser = async (user) => {
+    try {
+      await api.patch(`/authSvc/api/v1/users/${user.id}/restore`)
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, isDeleted: false, status: 'Aktif' } : u))
+      )
+      showToast(`Akun ${user.name} berhasil dipulihkan & aktif kembali!`, 'success')
+    } catch (err) {
+      showToast(err.response?.data?.message || `Gagal memulihkan akun ${user.name}`, 'error')
     }
   }
 
@@ -276,6 +300,45 @@ export default function AdminUsers() {
               />
             </div>
           </div>
+        </div>
+
+        {/* Tab Switcher: Pengguna Aktif vs Sampah / Terhapus */}
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          <button
+            onClick={() => {
+              setActiveTab('ACTIVE')
+              setCurrentPage(1)
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'ACTIVE'
+                ? 'bg-blue-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+            }`}
+          >
+            <UserCheck className="w-3.5 h-3.5" />
+            <span>Pengguna Aktif</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${activeTab === 'ACTIVE' ? 'bg-blue-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+              {users.filter(u => !u.isDeleted).length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              setActiveTab('TRASH')
+              setCurrentPage(1)
+            }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'TRASH'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200/70'
+            }`}
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Sampah / Terhapus</span>
+            <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-black ${activeTab === 'TRASH' ? 'bg-rose-800 text-white' : 'bg-slate-200 text-slate-700'}`}>
+              {users.filter(u => u.isDeleted).length}
+            </span>
+          </button>
         </div>
 
         {/* Users Table */}
@@ -388,6 +451,17 @@ export default function AdminUsers() {
                           <div className="flex items-center justify-end gap-1 text-slate-400 text-xs font-bold" title="Akun Master Administrator dilindungi demi integritas & ketersediaan sistem">
                             <Lock className="w-3.5 h-3.5 text-amber-600" />
                             <span className="text-[11px] text-amber-700">Terproteksi</span>
+                          </div>
+                        ) : u.isDeleted ? (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleRestoreUser(u)}
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300 rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                              title="Pulihkan & Aktifkan Kembali Akun Ini"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>Pulihkan</span>
+                            </button>
                           </div>
                         ) : (
                           <div className="flex items-center justify-end gap-2">

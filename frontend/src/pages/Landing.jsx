@@ -346,8 +346,8 @@ export default function Landing() {
                 <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Peringatan Anggaran</span>
               </div>
               <div className="flex items-center gap-3 px-6 py-3 rounded-2xl bg-slate-50 border border-slate-200 shadow-xs">
-                <span className="text-2xl font-black text-indigo-600 font-heading">Microservice</span>
-                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Arsitektur Cepat</span>
+                <span className="text-2xl font-black text-indigo-600 font-heading">Standar SAK</span>
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Prinsip Akuntansi</span>
               </div>
             </div>
           ))}
@@ -748,15 +748,15 @@ export default function Landing() {
             </ul>
           </div>
 
-          {/* Col 3: Ekosistem Sistem */}
+          {/* Col 3: Solusi Keuangan */}
           <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-black uppercase tracking-widest text-slate-100 font-heading">Ekosistem Aplikasi</h4>
+            <h4 className="text-xs font-black uppercase tracking-widest text-slate-100 font-heading">Solusi Keuangan</h4>
             <ul className="flex flex-col gap-2 text-xs font-medium text-slate-400">
-              <li><span className="text-slate-300">Gateway Service (Port 8024)</span></li>
-              <li><span className="text-slate-300">Auth Service (Port 8021)</span></li>
-              <li><span className="text-slate-300">Finance Service (Port 8022)</span></li>
-              <li><span className="text-slate-300">Notification Service (Port 8023)</span></li>
-              <li><span className="text-slate-300">PostgreSQL Relational DB</span></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Pencatatan Arus Kas</a></li>
+              <li><a href="#calculator" className="hover:text-white transition-colors">Target Tabungan Impian</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Plafon Anggaran 80%</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Pelaporan Finansial SAK</a></li>
+              <li><a href="#features" className="hover:text-white transition-colors">Multi-Mata Uang Dinamis</a></li>
             </ul>
           </div>
 

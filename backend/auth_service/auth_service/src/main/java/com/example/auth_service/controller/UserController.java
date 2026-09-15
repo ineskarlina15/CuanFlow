@@ -96,4 +96,14 @@ public class UserController {
             return message.error(e.getMessage(), 400);
         }
     }
+
+    @PatchMapping("/{id}/restore")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<?> restoreUser(@PathVariable Integer id) {
+        try {
+            return message.getData("Akun pengguna berhasil dipulihkan", userService.restoreUser(id), 200);
+        } catch (Exception e) {
+            return message.error(e.getMessage(), 400);
+        }
+    }
 }
