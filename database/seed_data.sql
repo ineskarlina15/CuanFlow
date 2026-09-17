@@ -1,9 +1,6 @@
 -- =========================================================
 -- CUANFLOW — SEED DATA SCRIPT (DML)
 -- Personal Finance Management System
--- Sesuai Ketentuan Tugas S1 Akuntansi & Sistem Informasi:
--- "Minimal 20 data awal (seed) untuk setiap tabel utama"
--- PostgreSQL
 -- =========================================================
 
 -- =========================================================
@@ -34,8 +31,8 @@ BEGIN
     END IF;
 END $$;
 
--- =========================================================
--- Pastikan kolom reset_password_token tersedia pada tabel users
+-- ==============================================================
+-- Kolom reset_password_token tersedia pada tabel users
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -53,12 +50,12 @@ BEGIN
     END IF;
 END $$;
 
--- =========================================================
+-- ===========================================================================
 -- 1. SEED USERS (20 Pengguna)
 -- Password untuk semua user non-admin: 'password123'
 -- Hash BCrypt: $2a$10$wN3Mh9fAEvs5qFf9pZgHau2W4Y9H.g.p0DkqfB6I5uOqWpI0qJt6u
 -- Password admin: 'admin123'
--- =========================================================
+-- ===========================================================================
 INSERT INTO users (id, name, username, email, password, role, phone, is_active, created_at, updated_at) VALUES
 (1, 'System Administrator', 'admin', 'admin@cuanflow.id', '$2a$10$wN3Mh9fAEvs5qFf9pZgHau2W4Y9H.g.p0DkqfB6I5uOqWpI0qJt6u', 'ADMIN', '081234567890', true, '2024-01-01 08:00:00', NOW()),
 (2, 'Galang Pratama', 'galang', 'galang@gmail.com', '$2a$10$wN3Mh9fAEvs5qFf9pZgHau2W4Y9H.g.p0DkqfB6I5uOqWpI0qJt6u', 'USER', '081234567891', true, '2024-01-10 09:00:00', NOW()),
@@ -113,7 +110,6 @@ ON CONFLICT (id) DO NOTHING;
 -- 3. SEED CATEGORIES (20 Kategori)
 -- Kombinasi Pemasukan (INCOME) dan Pengeluaran (EXPENSE)
 -- =========================================================
--- Pastikan kolom user_id tersedia pada tabel categories jika belum ada
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -123,7 +119,6 @@ BEGIN
         ALTER TABLE categories ADD COLUMN user_id INT4 DEFAULT 2;
     END IF;
 
-    -- Hapus batasan unik global pada nama kategori agar multi-user bisa memiliki nama kategori yang sama (misal: "Gaji")
     IF EXISTS (
         SELECT 1 FROM information_schema.table_constraints 
         WHERE table_name = 'categories' AND constraint_name = 'categories_name_key'
@@ -182,11 +177,11 @@ INSERT INTO tags (id, name, user_id) VALUES
 (20, 'tabungan', 2)
 ON CONFLICT (id) DO NOTHING;
 
--- =========================================================
+-- ===============================================================
 -- 5. SEED TRANSACTIONS (25 Data Transaksi)
 -- Didominasi untuk Galang (user_id = 2) untuk demo lengkap
 -- Melibatkan berbagai kategori, tanggal, tipe, dan metode bayar
--- =========================================================
+-- ===============================================================
 INSERT INTO transactions (id, user_id, category_id, type, amount, title, description, transaction_date, payment_method, created_at, updated_at) VALUES
 (1, 2, 1, 'INCOME', 8500000.00, 'Gaji Pokok Agustus 2024', 'Transfer gaji bulanan dari PT Tech Nusantara', '2024-08-01', 'BANK_TRANSFER', NOW(), NOW()),
 (2, 2, 6, 'EXPENSE', 45000.00, 'Makan Siang Nasi Padang', 'Makan siang bareng tim kantor', '2024-08-01', 'E_WALLET', NOW(), NOW()),
@@ -246,10 +241,10 @@ INSERT INTO transaction_tags (transaction_id, tag_id) VALUES
 (25, 20)
 ON CONFLICT (transaction_id, tag_id) DO NOTHING;
 
--- =========================================================
+-- ===============================================================
 -- 7. SEED BUDGETS (20 Batas Anggaran Bulanan)
 -- Langsung berelasi dengan category_id (sesuai entitas Budget)
--- =========================================================
+-- ===============================================================
 DO $$
 BEGIN
     IF NOT EXISTS (
@@ -374,10 +369,10 @@ INSERT INTO attachments (id, transaction_id, file_name, file_url, file_type, fil
 (5, 7, 'resi-token-pln.pdf', 'uploads/attachments/sample-token-pln.pdf', 'application/pdf', 189400, NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
 
--- =========================================================
+-- ===================================================================
 -- 12. SEED AUDIT_LOGS (20 Log Jejak Audit Pengendalian Internal SIA)
 -- Memenuhi Syarat Minimal 20 Data Awal & Standar Audit COSO
--- =========================================================
+-- ===================================================================
 INSERT INTO audit_logs (id, user_id, action, module, entity, description, ip_address, user_agent, status, severity, created_at) VALUES
 (1, 1, 'UPDATE_ROLE', 'USER_MANAGEMENT', 'User ID #2 (Galang Pratama)', 'Mengubah peran pengguna dari USER menjadi ADMIN', '192.168.1.105', 'Chrome/128.0 Windows 10', 'SUCCESS', 'HIGH', '2024-08-20 14:32:15'),
 (2, 5, 'EXPORT_REPORT', 'FINANCIAL_REPORT', 'Report PDF (Periode Agustus 2024)', 'Melakukan ekspor Laporan Keuangan Pribadi format PDF', '192.168.1.112', 'Edge/127.0 Windows 11', 'SUCCESS', 'LOW', '2024-08-20 11:15:40'),
@@ -401,9 +396,9 @@ INSERT INTO audit_logs (id, user_id, action, module, entity, description, ip_add
 (20, 1, 'SYSTEM_BACKUP', 'SYSTEM_MAINTENANCE', 'Database Snapshot db_cuanflow', 'Melakukan pencadangan (*backup*) data berkala sistem', '192.168.1.105', 'pg_dump Automated Script', 'SUCCESS', 'MEDIUM', '2024-08-11 23:59:59')
 ON CONFLICT (id) DO NOTHING;
 
--- =========================================================
+-- ============================================================
 -- 13. SEED SYSTEM_BROADCASTS (Contoh Siaran Pengumuman Massal)
--- =========================================================
+-- ============================================================
 INSERT INTO system_broadcasts (id, sender_id, title, message, type, target_audience, recipients_count, is_sent, sent_at, created_at) VALUES
 (1, 1, 'Pemeliharaan Server Terjadwal (Maintenance)', 'Sistem CuanFlow akan melakukan pemeliharaan rutin pada hari Minggu pukul 00.00 - 02.00 WIB. Mohon simpan transaksi Anda.', 'MAINTENANCE', 'ALL_USERS', 20, true, '2024-08-18 08:00:00', NOW()),
 (2, 1, 'Fitur Baru: Format Laporan Keuangan Pribadi (Excel & PDF)', 'Kini Anda dapat mengunduh laporan keuangan pribadi dengan struktur tabel bulanan terintegrasi dan ringkasan kas lengkap.', 'INFO', 'ACTIVE_ONLY', 19, true, '2024-08-15 14:30:22', NOW()),
@@ -438,7 +433,6 @@ BEGIN
 END $$;
 
 -- =========================================================
--- SEED DATA BERHASIL DI-LOAD SECARA LENGKAP!
 -- Total:
 -- - 20 Users & 20 Profiles
 -- - 20 Categories (Income & Expense)

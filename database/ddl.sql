@@ -1,7 +1,7 @@
 -- =========================================================
 -- CUANFLOW — PERSONAL FINANCE MANAGEMENT SYSTEM
 -- DDL DATABASE SCHEMA (PostgreSQL)
--- Program Studi S1 Akuntansi & Sistem Informasi
+-- Program Studi S1 Akuntansi
 -- =========================================================
 
 -- =========================================================
