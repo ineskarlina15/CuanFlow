@@ -29,6 +29,7 @@
 
 - [📖 Tentang CuanFlow](#-tentang-cuanflow)
 - [🏛️ Arsitektur Sistem (Microservices)](#️-arsitektur-sistem-microservices)
+- [📐 Perancangan Sistem (Flowchart)](#-perancangan-sistem-flowchart)
 - [✨ Fitur Unggulan](#-fitur-unggulan)
 - [🛠️ Teknologi yang Digunakan](#️-teknologi-yang-digunakan)
 - [📁 Struktur Direktori Monorepo](#-struktur-direktori-monorepo)
@@ -90,6 +91,70 @@ CuanFlow dibangun menggunakan pola arsitektur **Microservices** terdesentralisas
                                  │ 12 Tabel, Relasi 3NF,     │
                                  │ Soft Delete & Indexing    │
                                  └───────────────────────────┘
+```
+
+---
+
+## 📐 Perancangan Sistem (Flowchart)
+
+Sesuai standar perancangan sistem informasi akuntansi, berikut adalah diagram alir (*flowchart*) dari tiga alur proses bisnis utama dalam **CuanFlow**:
+
+### 1. Flowchart Autentikasi, Verifikasi Token JWT & RBAC
+```mermaid
+flowchart TD
+    Start([Mulai]) --> InputCred[/Input Username & Password/]
+    InputCred --> PostLogin[Kirim Request POST /api/v1/auth/login]
+    PostLogin --> CheckUser{Validasi User & Password BCrypt?}
+    CheckUser -- Tidak Valid --> Err401[Tampilkan Error 401 Unauthorized]
+    Err401 --> EndFail([Selesai / Gagal])
+    CheckUser -- Valid --> GenToken[Generate JWT Access Token & Refresh Token]
+    GenToken --> AuditLog[Catat Log Audit 'LOGIN' ke Database]
+    AuditLog --> SaveStorage[Simpan JWT Token di LocalStorage]
+    SaveStorage --> CheckRole{Cek Role Pengguna?}
+    CheckRole -- ADMIN --> AdminDash[Arahkan ke Dashboard Admin /admin/users]
+    CheckRole -- USER --> UserDash[Arahkan ke Dashboard Pengguna /dashboard]
+    AdminDash --> EndSuccess([Selesai / Berhasil])
+    UserDash --> EndSuccess
+```
+
+### 2. Flowchart Pencatatan Transaksi Kas & Upload Bukti Bayar
+```mermaid
+flowchart TD
+    A([Mulai]) --> B[/User Input Form Transaksi:/]
+    B --> C[Judul, Kategori, Tipe, Nominal, Tanggal, Metode Bayar]
+    C --> D{User Mengunggah Bukti Bayar?}
+    D -- Ya --> E[Pilih File Struk/Nota JPG/PNG/PDF]
+    E --> F{Cek Format & Ukuran File <= 5MB?}
+    F -- Gagal --> G[Tolak & Tampilkan Alert Format/Ukuran]
+    G --> B
+    F -- Lolos --> H[Unggah File ke Storage /uploads/attachments/]
+    D -- Tidak --> I[Set Bukti Bayar = NULL]
+    H --> J[Kirim Request POST /api/v1/transactions]
+    I --> J
+    J --> K{Server Validation JSR-380}
+    K -- Gagal --> L[Kembalikan Error 400 Bad Request]
+    L --> B
+    K -- Sukses --> M[Simpan Data ke Tabel 'transactions' & 'attachments']
+    M --> N[Catat Log Audit 'CREATE_TRANSACTION']
+    N --> O[Perbarui Saldo Kas & Tampilkan Notifikasi Sukses]
+    O --> P([Selesai])
+```
+
+### 3. Flowchart Pengendalian Anggaran (Budget Control 80% & Notifikasi Dini)
+```mermaid
+flowchart TD
+    StartB([Mulai: Input Transaksi Pengeluaran Baru]) --> CalcExp[Hitung Akumulasi Pengeluaran Kategori Terkait]
+    CalcExp --> FetchBudget[Ambil Plafon Anggaran Aktif dari Tabel 'budgets']
+    FetchBudget --> HasBudget{Plafon Anggaran Ditemukan?}
+    HasBudget -- Tidak --> NormalSave[Simpan Transaksi Kas Biasa]
+    HasBudget -- Ya --> Compare[Hitung Persentase Realisasi = Total Pengeluaran / Plafon * 100%]
+    Compare --> CheckThreshold{Persentase >= 80%?}
+    CheckThreshold -- Belum (< 80%) --> NormalSave
+    CheckThreshold -- Ya (>= 80%) --> TriggerAlert[Trigger Notifikasi 'BUDGET_ALERT' ke Tabel 'notifications']
+    TriggerAlert --> PushUI[Tampilkan Banner Peringatan Warna Kuning/Merah di Dashboard]
+    PushUI --> SaveBudgetAudit[Catat Audit 'BUDGET_THRESHOLD_REACHED']
+    NormalSave --> EndB([Selesai])
+    SaveBudgetAudit --> EndB
 ```
 
 ---
@@ -262,6 +327,7 @@ Aplikasi telah terisi dengan data awal yang siap diuji menggunakan akun-akun dem
 | Peran (*Role*) | Username | Email | Password | Hak Akses Utama |
 | :--- | :--- | :--- | :--- | :--- |
 | **USER (Utama)** | `ines` | `ines@gmail.com` | `password123` | Akses penuh dashboard keuangan, mutasi kas, anggaran 80%, goals, dan ekspor laporan PDF/Excel. |
+| **USER (Demo 2)** | `galang` | `galang@gmail.com` | `password123` | Data transaksi bervariasi (25 mutasi kas riil), analisis anggaran, dan pengujian fitur multi-user. |
 | **ADMIN** | `admin` | `admin@cuanflow.id` | `admin123` | Akses panel kontrol admin, manajemen user, log audit COSO, dan pengiriman siaran massal. |
 
 ---
