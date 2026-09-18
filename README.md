@@ -170,6 +170,8 @@ CuanFlow/
 ├── database/                                 # Skrip Database Relasional PostgreSQL
 │   ├── ddl.sql                               # Data Definition Language (12 Tabel, Enum, PK/FK)
 │   └── seed_data.sql                         # Data Awal Pengujian (20+ Data Riil per Tabel Utama)
+├── flowchart/                                # Dokumen Perancangan Sistem & Diagram Alir
+│   └── FLOWCHART_CUANFLOW.pdf                # Berkas Flowchart Resmi Sistem CuanFlow (PDF)
 ├── frontend/                                 # Klien Web SPA (React 19 + Vite)
 │   ├── public/                               # Aset Statis & Favicon
 │   ├── src/
